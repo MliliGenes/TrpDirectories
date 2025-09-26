@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Guide Builder - TrpDirectories</title>
+    <link rel="icon" type="image/png" href="imgs/favicon.png">
+    <link rel="stylesheet" href="style/main.css">
+    <link rel="stylesheet" href="style/json-builder.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>JSON Guide Builder</h1>
+                <div class="header-nav">
+                    <a href="index.html" class="nav-link back-to-index">Back to Home</a>
+                    <button class="theme-toggle" onclick="toggleTheme()">
+                        🌙 Dark Mode
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="builder-container">
+            <div class="intro">
+                <h2>Build Your Learning Guide</h2>
+                <p>Create interactive learning guides using this visual JSON builder. Configure sections, add content, and preview your guide in real-time.</p>
+            </div>
+
+            <div class="builder-layout">
+                <!-- Form Panel -->
+                <div class="form-panel">
+                    <h2>📋 Guide Configuration</h2>
+                    
+                    <!-- Meta Information -->
+                    <div class="form-section">
+                        <h3>📄 Meta Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="guideTitle">Title</label>
+                            <input type="text" id="guideTitle" placeholder="e.g., Advanced Sockets & Polling">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="guideDescription">Description</label>
+                            <textarea id="guideDescription" placeholder="Brief description of the guide content..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="guideDifficulty">Difficulty Level</label>
+                            <select id="guideDifficulty">
+                                <option value="beginner">Beginner</option>
+                                <option value="intermediate">Intermediate</option>
+                                <option value="advanced">Advanced</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="tagInput">Tags</label>
+                            <input type="text" id="tagInput" placeholder="Type tag and press Enter">
+                            <div class="tag-input-container" id="tagContainer"></div>
+                        </div>
+                    </div>
+
+                    <!-- Sections -->
+                    <div class="form-section">
+                        <h3>📚 Sections</h3>
+                        <div id="sectionsContainer"></div>
+                        <button class="add-section-btn" onclick="addSection()">+ Add Section</button>
+                    </div>
+                </div>
+
+                <!-- Preview Panel -->
+                <div class="preview-panel">
+                    <h2>👀 JSON Preview</h2>
+                    
+                    <div class="export-controls">
+                        <button class="export-btn" onclick="exportJSON()">💾 Export JSON</button>
+                        <button class="import-btn" onclick="importJSON()">📁 Import JSON</button>
+                        <input type="file" id="importFile" accept=".json" style="display: none;">
+                    </div>
+                    
+                    <div class="json-output" id="jsonOutput"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Available content types and icon classes
+        const CONTENT_TYPES = ['text', 'heading', 'codeblock', 'list', 'quote'];
+        
+        const ICON_CLASSES = [
+            { id: 'hook', name: 'Hook', description: 'Attention grabbers' },
+            { id: 'mechanics', name: 'Mechanics', description: 'How it works' },
+            { id: 'examples', name: 'Examples', description: 'Code examples' },
+            { id: 'practice', name: 'Practice', description: 'Exercises' },
+            { id: 'warnings', name: 'Warnings', description: 'Important notes' },
+            { id: 'connections', name: 'Connections', description: 'Related topics' },
+            { id: 'test', name: 'Testing', description: 'Test strategies' },
+            { id: 'growth', name: 'Growth', description: 'Next steps' },
+            { id: 'concept', name: 'Concept', description: 'Core concepts' },
+            { id: 'theory', name: 'Theory', description: 'Theoretical background' },
+            { id: 'debugging', name: 'Debugging', description: 'Troubleshooting' },
+            { id: 'performance', name: 'Performance', description: 'Optimization tips' },
+            { id: 'architecture', name: 'Architecture', description: 'System design' },
+            { id: 'security', name: 'Security', description: 'Security considerations' },
+            { id: 'optimization', name: 'Optimization', description: 'Performance tuning' },
+            { id: 'patterns', name: 'Patterns', description: 'Design patterns' },
+            { id: 'tools', name: 'Tools', description: 'Development tools' },
+            { id: 'bestpractices', name: 'Best Practices', description: 'Recommended approaches' },
+            { id: 'troubleshooting', name: 'Troubleshooting', description: 'Problem solving' },
+            { id: 'advanced', name: 'Advanced', description: 'Advanced topics' }
+        ];
+
+        const PREDEFINED_TAGS = [
+            'networking', 'sockets', 'polling', 'async', 'io', 'systems',
+            'c-programming', 'low-level', 'kernel', 'memory', 'processes',
+            'concurrency', 'performance', 'debugging', 'architecture',
+            'algorithms', 'data-structures', 'security', 'optimization'
+        ];
+
+        let guideTags = [];
+        let sectionCounter = 0;
+
+        // Initialize the builder
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load theme first
+            loadTheme();
+            
+            addSection(); // Add one section by default
+            updatePreview();
+            
+            // Setup tag input
+            setupTagInput();
+            
+            // Setup form change listeners
+            setupFormListeners();
+        });
+
+        // Theme management functions
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button text - show what clicking will do
+            updateThemeButton(newTheme);
+        }
+
+        // Update theme button text based on current theme
+        function updateThemeButton(currentTheme) {
+            const button = document.querySelector('.theme-toggle');
+            if (currentTheme === 'dark') {
+                button.innerHTML = '☀️ Light Mode';
+            } else {
+                button.innerHTML = '🌙 Dark Mode';
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            // Update button text to reflect current theme
+            updateThemeButton(savedTheme);
+        }
+
+        function setupTagInput() {
+            const tagInput = document.getElementById('tagInput');
+            
+            tagInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && this.value.trim()) {
+                    addTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+        }
+
+        function setupFormListeners() {
+            const inputs = ['guideTitle', 'guideDescription', 'guideDifficulty'];
+            inputs.forEach(id => {
+                document.getElementById(id).addEventListener('input', updatePreview);
+            });
+        }
+
+        function addTag(tagText) {
+            if (!guideTags.includes(tagText)) {
+                guideTags.push(tagText);
+                renderTags();
+                updatePreview();
+            }
+        }
+
+        function removeTag(tagText) {
+            guideTags = guideTags.filter(tag => tag !== tagText);
+            renderTags();
+            updatePreview();
+        }
+
+        function renderTags() {
+            const container = document.getElementById('tagContainer');
+            container.innerHTML = guideTags.map(tag => 
+                `<span class="tag-chip">
+                    ${tag}
+                    <span class="remove-tag" onclick="removeTag('${tag}')">×</span>
+                </span>`
+            ).join('');
+        }
+
+        function addSection() {
+            sectionCounter++;
+            const sectionId = `section-${sectionCounter}`;
+            
+            const sectionHTML = `
+                <div class="section-item" id="${sectionId}">
+                    <div class="form-group">
+                        <label>Section Title</label>
+                        <input type="text" class="section-title" placeholder="e.g., Introduction to Sockets" onchange="updatePreview()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Emoji</label>
+                        <input type="text" class="section-emoji" placeholder="🚀" maxlength="2" onchange="updatePreview()">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Icon Class</label>
+                        <div class="icon-class-grid">
+                            ${ICON_CLASSES.map(cls => 
+                                `<div class="icon-class-option" data-class="${cls.id}" onclick="selectIconClass('${sectionId}', '${cls.id}')" title="${cls.description}">
+                                    <div class="icon-class-name">${cls.name}</div>
+                                </div>`
+                            ).join('')}
+                        </div>
+                        <input type="hidden" class="section-icon-class">
+                    </div>
+                    
+                    <div class="form-group">
+                        <h4>Content Items</h4>
+                        <div class="content-items"></div>
+                        <button class="add-content-btn" onclick="addContentItem('${sectionId}')">+ Add Content</button>
+                    </div>
+                    
+                    <button class="remove-btn" onclick="removeSection('${sectionId}')">Remove Section</button>
+                </div>
+            `;
+            
+            document.getElementById('sectionsContainer').insertAdjacentHTML('beforeend', sectionHTML);
+            addContentItem(sectionId); // Add one content item by default
+        }
+
+        function removeSection(sectionId) {
+            document.getElementById(sectionId).remove();
+            updatePreview();
+        }
+
+        function selectIconClass(sectionId, iconClass) {
+            const section = document.getElementById(sectionId);
+            
+            // Remove selected class from all options in this section
+            section.querySelectorAll('.icon-class-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked option
+            event.target.classList.add('selected');
+            
+            // Set the hidden input value
+            section.querySelector('.section-icon-class').value = iconClass;
+            
+            updatePreview();
+        }
+
+        function addContentItem(sectionId) {
+            const contentCounter = Date.now();
+            const contentHTML = `
+                <div class="content-item" id="content-${contentCounter}">
+                    <div class="content-type-selector">
+                        <label>Content Type</label>
+                        <select class="content-type" onchange="updateContentForm('content-${contentCounter}')" onchange="updatePreview()">
+                            <option value="text">Text</option>
+                            <option value="heading">Heading</option>
+                            <option value="codeblock">Code Block</option>
+                            <option value="list">List</option>
+                            <option value="quote">Quote</option>
+                        </select>
+                    </div>
+                    
+                    <div class="content-form">
+                        <!-- Dynamic content form will be inserted here -->
+                    </div>
+                    
+                    <button class="remove-btn" onclick="removeContentItem('content-${contentCounter}')">Remove</button>
+                </div>
+            `;
+            
+            document.getElementById(sectionId).querySelector('.content-items').insertAdjacentHTML('beforeend', contentHTML);
+            updateContentForm(`content-${contentCounter}`);
+        }
+
+        function removeContentItem(contentId) {
+            document.getElementById(contentId).remove();
+            updatePreview();
+        }
+
+        function updateContentForm(contentId) {
+            const contentItem = document.getElementById(contentId);
+            const contentType = contentItem.querySelector('.content-type').value;
+            const contentForm = contentItem.querySelector('.content-form');
+            
+            let formHTML = '';
+            
+            switch(contentType) {
+                case 'text':
+                    formHTML = `
+                        <div class="form-group">
+                            <label>Text Content</label>
+                            <textarea class="content-text" placeholder="Enter your text content..." onchange="updatePreview()"></textarea>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'heading':
+                    formHTML = `
+                        <div class="form-group">
+                            <label>Heading Text</label>
+                            <input type="text" class="content-text" placeholder="Heading text" onchange="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Level</label>
+                            <select class="content-level" onchange="updatePreview()">
+                                <option value="2">H2</option>
+                                <option value="3">H3</option>
+                                <option value="4">H4</option>
+                            </select>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'codeblock':
+                    formHTML = `
+                        <div class="form-group">
+                            <label>Programming Language</label>
+                            <input type="text" class="content-language" placeholder="c, javascript, python, etc." onchange="updatePreview()">
+                        </div>
+                        <div class="form-group">
+                            <label>Code Content</label>
+                            <textarea class="content-code" placeholder="Enter your code..." onchange="updatePreview()"></textarea>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'list':
+                    formHTML = `
+                        <div class="form-group">
+                            <label>List Items (one per line)</label>
+                            <textarea class="content-items" placeholder="Item 1\\nItem 2\\nItem 3" onchange="updatePreview()"></textarea>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'quote':
+                    formHTML = `
+                        <div class="form-group">
+                            <label>Quote Text</label>
+                            <textarea class="content-text" placeholder="Enter quote text..." onchange="updatePreview()"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Author (optional)</label>
+                            <input type="text" class="content-author" placeholder="Quote author" onchange="updatePreview()">
+                        </div>
+                    `;
+                    break;
+            }
+            
+            contentForm.innerHTML = formHTML;
+            updatePreview();
+        }
+
+        function generateJSON() {
+            const guide = {
+                meta: {
+                    title: document.getElementById('guideTitle').value || 'Untitled Guide',
+                    description: document.getElementById('guideDescription').value || 'No description provided',
+                    tags: guideTags,
+                    difficulty: document.getElementById('guideDifficulty').value,
+                    lastUpdated: new Date().toISOString().split('T')[0],
+                    favicon: "../imgs/favicon.png",
+                    stylesheet: "../style/main.css"
+                },
+                navigation: [],
+                sections: []
+            };
+
+            const sections = document.querySelectorAll('.section-item');
+            
+            sections.forEach((section, index) => {
+                const title = section.querySelector('.section-title').value;
+                const emoji = section.querySelector('.section-emoji').value || '📄';
+                const iconClass = section.querySelector('.section-icon-class').value || 'concept';
+                const sectionId = `section-${index + 1}`;
+                
+                if (title) {
+                    // Add to navigation
+                    guide.navigation.push({
+                        id: sectionId,
+                        emoji: emoji,
+                        title: title,
+                        sectionIndex: index
+                    });
+                    
+                    // Build section content
+                    const content = [];
+                    const contentItems = section.querySelectorAll('.content-item');
+                    
+                    contentItems.forEach(item => {
+                        const type = item.querySelector('.content-type').value;
+                        
+                        switch(type) {
+                            case 'text':
+                                const text = item.querySelector('.content-text')?.value;
+                                if (text) {
+                                    content.push({ type: 'text', content: text });
+                                }
+                                break;
+                                
+                            case 'heading':
+                                const headingText = item.querySelector('.content-text')?.value;
+                                const level = item.querySelector('.content-level')?.value || '2';
+                                if (headingText) {
+                                    content.push({ 
+                                        type: 'heading',
+                                        level: parseInt(level),
+                                        text: headingText
+                                    });
+                                }
+                                break;
+                                
+                            case 'codeblock':
+                                const language = item.querySelector('.content-language')?.value || 'text';
+                                const code = item.querySelector('.content-code')?.value;
+                                if (code) {
+                                    content.push({
+                                        type: 'codeblock',
+                                        language: language,
+                                        code: code
+                                    });
+                                }
+                                break;
+                                
+                            case 'list':
+                                const items = item.querySelector('.content-items')?.value;
+                                if (items) {
+                                    content.push({
+                                        type: 'list',
+                                        items: items.split('\n').filter(item => item.trim())
+                                    });
+                                }
+                                break;
+                                
+                            case 'quote':
+                                const quoteText = item.querySelector('.content-text')?.value;
+                                const author = item.querySelector('.content-author')?.value;
+                                if (quoteText) {
+                                    const quoteObj = { type: 'quote', text: quoteText };
+                                    if (author) quoteObj.author = author;
+                                    content.push(quoteObj);
+                                }
+                                break;
+                        }
+                    });
+                    
+                    // Add section
+                    guide.sections.push({
+                        id: sectionId,
+                        title: title,
+                        emoji: emoji,
+                        iconClass: iconClass,
+                        content: content
+                    });
+                }
+            });
+
+            return guide;
+        }
+
+        function updatePreview() {
+            const guide = generateJSON();
+            const jsonOutput = document.getElementById('jsonOutput');
+            jsonOutput.textContent = JSON.stringify(guide, null, 2);
+        }
+
+        function exportJSON() {
+            const guide = generateJSON();
+            const dataStr = JSON.stringify(guide, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `${guide.meta.title.toLowerCase().replace(/\s+/g, '-')}-guide.json`;
+            link.click();
+        }
+
+        function importJSON() {
+            document.getElementById('importFile').click();
+        }
+
+        document.getElementById('importFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const guide = JSON.parse(e.target.result);
+                        loadGuideData(guide);
+                    } catch (error) {
+                        alert('Error parsing JSON file: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function loadGuideData(guide) {
+            // Load meta information
+            document.getElementById('guideTitle').value = guide.meta?.title || '';
+            document.getElementById('guideDescription').value = guide.meta?.description || '';
+            document.getElementById('guideDifficulty').value = guide.meta?.difficulty || 'beginner';
+            
+            // Load tags
+            guideTags = guide.meta?.tags || [];
+            renderTags();
+            
+            // Clear existing sections
+            document.getElementById('sectionsContainer').innerHTML = '';
+            sectionCounter = 0;
+            
+            // Load sections
+            if (guide.sections) {
+                guide.sections.forEach(section => {
+                    addSection();
+                    const sectionElement = document.querySelector('.section-item:last-child');
+                    
+                    sectionElement.querySelector('.section-title').value = section.title || '';
+                    sectionElement.querySelector('.section-emoji').value = section.emoji || '';
+                    sectionElement.querySelector('.section-icon-class').value = section.iconClass || 'concept';
+                    
+                    // Select the icon class
+                    const iconOption = sectionElement.querySelector(`[onclick*="${section.iconClass}"]`);
+                    if (iconOption) {
+                        iconOption.classList.add('selected');
+                    }
+                    
+                    // Clear default content item and load section content
+                    sectionElement.querySelector('.content-items').innerHTML = '';
+                    
+                    if (section.content) {
+                        section.content.forEach(contentItem => {
+                            addContentItem(sectionElement.id);
+                            const contentElement = sectionElement.querySelector('.content-item:last-child');
+                            
+                            contentElement.querySelector('.content-type').value = contentItem.type;
+                            updateContentForm(contentElement.id);
+                            
+                            // Set content values based on type
+                            setTimeout(() => { // Allow form to update first
+                                switch(contentItem.type) {
+                                    case 'text':
+                                        contentElement.querySelector('.content-text').value = contentItem.content || '';
+                                        break;
+                                    case 'heading':
+                                        contentElement.querySelector('.content-text').value = contentItem.text || '';
+                                        contentElement.querySelector('.content-level').value = contentItem.level || '2';
+                                        break;
+                                    case 'codeblock':
+                                        contentElement.querySelector('.content-language').value = contentItem.language || '';
+                                        contentElement.querySelector('.content-code').value = contentItem.code || '';
+                                        break;
+                                    case 'list':
+                                        contentElement.querySelector('.content-items').value = contentItem.items?.join('\n') || '';
+                                        break;
+                                    case 'quote':
+                                        contentElement.querySelector('.content-text').value = contentItem.text || '';
+                                        const authorInput = contentElement.querySelector('.content-author');
+                                        if (authorInput) authorInput.value = contentItem.author || '';
+                                        break;
+                                }
+                                updatePreview();
+                            }, 100);
+                        });
+                    }
+                });
+            }
+            
+            updatePreview();
+        }
+    </script>
+</body>
+</html>

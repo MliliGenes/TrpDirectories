@@ -1,0 +1,260 @@
+/* JSON Builder Specific Styles */
+
+.builder-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.builder-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.form-panel, .preview-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    height: fit-content;
+}
+
+.form-section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+}
+
+.form-section h3 {
+    margin-top: 0;
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    background: var(--background);
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.form-group textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.tag-input-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.tag-chip {
+    background: var(--primary);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.tag-chip .remove-tag {
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.add-section-btn,
+.add-content-btn,
+.remove-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin: 0.5rem 0.5rem 0.5rem 0;
+}
+
+.add-section-btn,
+.add-content-btn {
+    background: var(--primary);
+    color: white;
+}
+
+.remove-btn {
+    background: #ef4444;
+    color: white;
+}
+
+.content-item {
+    border: 1px solid var(--border);
+    border-radius: 0.25rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.content-type-selector {
+    margin-bottom: 1rem;
+}
+
+.json-output {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    max-height: 600px;
+    overflow-y: auto;
+}
+
+.export-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.export-btn,
+.import-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.export-btn {
+    background: var(--success);
+    color: white;
+}
+
+.import-btn {
+    background: var(--secondary);
+    color: white;
+}
+
+.section-item {
+    border: 2px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: var(--background);
+}
+
+.icon-class-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.icon-class-option {
+    padding: 1rem;
+    border: 2px solid transparent;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.icon-class-name {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: capitalize;
+    line-height: 1.2;
+}
+
+.icon-class-option:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    border-color: #ffffff;
+    border-width: 3px;
+}
+
+.icon-class-option.selected {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    border-color: #ffffff;
+    border-width: 4px;
+}
+
+/* Icon class background colors - make the whole element the associated color */
+.icon-class-option[data-class="hook"] { background: #f59e0b; color: white; }
+.icon-class-option[data-class="mechanics"] { background: #3b82f6; color: white; }
+.icon-class-option[data-class="examples"] { background: #10b981; color: white; }
+.icon-class-option[data-class="practice"] { background: #ef4444; color: white; }
+.icon-class-option[data-class="warnings"] { background: #f59e0b; color: white; }
+.icon-class-option[data-class="connections"] { background: #8b5cf6; color: white; }
+.icon-class-option[data-class="test"] { background: #06b6d4; color: white; }
+.icon-class-option[data-class="growth"] { background: #10b981; color: white; }
+.icon-class-option[data-class="concept"] { background: #6366f1; color: white; }
+.icon-class-option[data-class="theory"] { background: #8b5cf6; color: white; }
+.icon-class-option[data-class="debugging"] { background: #ef4444; color: white; }
+.icon-class-option[data-class="performance"] { background: #f59e0b; color: white; }
+.icon-class-option[data-class="architecture"] { background: #64748b; color: white; }
+.icon-class-option[data-class="security"] { background: #dc2626; color: white; }
+.icon-class-option[data-class="optimization"] { background: #059669; color: white; }
+.icon-class-option[data-class="patterns"] { background: #7c3aed; color: white; }
+.icon-class-option[data-class="tools"] { background: #0891b2; color: white; }
+.icon-class-option[data-class="bestpractices"] { background: #16a34a; color: white; }
+.icon-class-option[data-class="troubleshooting"] { background: #ea580c; color: white; }
+.icon-class-option[data-class="advanced"] { background: #991b1b; color: white; }
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .builder-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .builder-container {
+        padding: 1rem;
+    }
+    
+    .form-panel, .preview-panel {
+        padding: 1rem;
+    }
+    
+    .icon-class-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .export-controls {
+        flex-direction: column;
+    }
+}

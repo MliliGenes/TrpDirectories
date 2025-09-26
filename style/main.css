@@ -103,6 +103,60 @@ header {
     align-items: center;
 }
 
+.header-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+} */
+
+/* Shared button styling for nav-link and theme-toggle */
+.nav-link,
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.nav-link:hover,
+.theme-toggle:hover {
+    background: #2563eb;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.nav-link:active,
+.theme-toggle:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
+}
+
 .header-title {
     display: flex;
     flex-direction: column;
@@ -127,35 +181,6 @@ h1 {
     h1 {
         font-size: 2.25rem;
     }
-}
-
-.theme-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: var(--surface);
-    border: 2px solid var(--border);
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    color: var(--text-primary);
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-size: 0.875rem;
-    font-weight: 500;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.theme-toggle:hover {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-}
-
-.theme-toggle:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.2);
 }
 
 main {
@@ -907,7 +932,7 @@ pre::-webkit-scrollbar-thumb:hover {
     background: var(--surface);
     border: 2px solid var(--border);
     border-radius: 0.5rem;
-    padding: 0.4rem 1rem;
+    padding: 0.5rem 1rem;
     color: var(--text-primary);
     text-decoration: none;
     font-size: 0.875rem;
@@ -993,6 +1018,20 @@ section {
 .section-icon.connections { background: #8b5cf6; }
 .section-icon.test { background: #06b6d4; }
 .section-icon.growth { background: #10b981; }
+
+/* Extended content type classes */
+.section-icon.concept { background: #6366f1; }        /* Indigo for concepts */
+.section-icon.theory { background: #8b5cf6; }         /* Purple for theory */
+.section-icon.debugging { background: #ef4444; }      /* Red for debugging */
+.section-icon.performance { background: #f59e0b; }    /* Orange for performance */
+.section-icon.architecture { background: #64748b; }   /* Slate for architecture */
+.section-icon.security { background: #dc2626; }       /* Dark red for security */
+.section-icon.optimization { background: #059669; }   /* Green for optimization */
+.section-icon.patterns { background: #7c3aed; }       /* Violet for patterns */
+.section-icon.tools { background: #0891b2; }          /* Cyan for tools */
+.section-icon.bestpractices { background: #16a34a; }  /* Green for best practices */
+.section-icon.troubleshooting { background: #ea580c; } /* Orange-red for troubleshooting */
+.section-icon.advanced { background: #991b1b; }       /* Dark red for advanced topics */
 
 .section-title {
     font-size: 1.5rem;
@@ -1462,3 +1501,125 @@ section {
         -moz-osx-font-smoothing: grayscale;
     }
 }
+
+/* ==== TAG SYSTEM ==== */
+.tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+/* Tag Categories with Color Coding */
+.tag.networking { background: #dbeafe; color: #1e40af; }
+.tag.systems { background: #f3e8ff; color: #7c2d12; }
+.tag.programming { background: #dcfce7; color: #166534; }
+.tag.performance { background: #fef3c7; color: #92400e; }
+.tag.security { background: #fee2e2; color: #991b1b; }
+.tag.tools { background: #e0f2fe; color: #0c4a6e; }
+.tag.concepts { background: #f1f5f9; color: #475569; }
+.tag.advanced { background: #fecaca; color: #7f1d1d; }
+
+/* Specific Technology Tags */
+.tag[data-category="language"] { background: #ecfdf5; color: #047857; }
+.tag[data-category="framework"] { background: #ede9fe; color: #6b21a8; }
+.tag[data-category="protocol"] { background: #fef2f2; color: #b91c1c; }
+.tag[data-category="concept"] { background: #f0f9ff; color: #0c4a6e; }
+
+/* Interactive tags (for filtering) */
+.tag.interactive {
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.tag.interactive:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tag.interactive.active {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* Tag filtering states */
+.tag.filtered-out {
+    opacity: 0.3;
+    filter: grayscale(80%);
+}
+
+/* Tag input styling for builder */
+.tag-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.tag-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+}
+
+/* Tag suggestions dropdown */
+.tag-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    margin-top: 0.25rem;
+}
+
+.tag-suggestion {
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.tag-suggestion:hover,
+.tag-suggestion.highlighted {
+    background: var(--surface-hover);
+}
+
+.tag-suggestion.category-header {
+    background: var(--background);
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: default;
+}
+
+/* Dark theme tag adjustments */
+[data-theme="dark"] .tag.networking { background: #1e3a8a; color: #93c5fd; }
+[data-theme="dark"] .tag.systems { background: #581c87; color: #d8b4fe; }
+[data-theme="dark"] .tag.programming { background: #14532d; color: #86efac; }
+[data-theme="dark"] .tag.performance { background: #78350f; color: #fbbf24; }
+[data-theme="dark"] .tag.security { background: #7f1d1d; color: #fca5a5; }
+[data-theme="dark"] .tag.tools { background: #0c4a6e; color: #7dd3fc; }
+[data-theme="dark"] .tag.concepts { background: #334155; color: #cbd5e1; }
+[data-theme="dark"] .tag.advanced { background: #7f1d1d; color: #fca5a5; }
