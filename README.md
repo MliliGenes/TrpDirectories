@@ -62,7 +62,12 @@ lowlevel_blog/
    node build-system.js
    ```
 
-4. **Open in browser**:
+4. **Clean generated guides** (optional):
+   ```bash
+   node clean-guides.js
+   ```
+
+5. **Open in browser**:
    ```bash
    open index.html
    ```
@@ -243,6 +248,49 @@ The build system includes robust error handling:
 - **Graceful Degradation**: Continues building other articles if one fails
 - **Detailed Logging**: Comprehensive error messages and suggestions
 - **Automatic Retry**: Retries failed operations with exponential backoff
+
+## 🧹 Maintenance & Cleanup
+
+### Clean Generated Guides
+
+Remove all generated HTML guide directories while preserving JSON source files:
+
+```bash
+node clean-guides.js
+```
+
+**What it does:**
+- Removes all directories in `guides/` folder
+- Resets `guides-config.json` to empty state  
+- Preserves all JSON source files in `articles/`
+- Includes safety checks to prevent accidental deletion
+
+**Use cases:**
+- Clean slate rebuild of all guides
+- Testing build system changes
+- Removing guides with outdated structure
+- Disk space cleanup during development
+
+**Example output:**
+```
+🧹 Starting Guide Cleanup Process
+
+ℹ️  Found 2 guide directories to remove:
+   📁 Sockets & Poll  
+   📁 Struct Padding & Alignment
+
+✅ Removed guide: Sockets & Poll
+✅ Removed guide: Struct Padding & Alignment
+✅ Reset guides-config.json
+
+📊 Cleanup Summary:
+✅ Removed: 2 guide directories
+❌ Errors: 0
+📄 Reset guides-config.json
+
+🎉 Guide cleanup completed successfully!
+💡 Run "node build-system.js" to regenerate guides from JSON sources
+```
 - **State Recovery**: Maintains build state across interruptions
 
 ## 📚 Content Topics
