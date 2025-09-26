@@ -219,6 +219,7 @@ class BuildSystem {
                     title: guide.title,
                     path: guide.path,
                     description: guide.description,
+                    author: guide.author,
                     tags: guide.tags || [],
                     difficulty: guide.difficulty,
                     lastUpdated: guide.lastUpdated || new Date().toISOString().split('T')[0]

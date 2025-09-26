@@ -2,6 +2,7 @@
   "meta": {
     "title": "Sockets & Poll",
     "description": "Master network programming with sockets and efficient I/O multiplexing using poll",
+    "author": "sel-mlil",
     "tags": ["networking", "sockets", "poll", "server programming", "I/O multiplexing"],
     "difficulty": "advanced",
     "lastUpdated": "2024-09-26"

@@ -2,6 +2,7 @@
   "meta": {
     "title": "Struct Padding & Alignment",
     "description": "Comprehensive guide covering low-level programming concepts and memory management",
+    "author": "sel-mlil",
     "tags": ["memory", "structs", "alignment", "padding", "c programming"],
     "difficulty": "intermediate",
     "lastUpdated": "2024-09-26"

@@ -53,10 +53,15 @@ class GuideGenerator {
     }
 
     generateHeader() {
+        const authorInfo = this.guide.meta.author ? `<div class="author-info">By ${this.guide.meta.author}</div>` : '';
+        
         return `    <header>
         <div class="container">
             <div class="header-content">
-                <h1>${this.guide.meta.title}</h1>
+                <div class="header-title">
+                    <h1>${this.guide.meta.title}</h1>
+                    ${authorInfo}
+                </div>
                 <div class="header-nav">
                     <a href="../../index.html" class="back-to-index">
                         Back to Index

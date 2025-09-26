@@ -7,6 +7,7 @@ Use this template to create new learning guide articles. Save as `your-article-t
   "meta": {
     "title": "Your Article Title",
     "description": "Brief description of what this guide covers",
+    "author": "Your Name",
     "tags": ["tag1", "tag2", "programming"],
     "difficulty": "beginner|intermediate|advanced",
     "lastUpdated": "2024-09-26"
