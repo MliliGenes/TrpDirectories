@@ -50,6 +50,11 @@
                         </div>
                         
                         <div class="form-group">
+                            <label for="guideAuthor">Author</label>
+                            <input type="text" id="guideAuthor" placeholder="e.g., John Doe">
+                        </div>
+                        
+                        <div class="form-group">
                             <label for="guideDifficulty">Difficulty Level</label>
                             <select id="guideDifficulty">
                                 <option value="beginner">Beginner</option>
@@ -91,7 +96,7 @@
 
     <script>
         // Available content types and icon classes
-        const CONTENT_TYPES = ['text', 'heading', 'codeblock', 'list', 'quote'];
+        const CONTENT_TYPES = ['paragraph', 'heading', 'codeblock', 'list', 'quote'];
         
         const ICON_CLASSES = [
             { id: 'hook', name: 'Hook', description: 'Attention grabbers' },
@@ -285,7 +290,7 @@
                     <div class="content-type-selector">
                         <label>Content Type</label>
                         <select class="content-type" onchange="updateContentForm('content-${contentCounter}')" onchange="updatePreview()">
-                            <option value="text">Text</option>
+                            <option value="paragraph">Paragraph</option>
                             <option value="heading">Heading</option>
                             <option value="codeblock">Code Block</option>
                             <option value="list">List</option>
@@ -318,11 +323,11 @@
             let formHTML = '';
             
             switch(contentType) {
-                case 'text':
+                case 'paragraph':
                     formHTML = `
                         <div class="form-group">
-                            <label>Text Content</label>
-                            <textarea class="content-text" placeholder="Enter your text content..." onchange="updatePreview()"></textarea>
+                            <label>Paragraph Content</label>
+                            <textarea class="content-text" placeholder="Enter your paragraph content..." onchange="updatePreview()"></textarea>
                         </div>
                     `;
                     break;
@@ -360,6 +365,12 @@
                 case 'list':
                     formHTML = `
                         <div class="form-group">
+                            <label>
+                                <input type="checkbox" class="content-ordered" onchange="updatePreview()"> 
+                                Ordered List (numbered)
+                            </label>
+                        </div>
+                        <div class="form-group">
                             <label>List Items (one per line)</label>
                             <textarea class="content-items" placeholder="Item 1\\nItem 2\\nItem 3" onchange="updatePreview()"></textarea>
                         </div>
@@ -389,11 +400,10 @@
                 meta: {
                     title: document.getElementById('guideTitle').value || 'Untitled Guide',
                     description: document.getElementById('guideDescription').value || 'No description provided',
+                    author: document.getElementById('guideAuthor').value || 'Anonymous',
                     tags: guideTags,
                     difficulty: document.getElementById('guideDifficulty').value,
-                    lastUpdated: new Date().toISOString().split('T')[0],
-                    favicon: "../imgs/favicon.png",
-                    stylesheet: "../style/main.css"
+                    lastUpdated: new Date().toISOString().split('T')[0]
                 },
                 navigation: [],
                 sections: []
@@ -424,10 +434,10 @@
                         const type = item.querySelector('.content-type').value;
                         
                         switch(type) {
-                            case 'text':
+                            case 'paragraph':
                                 const text = item.querySelector('.content-text')?.value;
                                 if (text) {
-                                    content.push({ type: 'text', content: text });
+                                    content.push({ type: 'paragraph', content: text });
                                 }
                                 break;
                                 
@@ -438,7 +448,7 @@
                                     content.push({ 
                                         type: 'heading',
                                         level: parseInt(level),
-                                        text: headingText
+                                        content: headingText
                                     });
                                 }
                                 break;
@@ -457,9 +467,11 @@
                                 
                             case 'list':
                                 const items = item.querySelector('.content-items')?.value;
+                                const isOrdered = item.querySelector('.content-ordered')?.checked || false;
                                 if (items) {
                                     content.push({
                                         type: 'list',
+                                        ordered: isOrdered,
                                         items: items.split('\n').filter(item => item.trim())
                                     });
                                 }
@@ -469,7 +481,7 @@
                                 const quoteText = item.querySelector('.content-text')?.value;
                                 const author = item.querySelector('.content-author')?.value;
                                 if (quoteText) {
-                                    const quoteObj = { type: 'quote', text: quoteText };
+                                    const quoteObj = { type: 'quote', content: quoteText };
                                     if (author) quoteObj.author = author;
                                     content.push(quoteObj);
                                 }
@@ -532,6 +544,7 @@
             // Load meta information
             document.getElementById('guideTitle').value = guide.meta?.title || '';
             document.getElementById('guideDescription').value = guide.meta?.description || '';
+            document.getElementById('guideAuthor').value = guide.meta?.author || '';
             document.getElementById('guideDifficulty').value = guide.meta?.difficulty || 'beginner';
             
             // Load tags
@@ -572,11 +585,11 @@
                             // Set content values based on type
                             setTimeout(() => { // Allow form to update first
                                 switch(contentItem.type) {
-                                    case 'text':
+                                    case 'paragraph':
                                         contentElement.querySelector('.content-text').value = contentItem.content || '';
                                         break;
                                     case 'heading':
-                                        contentElement.querySelector('.content-text').value = contentItem.text || '';
+                                        contentElement.querySelector('.content-text').value = contentItem.content || '';
                                         contentElement.querySelector('.content-level').value = contentItem.level || '2';
                                         break;
                                     case 'codeblock':
@@ -585,9 +598,11 @@
                                         break;
                                     case 'list':
                                         contentElement.querySelector('.content-items').value = contentItem.items?.join('\n') || '';
+                                        const orderedCheckbox = contentElement.querySelector('.content-ordered');
+                                        if (orderedCheckbox) orderedCheckbox.checked = contentItem.ordered || false;
                                         break;
                                     case 'quote':
-                                        contentElement.querySelector('.content-text').value = contentItem.text || '';
+                                        contentElement.querySelector('.content-text').value = contentItem.content || '';
                                         const authorInput = contentElement.querySelector('.content-author');
                                         if (authorInput) authorInput.value = contentItem.author || '';
                                         break;
