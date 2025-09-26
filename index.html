@@ -188,7 +188,7 @@
                     metadata: {
                         version: '2.0.0',
                         lastModified: new Date().toISOString(),
-                        totalDirectories: 2,
+                        totalGuides: 2,
                         system: 'Fallback mode'
                     }
                 };
@@ -217,7 +217,7 @@
             metadataInfo.innerHTML = `
                 <h4>📊 Collection Info</h4>
                 <p>${systemInfo}<strong>Version:</strong> ${metadata.version || 'Unknown'} | 
-                   <strong>Total Guides:</strong> ${metadata.totalDirectories || 0} | 
+                   <strong>Total Guides:</strong> ${metadata.totalGuides || metadata.totalDirectories || 0} | 
                    <strong>Last Updated:</strong> ${formatDate(metadata.lastModified)}${description}</p>
             `;
             
