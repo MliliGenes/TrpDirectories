@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="../../imgs/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="../../style/main.css">
+    <title>x86 CPU 16-bit Real Mode - Learning Guide</title>
+</head>
+<body>
+        <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>x86 CPU 16-bit Real Mode</h1>
+                    <div class="author-info">By sel-mlil</div>
+                </div>
+                <div class="header-nav">
+                    <a href="../../index.html" class="back-to-index">
+                        Back to Index
+                    </a>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+                </div>
+            </div>
+        </div>
+    </header>
+        <nav>
+        <div class="container">
+            <div class="guide-nav-grid">
+                <a class="guide-nav-item" href="#hook" data-section="0">🎯 The Hook</a>
+                <a class="guide-nav-item" href="#mechanics" data-section="1">⚙️ How It Works</a>
+                <a class="guide-nav-item" href="#examples" data-section="2">🌍 Real Examples</a>
+                <a class="guide-nav-item" href="#practice" data-section="3">🛠️ Do This Now</a>
+                <a class="guide-nav-item" href="#warnings" data-section="4">⚠️ Avoid These</a>
+                <a class="guide-nav-item" href="#connections" data-section="5">🔗 Connections</a>
+                <a class="guide-nav-item" href="#test" data-section="6">🎯 Test Yourself</a>
+                <a class="guide-nav-item" href="#growth" data-section="7">📈 Level Up</a>
+            </div>
+        </div>
+    </nav>
+        <main class="container">
+        <section id="hook">
+            <div class="section-header">
+                <div class="section-icon hook">🎯</div>
+                <h2 class="section-title">THE HOOK</h2>
+            </div>
+            <div class="content">
+                <p><strong>What is this?</strong><br>The **16-bit Real Mode** is the initial operating mode of an x86 CPU (8086 and all successors) where the CPU operates as a **16-bit processor**, utilizing **16-bit registers** and a **segmented memory addressing scheme** to access a maximum of 1 megabyte (MB) of memory. It is the mandatory starting state upon power-up.<br><br><strong>Historical Context:</strong> It was the native mode of the original Intel 8086/8088 and the foundational environment for MS-DOS and the first IBM PCs.</p>
+                <p><strong>Why care?</strong><br>It's the **first step in booting any PC**, modern or ancient. Understanding Real Mode is crucial for **BIOS/firmware developers**, **Operating System (OS) developers** who need to manage the transition from 16-bit Real Mode to 64-bit Long Mode, and for **low-level systems engineers** debugging bootloaders and embedded systems.</p>
+                <p><strong>Mental model:</strong><br>Think of Real Mode as a **simple office with limited filing cabinets** (1 MB). You have to use two pieces of information—a **cabinet number (Segment)** and a **folder number (Offset)**—to find any document. Every calculation is simple and direct, but there's no security guard; any application can access any file in the office without permission.</p>
+            </div>
+        </section>
+
+        <section id="mechanics">
+            <div class="section-header">
+                <div class="section-icon mechanics">⚙️</div>
+                <h2 class="section-title">HOW IT WORKS</h2>
+            </div>
+            <div class="content">
+                <h3>Core mechanics: Segmented Addressing</h3>
+                <p>The central feature is the **Segmented Memory Addressing** system, which overcomes the 16-bit addressing limit (max 64 KB) to access 1 MB.</p>
+                <ul>
+                    <li><strong>Address Calculation:</strong> The CPU calculates the **20-bit Physical Address** by shifting the 16-bit **Segment** value 4 bits to the left ($	imes 16$) and then adding the **16-bit Offset** value. This is the $	ext{Segment} 	imes 16 + 	ext{Offset}$ formula.</li>
+                    <li><strong>Registers:</strong> Uses **16-bit General Purpose Registers** (AX, BX, CX, DX) and **16-bit Segment Registers** (CS, DS, SS, ES) to define the base of code, data, and stack segments.</li>
+                </ul>
+                <h3>Governing Principles</h3>
+                <ul>
+                    <li><strong>No Protection:</strong> There is **no hardware-enforced memory protection**. Programs have direct and unrestricted access to all memory and hardware I/O ports.</li>
+                    <li><strong>Single-Tasking:</strong> The hardware does not support virtual memory or preemptive multitasking; it is inherently a single-process environment.</li>
+                </ul>
+                <div class="code-block">
+                    <pre>Physical Address = (\text{Segment Register Value} \times 16) + \text{Offset Register Value}</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="examples">
+            <div class="section-header">
+                <div class="section-icon examples">🌍</div>
+                <h2 class="section-title">REAL EXAMPLES</h2>
+            </div>
+            <div class="content">
+                <h3>Case Study 1: MS-DOS Program Execution</h3>
+                <p>MS-DOS is the quintessential Real Mode OS. Programs often run in a **Tiny Memory Model** where CS, DS, SS, and ES all point to the same segment, giving the program a single 64 KB working space.</p>
+                <div class="code-block">
+                    <pre>; Simple 8086 Real Mode program to print 'Hello' (using MS-DOS INT 21h)
+
+ORG 100h       ; Standard starting point for .COM files
+
+  MOV AH, 09h  ; Function 09h: Display String
+  MOV DX, OFFSET message ; DX holds the offset address of the string
+  INT 21h      ; Call MS-DOS service
+
+  MOV AH, 4Ch  ; Function 4Ch: Terminate Program
+  INT 21h      ; Return to MS-DOS
+
+message DB 'Hello, Real Mode!$' ; String data</pre>
+                </div>
+                <h3>Case Study 2: The BIOS Boot Process (Mandatory Use)</h3>
+                <ul>
+                    <li><strong>Reset Vector:</strong> Upon power-on, the CPU is forced to execute code starting at **FFFF:0000** (a location in the BIOS ROM), which is a hardcoded Real Mode address.</li>
+                    <li><strong>POST and MBR:</strong> The BIOS runs the Power-On Self-Test (POST), then loads the **Master Boot Record (MBR)** from the disk into memory (typically $07	ext{C00}_{	ext{hex}}$), and transfers control to it—all in Real Mode.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="practice">
+            <div class="section-header">
+                <div class="section-icon practice">🛠️</div>
+                <h2 class="section-title">DO THIS NOW</h2>
+            </div>
+            <div class="content">
+                <h3>Immediate Action: Boot Sector Development</h3>
+                <div class="action-box">
+                <ol>
+                    <li><strong>Setup:</strong> Install a lightweight x86 assembler (e.g., **NASM**) and a virtual environment (**DOSBox** or **QEMU**).</li>
+                    <li><strong>Code:</strong> Write a 512-byte assembly program to be your own MBR/boot sector.</li>
+                    <li><strong>Assemble:</strong> Use NASM to compile to a flat binary file (`-f bin`).</li>
+                    <li><strong>Test:</strong> Load the binary into QEMU (`qemu-system-i386 -fda boot.bin`) to observe its behavior in a pure Real Mode environment.</li>
+                </ol>
+                <p><strong>What to look for:</strong> Correct 16-bit register usage (e.g., using `mov ax, [bx+si]`). The program must occupy exactly 512 bytes with the signature $55	ext{AA}_{	ext{hex}}$ at the end to be recognized as a boot sector.<br><strong>Quick win:</strong> Successfully printing a single character using a BIOS interrupt (e.g., `INT 10h`).</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="warnings">
+            <div class="section-header">
+                <div class="section-icon warnings">⚠️</div>
+                <h2 class="section-title">AVOID THESE</h2>
+            </div>
+            <div class="content">
+                <h3>Common Pitfalls in Real Mode Programming</h3>
+                <div class="warning-box">
+                <ul>
+                    <li><strong>The $64$ KB Trap</strong> → **Avoid:** Assuming all memory is easily accessible with a 16-bit offset. **Fix:** Explicitly reload the appropriate **Segment Register** (CS, DS, SS, ES) when accessing data or code that spans beyond the current $64$ KB segment boundary.</li>
+                    <li><strong>A20 Line Oversight</strong> → **Avoid:** On 80286+ CPUs, failing to enable the **A20 Gate** when trying to access the **High Memory Area (HMA)** (the $64$ KB block above 1 MB). **Fix:** Your boot code must intentionally enable A20, typically via the keyboard controller, to prevent address wraparound at $1$ MB.</li>
+                    <li><strong>Stack Corruption</strong> → **Avoid:** Forgetting that Real Mode stacks are only 16-bit deep by default and prone to overflow. **Fix:** Allocate a sufficiently large **Stack Segment (SS)** and regularly check the **Stack Pointer (SP)** or move to a flat memory model setup if possible.</li>
+                </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="connections">
+            <div class="section-header">
+                <div class="section-icon connections">🔗</div>
+                <h2 class="section-title">CONNECTIONS</h2>
+            </div>
+            <div class="content">
+                <ul>
+                    <li><strong>Prerequisites:</strong> **x86 Assembly Language** (16-bit instruction set), **Binary/Hexadecimal Arithmetic**, and basic knowledge of **CPU Registers**.</li>
+                    <li><strong>Related concepts:</strong> **Protected Mode** (the 32-bit successor that introduced memory protection), **Long Mode** (the 64-bit mode of modern CPUs), and **Virtual 8086 Mode** (V86, a protected environment for running Real Mode code).</li>
+                    <li><strong>Ecosystem overview:</strong> Real Mode defines the behavior of the **BIOS** and **MBR**, which load the kernel code that then initiates the transition into Protected Mode (or Long Mode) using a complex sequence of control register writes.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="test">
+            <div class="section-header">
+                <div class="section-icon test">🎯</div>
+                <h2 class="section-title">TEST YOURSELF</h2>
+            </div>
+            <div class="content">
+                <ol>
+                    <li>If $	ext{CS}=1000_{	ext{hex}}$ and $	ext{IP}=5000_{	ext{hex}}$, calculate the resulting 20-bit Physical Address.</li>
+                    <li>Explain *why* an 8086 CPU needs segmented addressing instead of simply using a 20-bit offset register.</li>
+                    <li>What is the single biggest security or stability weakness of Real Mode, and what architectural feature fixes it in Protected Mode?</li>
+                    <li>Describe the sequence of events (and mode) from CPU reset to the loading of the MBR.</li>
+                </ol>
+                <p><strong>Success criteria:</strong> You can accurately trace a memory access across segment boundaries and explain the $1$ MB limit's origin.<br><strong>Skill demonstration:</strong> Successfully modify a boot sector to load and jump to a small second-stage loader.</p>
+            </div>
+        </section>
+
+        <section id="growth">
+            <div class="section-header">
+                <div class="section-icon growth">📈</div>
+                <h2 class="section-title">LEVEL UP</h2>
+            </div>
+            <div class="content">
+                <ul>
+                    <li><strong>This week (Immediate Skills):</strong> Master **NASM** and complete the boot sector exercise. Practice writing BIOS interrupts (INT 10h, INT 13h).</li>
+                    <li><strong>This month (Skill Consolidation):</strong> Study the **80286 architecture**. Write the assembly code required to move the CPU from Real Mode to **Protected Mode**, including setting up the **Global Descriptor Table (GDT)**.</li>
+                    <li><strong>Long term (Expertise and Innovation):</strong> Develop a complete **minimal OS kernel** (a **hobby OS**) that starts in Real Mode, switches to Protected Mode, and can manage basic memory allocation and task switching.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+        <footer>
+        <div class="container">
+            <p>Learning journey completed! Real Mode mastered. Time to explore Protected Mode. 🎉</p>
+            <div class="checkbox-item" style="justify-content: center; margin-top: 1rem;">
+                <div class="checkbox" onclick="toggleComplete(this)"></div>
+                <span>Mark this topic as mastered</span>
+            </div>
+        </div>
+    </footer>
+        <script>
+        // Theme toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button text
+            updateThemeButton(newTheme);
+        }
+
+        // Update theme button text based on current theme
+        function updateThemeButton(currentTheme) {
+            const button = document.querySelector('.theme-toggle');
+            if (currentTheme === 'dark') {
+                button.innerHTML = '☀️ Light Mode';
+            } else {
+                button.innerHTML = '🌙 Dark Mode';
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', loadTheme);
+
+        // Section completion
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
+                    .map(el => el.getAttribute('data-section'));
+                localStorage.setItem('completed-x86-cpu-16-bit-real-mode', JSON.stringify(completedSections));
+            });
+        });
+
+        // Load saved progress
+        const savedProgress = localStorage.getItem('completed-x86-cpu-16-bit-real-mode');
+        if (savedProgress) {
+            const completed = JSON.parse(savedProgress);
+            completed.forEach(sectionNum => {
+                const navItem = document.querySelector(`[data-section="${sectionNum}"]`);
+                if (navItem) navItem.classList.add('completed');
+            });
+        }
+
+        // Checkbox functionality
+        function toggleComplete(checkbox) {
+            checkbox.classList.toggle('checked');
+            if (checkbox.classList.contains('checked')) {
+                checkbox.innerHTML = '✓';
+                localStorage.setItem('mastered-x86-cpu-16-bit-real-mode', 'true');
+            } else {
+                checkbox.innerHTML = '';
+                localStorage.setItem('mastered-x86-cpu-16-bit-real-mode', 'false');
+            }
+        }
+
+        // Load mastery status
+        const masteryStatus = localStorage.getItem('mastered-x86-cpu-16-bit-real-mode');
+        if (masteryStatus === 'true') {
+            const masteryCheckbox = document.querySelector('footer .checkbox');
+            if (masteryCheckbox) {
+                masteryCheckbox.classList.add('checked');
+                masteryCheckbox.innerHTML = '✓';
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>

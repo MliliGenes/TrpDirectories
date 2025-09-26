@@ -9,7 +9,7 @@ const GuideGenerator = require('./guide-generator.js');
  */
 const CONFIG = {
     articlesDir: './articles',
-    guidesDir: './build',
+    guidesDir: './guides',
     configFile: './guides-config.json',
     schemaFile: './guides-schema.json'
 };

@@ -16,7 +16,7 @@ const path = require('path');
 
 class GuidesCleaner {
     constructor() {
-        this.guidesDir = path.join(__dirname, 'build');
+        this.guidesDir = path.join(__dirname, 'guides');
         this.configFile = path.join(__dirname, 'guides-config.json');
     }
 
@@ -36,9 +36,9 @@ class GuidesCleaner {
         console.log('🧹 Starting Guide Cleanup Process\n');
         
         try {
-            // Check if build directory exists
+            // Check if guides directory exists
             if (!fs.existsSync(this.guidesDir)) {
-                this.log('warning', 'Build directory not found, nothing to clean');
+                this.log('warning', 'Guides directory not found, nothing to clean');
                 return true;
             }
 

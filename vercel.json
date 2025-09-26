@@ -8,12 +8,12 @@
   ],
   "routes": [
     {
-      "src": "/build/(.*)/",
-      "dest": "/build/$1/index.html"
+      "src": "/guides/(.*)/",
+      "dest": "/guides/$1/index.html"
     },
     {
-      "src": "/build/(.*)",
-      "dest": "/build/$1/index.html"
+      "src": "/guides/(.*)",
+      "dest": "/guides/$1/index.html"
     },
     {
       "src": "/",
@@ -35,7 +35,7 @@
       ]
     },
     {
-      "source": "/build/(.*)",
+      "source": "/guides/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
