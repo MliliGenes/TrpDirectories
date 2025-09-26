@@ -98,7 +98,7 @@
             <div class="content">
                 <h3>Simple case</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-jepnxvv3l" class="codemirror-code">struct A {
+                    <textarea id="code-012c6186j" class="codemirror-code">struct A {
     char c;  // 1 byte
     int i;   // 4 bytes
 };</textarea>
@@ -112,7 +112,7 @@
                 </ul>
                 <h3>Professional use</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-mn4k615lc" class="codemirror-code">struct B {
+                    <textarea id="code-nvggfd1wn" class="codemirror-code">struct B {
     char c;   // 1
     char d;   // 1
     int i;    // 4
@@ -128,7 +128,7 @@
                 </ul>
                 <p>Efficient if reordered:</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-afidrqihh" class="codemirror-code">struct B_opt {
+                    <textarea id="code-sc9gtm9t9" class="codemirror-code">struct B_opt {
     int i;    // 4
     char c;   // 1
     char d;   // 1
@@ -136,7 +136,7 @@
                 </div>
                 <h3>Edge case: Arrays & nested structs</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-xmoiw1u3a" class="codemirror-code">struct Point {
+                    <textarea id="code-nq2dki5sc" class="codemirror-code">struct Point {
     char c;
     int i;
 };
@@ -151,7 +151,7 @@ struct Shape {
                 </ul>
                 <p>For an array:</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-zltb4sgc4" class="codemirror-code">struct Point arr[3];</textarea>
+                    <textarea id="code-n37hr5tiz" class="codemirror-code">struct Point arr[3];</textarea>
                 </div>
                 <p>Each element takes 8 bytes, so total = 24 bytes. Padding ensures each <code>i</code> stays 4-byte aligned.</p>
             </div>
@@ -168,7 +168,7 @@ struct Shape {
                     <li>Write a small C program:</li>
                 </ol>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-p5g7ujfv0" class="codemirror-code">#include <stdio.h>
+                    <textarea id="code-6akjt62ox" class="codemirror-code">#include <stdio.h>
 
 struct X { char c; int i; };
 struct Y { int i; char c; };
@@ -408,9 +408,8 @@ int main() {
                         mode = 'text';
                 }
                 
-                // Get current theme
-                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
+                // Use custom theme that respects CSS variables
+                const cmTheme = 'default'; // We'll override with CSS
                 
                 try {
                     const editor = CodeMirror.fromTextArea(textarea, {
@@ -443,24 +442,7 @@ int main() {
             });
         }
         
-        // Update CodeMirror themes when switching app theme
-        function updateCodeMirrorThemes() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
-            
-            document.querySelectorAll('.codemirror-code').forEach(textarea => {
-                if (textarea.codeMirrorInstance) {
-                    textarea.codeMirrorInstance.setOption('theme', cmTheme);
-                }
-            });
-        }
-        
-        // Override the original toggleTheme to also update CodeMirror
-        const originalToggleTheme = toggleTheme;
-        toggleTheme = function() {
-            originalToggleTheme();
-            updateCodeMirrorThemes();
-        };
+        // CodeMirror themes are handled by CSS variables, no need to update programmatically
         
         // Initialize CodeMirror when DOM and scripts are fully loaded
         if (document.readyState === 'loading') {

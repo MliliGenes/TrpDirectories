@@ -86,7 +86,7 @@
                     <li><strong>Single-Tasking:</strong> The hardware does not support virtual memory or preemptive multitasking; it is inherently a single-process environment.</li>
                 </ul>
                 <div class="code-block" data-language="latex">
-                    <textarea id="code-rhujlkpbl" class="codemirror-code">Physical Address = (\text{Segment Register Value} \times 16) + \text{Offset Register Value}</textarea>
+                    <textarea id="code-8dd21tlaq" class="codemirror-code">Physical Address = (\text{Segment Register Value} \times 16) + \text{Offset Register Value}</textarea>
                 </div>
             </div>
         </section>
@@ -100,7 +100,7 @@
                 <h3>Case Study 1: MS-DOS Program Execution</h3>
                 <p>MS-DOS is the quintessential Real Mode OS. Programs often run in a **Tiny Memory Model** where CS, DS, SS, and ES all point to the same segment, giving the program a single 64 KB working space.</p>
                 <div class="code-block" data-language="assembly">
-                    <textarea id="code-wtq933jzs" class="codemirror-code">; Simple 8086 Real Mode program to print 'Hello' (using MS-DOS INT 21h)
+                    <textarea id="code-54da4xx97" class="codemirror-code">; Simple 8086 Real Mode program to print 'Hello' (using MS-DOS INT 21h)
 
 ORG 100h       ; Standard starting point for .COM files
 
@@ -363,9 +363,8 @@ message DB 'Hello, Real Mode!$' ; String data</textarea>
                         mode = 'text';
                 }
                 
-                // Get current theme
-                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-                const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
+                // Use custom theme that respects CSS variables
+                const cmTheme = 'default'; // We'll override with CSS
                 
                 try {
                     const editor = CodeMirror.fromTextArea(textarea, {
@@ -398,24 +397,7 @@ message DB 'Hello, Real Mode!$' ; String data</textarea>
             });
         }
         
-        // Update CodeMirror themes when switching app theme
-        function updateCodeMirrorThemes() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
-            
-            document.querySelectorAll('.codemirror-code').forEach(textarea => {
-                if (textarea.codeMirrorInstance) {
-                    textarea.codeMirrorInstance.setOption('theme', cmTheme);
-                }
-            });
-        }
-        
-        // Override the original toggleTheme to also update CodeMirror
-        const originalToggleTheme = toggleTheme;
-        toggleTheme = function() {
-            originalToggleTheme();
-            updateCodeMirrorThemes();
-        };
+        // CodeMirror themes are handled by CSS variables, no need to update programmatically
         
         // Initialize CodeMirror when DOM and scripts are fully loaded
         if (document.readyState === 'loading') {
