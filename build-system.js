@@ -246,13 +246,13 @@ class BuildSystem {
      */
     cleanup() {
         try {
-            // Clean build directory
-            if (fs.existsSync(CONFIG.buildDir)) {
-                const files = fs.readdirSync(CONFIG.buildDir);
+            // Clean guides directory
+            if (fs.existsSync(CONFIG.guidesDir)) {
+                const files = fs.readdirSync(CONFIG.guidesDir);
                 files.forEach(file => {
-                    fs.unlinkSync(path.join(CONFIG.buildDir, file));
+                    fs.unlinkSync(path.join(CONFIG.guidesDir, file));
                 });
-                this.log('info', `Cleaned ${files.length} files from build directory`);
+                this.log('info', `Cleaned ${files.length} files from guides directory`);
             }
             return true;
         } catch (error) {
@@ -267,8 +267,8 @@ class BuildSystem {
     async build() {
         console.log('🚀 Starting Automated Guide Build System\n');
         
-        // Ensure directories exist
-        [CONFIG.buildDir, CONFIG.guidesDir].forEach(dir => this.ensureDir(dir));
+        // Ensure guides directory exists
+        this.ensureDir(CONFIG.guidesDir);
         
         // Discovery phase
         this.log('info', 'Phase 1: Discovering articles...');
