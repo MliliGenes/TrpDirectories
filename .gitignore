@@ -67,3 +67,9 @@ coverage/
 .directory
 .Trash-*
 .nfs*
+
+# Vercel
+.vercel
+.vercel/
+*.vercel
+.env*.local
