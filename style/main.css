@@ -1065,7 +1065,7 @@ section {
     }
     
     .nav-item {
-        padding: 1.5rem 1.75rem;
+        padding: 1.25rem 1.5rem;
     }
 }
 
@@ -1073,9 +1073,9 @@ section {
 
 /* Touch-friendly interactions */
 @media (max-width: 1024px) {
-    /* Larger touch targets */
+    /* Appropriately sized touch targets */
     .nav-item {
-        min-height: 120px;
+        min-height: 60px;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
     }
