@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrpDirectories - Directory Index</title>
+    <link rel="icon" type="image/png" href="imgs/favicon.png">
+    <link rel="stylesheet" href="style/main.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>TrpDirectories</h1>
+                <button class="theme-toggle" onclick="toggleTheme()">
+                    🌙 Toggle Theme
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="intro">
+                <h2>Welcome to TrpDirectories</h2>
+                <p>Explore the different topics and learning guides available in this collection. Each directory contains in-depth content about low-level programming concepts.</p>
+            </div>
+
+            <div class="directory-section">
+                <div class="section-header">
+                    <div class="section-icon">📚</div>
+                    <h3 class="section-title">Available Directories</h3>
+                </div>
+                
+                <div class="loading" id="loading">
+                    <div class="spinner"></div>
+                    <p>Loading directories...</p>
+                </div>
+
+                <div class="nav-grid" id="directoryGrid" style="display: none;">
+                    <!-- Directory links will be populated here by JavaScript -->
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="icon">📭</div>
+                    <p>No directories found in the current location.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div style="text-align: center; margin-bottom: 1rem;">
+                <p>&copy; 2024 TrpDirectories. Exploring the depths of programming.</p>
+            </div>
+            <div style="text-align: center; padding-top: 1rem; border-top: 1px solid var(--border);">
+                <p style="margin-bottom: 0.5rem; font-weight: 600;">Created by sel-mlil</p>
+                <div style="display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap;">
+                    <a href="https://github.com/MliliGenes" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       style="color: var(--primary); text-decoration: none; font-weight: 500; transition: all 0.2s ease;">
+                        GitHub Profile
+                    </a>
+                    <a href="https://profile.intra.42.fr/users/sel-mlil" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       style="color: var(--primary); text-decoration: none; font-weight: 500; transition: all 0.2s ease;">
+                        42 School Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme management
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button text
+            const button = document.querySelector('.theme-toggle');
+            button.textContent = newTheme === 'dark' ? '☀️ Toggle Theme' : '🌙 Toggle Theme';
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            const button = document.querySelector('.theme-toggle');
+            button.textContent = savedTheme === 'dark' ? '☀️ Toggle Theme' : '🌙 Toggle Theme';
+        }
+
+        // Directory management
+        async function loadDirectories() {
+            const loadingElement = document.getElementById('loading');
+            const gridElement = document.getElementById('directoryGrid');
+            const emptyElement = document.getElementById('emptyState');
+
+            try {
+                // Fetch directory data with metadata
+                const data = await getDirectories();
+                
+                loadingElement.style.display = 'none';
+
+                if (!data.directories || data.directories.length === 0) {
+                    emptyElement.style.display = 'block';
+                } else {
+                    gridElement.style.display = 'grid';
+                    
+                    // Display metadata info
+                    displayMetadata(data.metadata);
+                    
+                    // Display directories
+                    populateDirectoryGrid(data.directories);
+                }
+            } catch (error) {
+                console.error('Error loading directories:', error);
+                loadingElement.innerHTML = '<p>Error loading directories. Please refresh the page.</p>';
+            }
+        }
+
+        async function getDirectories() {
+            try {
+                // Fetch guide configuration (now auto-generated)
+                const configResponse = await fetch('./guides-config.json');
+                
+                if (!configResponse.ok) {
+                    throw new Error(`Config fetch error! status: ${configResponse.status}`);
+                }
+                
+                const config = await configResponse.json();
+                
+                // Transform config data to directory format
+                const directories = config.guides.map(guide => ({
+                    name: guide.title,
+                    path: guide.path,
+                    description: guide.description,
+                    tags: guide.tags,
+                    difficulty: guide.difficulty,
+                    lastUpdated: guide.lastUpdated,
+                    id: guide.id
+                }));
+                
+                // Return data with metadata
+                return {
+                    directories: directories,
+                    metadata: config.metadata
+                };
+            } catch (error) {
+                console.error('Error fetching directories:', error);
+                
+                // Fallback to hardcoded data if JSON fetch fails
+                return {
+                    directories: [
+                        {
+                            name: 'Struct Padding & Alignment',
+                            path: './Struct Padding & Alignment - Learning Guide/',
+                            description: 'Comprehensive guide covering low-level programming concepts and memory management',
+                            tags: ['memory', 'structs', 'alignment', 'padding', 'c programming'],
+                            difficulty: 'intermediate',
+                            lastUpdated: '2024-09-26'
+                        },
+                        {
+                            name: 'Sockets & Poll',
+                            path: './Sockets & Poll - Learning Guide/',
+                            description: 'Master network programming with sockets and efficient I/O multiplexing using poll',
+                            tags: ['networking', 'sockets', 'poll', 'server programming', 'I/O multiplexing'],
+                            difficulty: 'advanced',
+                            lastUpdated: '2024-09-26'
+                        }
+                    ],
+                    metadata: {
+                        version: '2.0.0',
+                        lastModified: new Date().toISOString(),
+                        totalDirectories: 2,
+                        system: 'Fallback mode'
+                    }
+                };
+            }
+        }
+
+        function displayMetadata(metadata) {
+            if (!metadata) return;
+            
+            const directorySection = document.querySelector('.directory-section');
+            const sectionHeader = directorySection.querySelector('.section-header');
+            
+            // Remove existing metadata if present
+            const existingMetadata = directorySection.querySelector('.metadata-info');
+            if (existingMetadata) {
+                existingMetadata.remove();
+            }
+            
+            // Create metadata info element
+            const metadataInfo = document.createElement('div');
+            metadataInfo.className = 'metadata-info';
+            
+            const systemInfo = metadata.system ? `<strong>System:</strong> ${metadata.system} | ` : '';
+            const description = metadata.description ? `<br><em>${metadata.description}</em>` : '';
+            
+            metadataInfo.innerHTML = `
+                <h4>📊 Collection Info</h4>
+                <p>${systemInfo}<strong>Version:</strong> ${metadata.version || 'Unknown'} | 
+                   <strong>Total Guides:</strong> ${metadata.totalDirectories || 0} | 
+                   <strong>Last Updated:</strong> ${formatDate(metadata.lastModified)}${description}</p>
+            `;
+            
+            // Insert after section header
+            sectionHeader.parentNode.insertBefore(metadataInfo, sectionHeader.nextSibling);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (error) {
+                return dateString;
+            }
+        }
+
+        function populateDirectoryGrid(directories) {
+            const gridElement = document.getElementById('directoryGrid');
+            gridElement.innerHTML = '';
+
+            directories.forEach(directory => {
+                const link = document.createElement('a');
+                link.href = directory.path;
+                link.className = 'nav-item';
+                
+                // Build tags HTML
+                const tagsHtml = directory.tags ? 
+                    `<div class="directory-tags">
+                        ${directory.tags.map(tag => `<span class="directory-tag">${tag}</span>`).join('')}
+                    </div>` : '';
+                
+                // Build difficulty HTML
+                const difficultyHtml = directory.difficulty ? 
+                    `<div class="directory-meta">
+                        <span class="directory-difficulty ${directory.difficulty}">${directory.difficulty}</span>
+                    </div>` : '';
+                
+                // Build last updated HTML
+                const updatedHtml = directory.lastUpdated ? 
+                    `<div class="directory-updated">Updated: ${formatDate(directory.lastUpdated)}</div>` : '';
+                
+                link.innerHTML = `
+                    ${difficultyHtml}
+                    <div class="directory-title">${directory.name}</div>
+                    ${directory.description ? `<div class="directory-description">${directory.description}</div>` : ''}
+                    ${tagsHtml}
+                    ${updatedHtml}
+                `;
+                
+                // Add click tracking
+                link.addEventListener('click', () => {
+                    console.log(`Navigating to: ${directory.name}`);
+                });
+
+                gridElement.appendChild(link);
+            });
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            loadTheme();
+            loadDirectories();
+        });
+    </script>
+</body>
+</html>

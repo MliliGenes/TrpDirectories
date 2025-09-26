@@ -1,0 +1,293 @@
+{
+  "meta": {
+    "title": "Struct Padding & Alignment",
+    "description": "Comprehensive guide covering low-level programming concepts and memory management",
+    "tags": ["memory", "structs", "alignment", "padding", "c programming"],
+    "difficulty": "intermediate",
+    "lastUpdated": "2024-09-26"
+  },
+  "navigation": [
+    {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},
+    {"id": "mechanics", "emoji": "⚙️", "title": "How It Works", "sectionIndex": 1},
+    {"id": "examples", "emoji": "🌍", "title": "Real Examples", "sectionIndex": 2},
+    {"id": "practice", "emoji": "🛠️", "title": "Do This Now", "sectionIndex": 3},
+    {"id": "warnings", "emoji": "⚠️", "title": "Avoid These", "sectionIndex": 4},
+    {"id": "connections", "emoji": "🔗", "title": "Connections", "sectionIndex": 5},
+    {"id": "test", "emoji": "🎯", "title": "Test Yourself", "sectionIndex": 6},
+    {"id": "growth", "emoji": "📈", "title": "Level Up", "sectionIndex": 7}
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>What is this?</strong><br>Struct padding and alignment are rules that determine how data is laid out in memory so the CPU can read it efficiently.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Why care?</strong><br>They directly affect <strong>memory usage, performance, and binary compatibility</strong> in C programs. Get it wrong, and you waste space or cause crashes (misaligned access).",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Mental model:</strong><br>Think of it like a <strong>bookshelf</strong>: each shelf holds books of a certain fixed width. If you try to put a big book halfway across two shelves, you'll struggle to pull it out. Padding is the extra empty space added so each book starts neatly at the correct shelf boundary.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW IT WORKS",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Core mechanics"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>CPU word:</strong> 32-bit CPU = 4 bytes, 64-bit CPU = 8 bytes. Accessing aligned data takes 1 cycle, misaligned data may take multiple cycles or even cause a bus error.",
+            "<strong>Members:</strong> Each member inside a struct is aligned independently.",
+            "<strong>Arrays:</strong> Each element in an array of structs must align properly, so the <em>stride</em> (element size) is the padded struct size.",
+            "<strong>Nested structs:</strong> Alignment rules propagate — the nested struct behaves like a member with its own alignment requirements."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Governing principles"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "Each member starts at an offset that is a multiple of its alignment.",
+            "Padding is added between members as needed.",
+            "Total struct size is padded to be a multiple of the largest alignment."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍",
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Simple case"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "struct A {\n    char c;  // 1 byte\n    int i;   // 4 bytes\n};"
+        },
+        {
+          "type": "paragraph",
+          "content": "On 32-bit or 64-bit:"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<code>c</code> at offset 0",
+            "3 bytes padding",
+            "<code>i</code> at offset 4–7",
+            "<strong>Struct size = 8 bytes (not 5).</strong>"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Professional use"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "struct B {\n    char c;   // 1\n    char d;   // 1\n    int i;    // 4\n};"
+        },
+        {
+          "type": "paragraph",
+          "content": "Layout:"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<code>c</code> offset 0",
+            "<code>d</code> offset 1",
+            "2 bytes padding",
+            "<code>i</code> offset 4–7",
+            "<strong>Size = 8 bytes</strong>."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Efficient if reordered:"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "struct B_opt {\n    int i;    // 4\n    char c;   // 1\n    char d;   // 1\n}; // size = 8 but better packing for arrays"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Edge case: Arrays & nested structs"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "struct Point {\n    char c;\n    int i;\n};\nstruct Shape {\n    int id;\n    struct Point p;\n};"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<code>Point</code> size = 8 (due to padding).",
+            "<code>Shape</code>: <ul><li><code>id</code> at offset 0–3</li><li>padding 4–7</li><li><code>p</code> at offset 8–15</li><li><strong>Size = 16 bytes</strong>, not 12.</li></ul>"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "For an array:"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "struct Point arr[3];"
+        },
+        {
+          "type": "paragraph",
+          "content": "Each element takes 8 bytes, so total = 24 bytes. Padding ensures each <code>i</code> stays 4-byte aligned.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "DO THIS NOW",
+      "emoji": "🛠️",
+      "iconClass": "practice",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "list",
+              "ordered": true,
+              "items": ["Write a small C program:"]
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "#include <stdio.h>\n\nstruct X { char c; int i; };\nstruct Y { int i; char c; };\n\nint main() {\n    printf(\"sizeof(struct X) = %zu\\n\", sizeof(struct X));\n    printf(\"sizeof(struct Y) = %zu\\n\", sizeof(struct Y));\n}"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "startFrom": 2,
+              "items": [
+                "Compile and run.",
+                "Notice how both are 8, but layouts differ (you can confirm with <code>offsetof</code>)."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>What to look for:</strong> The difference between field order and struct size.<br><strong>Quick win:</strong> See that reordering fields doesn't always reduce size, but often improves cache efficiency.",
+              "html": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "list",
+              "items": [
+                "<strong>Assuming struct size = sum of members</strong> → Always check <code>sizeof</code>.",
+                "<strong>Forgetting about arrays of structs</strong> → Padding inside one element gets multiplied across the array.",
+                "<strong>Embedding structs blindly</strong> → Nested structs carry their alignment rules into parents."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "connections",
+      "title": "CONNECTIONS",
+      "emoji": "🔗",
+      "iconClass": "connections",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>Prerequisites:</strong> Pointers, memory addressing, word size.",
+            "<strong>Related concepts:</strong> Cache lines, ABI (Application Binary Interface), <code>#pragma pack</code> / <code>__attribute__((packed))</code>.",
+            "<strong>Next steps:</strong> Study how padding interacts with bitfields, unions, and serialization."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "Why does <code>sizeof(struct {char c; int i;})</code> equal 8, not 5?",
+            "What happens to array size when padding is inside the struct?",
+            "How does the largest member influence total struct size?"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Success criteria:</strong> You can predict struct size and explain why padding appears.<br><strong>Review triggers:</strong> Any time you serialize structs across systems (e.g., networking, file formats).",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>This week:</strong> Experiment with <code>sizeof</code> and <code>offsetof</code> for different struct layouts.",
+            "<strong>This month:</strong> Learn ABI rules for your platform (x86, ARM).",
+            "<strong>Long term:</strong> Master cache-aware struct design, packed structs for networking, and alignment for SIMD/vectorization."
+          ]
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "message": "Learning journey completed! 🎉",
+    "completionText": "Mark this topic as mastered"
+  }
+}

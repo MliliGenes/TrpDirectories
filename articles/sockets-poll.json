@@ -1,0 +1,249 @@
+{
+  "meta": {
+    "title": "Sockets & Poll",
+    "description": "Master network programming with sockets and efficient I/O multiplexing using poll",
+    "tags": ["networking", "sockets", "poll", "server programming", "I/O multiplexing"],
+    "difficulty": "advanced",
+    "lastUpdated": "2024-09-26"
+  },
+  "navigation": [
+    {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},
+    {"id": "mechanics", "emoji": "⚙️", "title": "How It Works", "sectionIndex": 1},
+    {"id": "examples", "emoji": "🌍", "title": "Real Examples", "sectionIndex": 2},
+    {"id": "practice", "emoji": "🛠️", "title": "Do This Now", "sectionIndex": 3},
+    {"id": "warnings", "emoji": "⚠️", "title": "Avoid These", "sectionIndex": 4},
+    {"id": "connections", "emoji": "🔗", "title": "Connections", "sectionIndex": 5},
+    {"id": "test", "emoji": "🎯", "title": "Test Yourself", "sectionIndex": 6},
+    {"id": "growth", "emoji": "📈", "title": "Level Up", "sectionIndex": 7}
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>What is this?</strong><br>Sockets are endpoints for communication between processes over a network or within the same machine. <code>poll</code> lets you efficiently wait for multiple sockets to become ready for reading, writing, or errors.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Why care?</strong><br>Essential for building <strong>servers or networked applications</strong> to handle multiple clients without busy-waiting or blocking threads.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Mental model:</strong><br>Think of sockets like <strong>phone lines</strong>, each connecting to a friend. <code>poll</code> is like a receptionist telling you which lines are ringing, so you don't check each phone constantly.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW IT WORKS",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Core mechanics"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Socket creation:</strong> <code>socket()</code> creates an endpoint for communication.",
+            "<strong>Binding & Listening:</strong> Server sockets bind to an address and listen for connections.",
+            "<strong>Poll monitoring:</strong> <code>poll()</code> watches multiple file descriptors for events without blocking."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Key components"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>File descriptors:</strong> Sockets are treated as file descriptors in Unix-like systems.",
+            "<strong>Events:</strong> POLLIN (data ready to read), POLLOUT (ready for write), POLLERR (error condition).",
+            "<strong>Timeout:</strong> <code>poll()</code> can wait indefinitely, return immediately, or timeout after a specified duration.",
+            "<strong>Non-blocking I/O:</strong> Sockets can be set to non-blocking mode to avoid hanging operations."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Governing principles"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "One socket per connection endpoint.",
+            "Poll checks multiple sockets in a single system call.",
+            "Events are edge-triggered or level-triggered depending on the system."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍",
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Basic TCP Server"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "int server_fd = socket(AF_INET, SOCK_STREAM, 0);\nstruct sockaddr_in addr = {0};\naddr.sin_family = AF_INET;\naddr.sin_addr.s_addr = INADDR_ANY;\naddr.sin_port = htons(8080);\n\nbind(server_fd, (struct sockaddr*)&addr, sizeof(addr));\nlisten(server_fd, 10);"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Poll-based event loop"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "struct pollfd fds[MAX_CLIENTS];\nfds[0].fd = server_fd;\nfds[0].events = POLLIN;\nint nfds = 1;\n\nwhile (1) {\n    int ready = poll(fds, nfds, -1);\n    \n    if (fds[0].revents & POLLIN) {\n        // Accept new connection\n        int client_fd = accept(server_fd, NULL, NULL);\n        fds[nfds].fd = client_fd;\n        fds[nfds].events = POLLIN;\n        nfds++;\n    }\n    \n    for (int i = 1; i < nfds; i++) {\n        if (fds[i].revents & POLLIN) {\n            // Handle client data\n            char buffer[1024];\n            recv(fds[i].fd, buffer, sizeof(buffer), 0);\n        }\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Edge case: Connection cleanup"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "if (fds[i].revents & (POLLHUP | POLLERR)) {\n    close(fds[i].fd);\n    // Remove from poll array\n    for (int j = i; j < nfds - 1; j++) {\n        fds[j] = fds[j + 1];\n    }\n    nfds--;\n    i--; // Adjust index\n}"
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "DO THIS NOW",
+      "emoji": "🛠️",
+      "iconClass": "practice",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "list",
+              "ordered": true,
+              "items": ["Create a simple echo server:"]
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "#include <sys/socket.h>\n#include <sys/poll.h>\n#include <netinet/in.h>\n#include <stdio.h>\n#include <unistd.h>\n\nint main() {\n    int server_fd = socket(AF_INET, SOCK_STREAM, 0);\n    // Set up address, bind, listen\n    \n    struct pollfd fds[10];\n    fds[0].fd = server_fd;\n    fds[0].events = POLLIN;\n    \n    while (1) {\n        poll(fds, 1, -1);\n        // Handle connections and data\n    }\n}"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "startFrom": 2,
+              "items": [
+                "Test with <code>telnet localhost 8080</code>",
+                "Add multiple client support using poll array."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>What to look for:</strong> How poll eliminates busy-waiting.<br><strong>Quick win:</strong> See one server handle multiple clients efficiently.",
+              "html": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "list",
+              "items": [
+                "<strong>Blocking operations in poll loop</strong> → Always use non-blocking sockets or handle partial reads/writes.",
+                "<strong>Not handling POLLHUP/POLLERR</strong> → Disconnected clients will consume CPU if not removed.",
+                "<strong>Fixed-size poll arrays</strong> → Consider dynamic resizing or use epoll/kqueue for scalability."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "connections",
+      "title": "CONNECTIONS",
+      "emoji": "🔗",
+      "iconClass": "connections",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>Prerequisites:</strong> File descriptors, system calls, basic networking concepts.",
+            "<strong>Related concepts:</strong> select(), epoll (Linux), kqueue (BSD), async I/O patterns.",
+            "<strong>Next steps:</strong> Study epoll for high-performance servers, non-blocking I/O patterns, and protocol design."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "What's the difference between poll() and busy-waiting on socket reads?",
+            "How do you handle a client disconnect in a poll-based server?",
+            "Why might poll() return without any file descriptors being ready?"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Success criteria:</strong> You can build a multi-client server that doesn't waste CPU cycles.<br><strong>Review triggers:</strong> When building any networked application or real-time system.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>This week:</strong> Build an echo server, then a simple chat server using poll.",
+            "<strong>This month:</strong> Learn epoll (Linux) or kqueue (BSD) for higher performance.",
+            "<strong>Long term:</strong> Master async programming patterns, protocol design, and high-concurrency architectures."
+          ]
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "message": "Learning journey completed! 🎉",
+    "completionText": "Mark this topic as mastered"
+  }
+}

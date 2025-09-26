@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="../../imgs/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="../../style/main.css">
+    <title>Memory Management Basics - Learning Guide</title>
+</head>
+<body>
+        <header>
+        <div class="container">
+            <div class="header-content">
+                <h1>Memory Management Basics</h1>
+                <div class="header-nav">
+                    <a href="../../index.html" class="back-to-index">
+                        Back to Index
+                    </a>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                </div>
+            </div>
+        </div>
+    </header>
+        <nav>
+        <div class="container">
+            <div class="nav-grid">
+                <a class="nav-item" href="#hook" data-section="0">🎯 The Hook</a>
+                <a class="nav-item" href="#mechanics" data-section="1">⚙️ How It Works</a>
+                <a class="nav-item" href="#examples" data-section="2">🌍 Real Examples</a>
+                <a class="nav-item" href="#practice" data-section="3">🛠️ Do This Now</a>
+            </div>
+        </div>
+    </nav>
+        <main class="container">
+        <section id="hook">
+            <div class="section-header">
+                <div class="section-icon hook">🎯</div>
+                <h2 class="section-title">THE HOOK</h2>
+            </div>
+            <div class="content">
+                <p><strong>What is this?</strong><br>Dynamic memory management lets you allocate and free memory at runtime using malloc() and free().</p>
+                <p><strong>Why care?</strong><br>Essential for building flexible programs that can handle varying amounts of data without wasting memory.</p>
+            </div>
+        </section>
+
+        <section id="mechanics">
+            <div class="section-header">
+                <div class="section-icon mechanics">⚙️</div>
+                <h2 class="section-title">HOW IT WORKS</h2>
+            </div>
+            <div class="content">
+                <h3>Core functions</h3>
+                <ul>
+                    <li><strong>malloc():</strong> Allocates memory on the heap</li>
+                    <li><strong>free():</strong> Releases previously allocated memory</li>
+                    <li><strong>calloc():</strong> Allocates zeroed memory for arrays</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="examples">
+            <div class="section-header">
+                <div class="section-icon examples">🌍</div>
+                <h2 class="section-title">REAL EXAMPLES</h2>
+            </div>
+            <div class="content">
+                <h3>Basic allocation</h3>
+                <div class="code-block">
+                    <pre>int *ptr = malloc(sizeof(int) * 10);
+if (ptr == NULL) {
+    // Handle allocation failure
+    return -1;
+}
+
+// Use the memory
+ptr[0] = 42;
+
+// Always free when done
+free(ptr);
+ptr = NULL;  // Prevent accidental reuse</pre>
+                </div>
+            </div>
+        </section>
+
+        <section id="practice">
+            <div class="section-header">
+                <div class="section-icon practice">🛠️</div>
+                <h2 class="section-title">DO THIS NOW</h2>
+            </div>
+            <div class="content">
+                <div class="action-box">
+                <ol>
+                    <li>Write a program that allocates an array of integers</li>
+                    <li>Fill the array with values 1 to N</li>
+                    <li>Print the values and free the memory</li>
+                </ol>
+                </div>
+            </div>
+        </section>
+    </main>
+        <footer>
+        <div class="container">
+            <p>Learning journey completed! 🎉</p>
+            <div class="checkbox-item" style="justify-content: center; margin-top: 1rem;">
+                <div class="checkbox" onclick="toggleComplete(this)"></div>
+                <span>Mark this topic as mastered</span>
+            </div>
+        </div>
+    </footer>
+        <script>
+        // Theme toggle
+        function toggleTheme() {
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        document.body.setAttribute('data-theme', savedTheme);
+
+        // Section completion
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
+                    .map(el => el.getAttribute('data-section'));
+                localStorage.setItem('completed-memory-management-basics', JSON.stringify(completedSections));
+            });
+        });
+
+        // Load saved progress
+        const savedProgress = localStorage.getItem('completed-memory-management-basics');
+        if (savedProgress) {
+            const completed = JSON.parse(savedProgress);
+            completed.forEach(sectionNum => {
+                const navItem = document.querySelector(`[data-section="${sectionNum}"]`);
+                if (navItem) navItem.classList.add('completed');
+            });
+        }
+
+        // Checkbox functionality
+        function toggleComplete(checkbox) {
+            checkbox.classList.toggle('checked');
+            if (checkbox.classList.contains('checked')) {
+                checkbox.innerHTML = '✓';
+                localStorage.setItem('mastered-memory-management-basics', 'true');
+            } else {
+                checkbox.innerHTML = '';
+                localStorage.setItem('mastered-memory-management-basics', 'false');
+            }
+        }
+
+        // Load mastery status
+        const masteryStatus = localStorage.getItem('mastered-memory-management-basics');
+        if (masteryStatus === 'true') {
+            const masteryCheckbox = document.querySelector('footer .checkbox');
+            if (masteryCheckbox) {
+                masteryCheckbox.classList.add('checked');
+                masteryCheckbox.innerHTML = '✓';
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+    </script>
+</body>
+</html>

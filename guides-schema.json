@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Learning Guide Schema",
+  "description": "Schema for generating HTML learning guides from JSON",
+  "type": "object",
+  "properties": {
+    "meta": {
+      "type": "object",
+      "properties": {
+        "title": {"type": "string"},
+        "description": {"type": "string"},
+        "tags": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "difficulty": {
+          "type": "string",
+          "enum": ["beginner", "intermediate", "advanced"]
+        },
+        "lastUpdated": {"type": "string"},
+        "favicon": {"type": "string", "default": "../imgs/favicon.png"},
+        "stylesheet": {"type": "string", "default": "../style/main.css"}
+      },
+      "required": ["title", "description", "difficulty"]
+    },
+    "navigation": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "emoji": {"type": "string"},
+          "title": {"type": "string"},
+          "sectionIndex": {"type": "integer"}
+        },
+        "required": ["id", "emoji", "title", "sectionIndex"]
+      }
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "emoji": {"type": "string"},
+          "iconClass": {"type": "string"},
+          "content": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {"const": "paragraph"},
+                    "content": {"type": "string"},
+                    "html": {"type": "boolean", "default": false}
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {"const": "heading"},
+                    "level": {"type": "integer", "minimum": 1, "maximum": 6},
+                    "content": {"type": "string"}
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {"const": "list"},
+                    "ordered": {"type": "boolean", "default": false},
+                    "items": {
+                      "type": "array",
+                      "items": {"type": "string"}
+                    },
+                    "startFrom": {"type": "integer"}
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {"const": "codeblock"},
+                    "language": {"type": "string", "default": "c"},
+                    "code": {"type": "string"},
+                    "withSyntaxHighlight": {"type": "boolean", "default": true}
+                  }
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {"const": "actionbox"},
+                    "boxType": {
+                      "type": "string",
+                      "enum": ["action", "warning", "tip"],
+                      "default": "action"
+                    },
+                    "title": {"type": "string"},
+                    "content": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/properties/sections/items/properties/content/items"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "required": ["id", "title", "emoji", "iconClass", "content"]
+      }
+    },
+    "footer": {
+      "type": "object",
+      "properties": {
+        "message": {"type": "string", "default": "Learning journey completed! 🎉"},
+        "completionText": {"type": "string", "default": "Mark this topic as mastered"}
+      }
+    }
+  },
+  "required": ["meta", "navigation", "sections"]
+}
