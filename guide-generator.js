@@ -61,7 +61,7 @@ class GuideGenerator {
                     <a href="../../index.html" class="back-to-index">
                         Back to Index
                     </a>
-                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
                 </div>
             </div>
         </div>
@@ -189,16 +189,35 @@ ${title ? '                    ' + title : ''}${boxContent}
         return `    <script>
         // Theme toggle
         function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute('data-theme');
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            body.setAttribute('data-theme', newTheme);
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
+            
+            // Update button text
+            updateThemeButton(newTheme);
+        }
+
+        // Update theme button text based on current theme
+        function updateThemeButton(currentTheme) {
+            const button = document.querySelector('.theme-toggle');
+            if (currentTheme === 'dark') {
+                button.innerHTML = '☀️ Light Mode';
+            } else {
+                button.innerHTML = '🌙 Dark Mode';
+            }
         }
 
         // Load saved theme
-        const savedTheme = localStorage.getItem('theme') || 'dark';
-        document.body.setAttribute('data-theme', savedTheme);
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', loadTheme);
 
         // Section completion
         document.querySelectorAll('.nav-item').forEach(item => {

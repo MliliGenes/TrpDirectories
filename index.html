@@ -77,15 +77,24 @@
     <script>
         // Theme management
         function toggleTheme() {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
             
             document.documentElement.setAttribute('data-theme', newTheme);
             localStorage.setItem('theme', newTheme);
             
-            // Update button text
+            // Update button text - show what clicking will do
+            updateThemeButton(newTheme);
+        }
+
+        // Update theme button text based on current theme
+        function updateThemeButton(currentTheme) {
             const button = document.querySelector('.theme-toggle');
-            button.textContent = newTheme === 'dark' ? '☀️ Toggle Theme' : '🌙 Toggle Theme';
+            if (currentTheme === 'dark') {
+                button.innerHTML = '☀️ Light Mode';
+            } else {
+                button.innerHTML = '🌙 Dark Mode';
+            }
         }
 
         // Load saved theme
@@ -93,8 +102,8 @@
             const savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             
-            const button = document.querySelector('.theme-toggle');
-            button.textContent = savedTheme === 'dark' ? '☀️ Toggle Theme' : '🌙 Toggle Theme';
+            // Update button text to reflect current theme
+            updateThemeButton(savedTheme);
         }
 
         // Directory management
