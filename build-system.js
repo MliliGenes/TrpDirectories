@@ -66,12 +66,15 @@ class BuildSystem {
     }
 
     /**
-     * Sanitize filename for directory creation
+     * Sanitize filename for directory creation (URL-safe)
      */
     sanitizeFilename(title) {
         return title
-            .replace(/[^a-zA-Z0-9\s\-&]/g, '') // Remove special chars except spaces, hyphens, ampersands
-            .replace(/\s+/g, ' ') // Normalize spaces
+            .toLowerCase()                           // Convert to lowercase
+            .replace(/[^a-z0-9\s\-]/g, '')          // Remove special chars, keep spaces and hyphens
+            .replace(/\s+/g, '-')                   // Replace spaces with hyphens
+            .replace(/-+/g, '-')                    // Replace multiple hyphens with single
+            .replace(/^-|-$/g, '')                  // Remove leading/trailing hyphens
             .trim();
     }
 
@@ -197,7 +200,7 @@ class BuildSystem {
             
             return {
                 title: article.data.meta.title,
-                path: `./${path.relative('.', guideDir)}/`,
+                path: `${path.relative('.', guideDir)}/`,
                 htmlPath: htmlPath,
                 ...article.data.meta
             };
