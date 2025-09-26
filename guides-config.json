@@ -3,7 +3,7 @@
     {
       "id": "sockets---poll",
       "title": "Sockets & Poll",
-      "path": "./guides/Sockets & Poll/",
+      "path": "./build/Sockets & Poll/",
       "description": "Master network programming with sockets and efficient I/O multiplexing using poll",
       "author": "sel-mlil",
       "tags": [
@@ -19,7 +19,7 @@
     {
       "id": "struct-padding---alignment",
       "title": "Struct Padding & Alignment",
-      "path": "./guides/Struct Padding & Alignment/",
+      "path": "./build/Struct Padding & Alignment/",
       "description": "Comprehensive guide covering low-level programming concepts and memory management",
       "author": "sel-mlil",
       "tags": [
@@ -31,12 +31,29 @@
       ],
       "difficulty": "intermediate",
       "lastUpdated": "2024-09-26"
+    },
+    {
+      "id": "x86-cpu-16-bit-real-mode",
+      "title": "x86 CPU 16-bit Real Mode",
+      "path": "./build/x86 CPU 16-bit Real Mode/",
+      "description": "A comprehensive guide to the 16-bit Real Mode of x86 CPUs, covering its segmented memory, historical context, and role in the modern PC boot process.",
+      "author": "sel-mlil",
+      "tags": [
+        "x86",
+        "Assembly",
+        "CPU Architecture",
+        "Real Mode",
+        "Operating Systems",
+        "Low-Level Programming"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2024-09-26"
     }
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-26T03:09:46.867Z",
-    "totalGuides": 2,
+    "lastModified": "2025-09-26T03:39:00.243Z",
+    "totalGuides": 3,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }

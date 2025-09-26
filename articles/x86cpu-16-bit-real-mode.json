@@ -1,0 +1,287 @@
+{
+  "meta": {
+    "title": "x86 CPU 16-bit Real Mode",
+    "description": "A comprehensive guide to the 16-bit Real Mode of x86 CPUs, covering its segmented memory, historical context, and role in the modern PC boot process.",
+    "author": "sel-mlil",
+    "tags": [
+      "x86",
+      "Assembly",
+      "CPU Architecture",
+      "Real Mode",
+      "Operating Systems",
+      "Low-Level Programming"
+    ],
+    "difficulty": "intermediate",
+    "lastUpdated": "2024-09-26"
+  },
+  "navigation": [
+    {
+      "id": "hook",
+      "emoji": "🎯",
+      "title": "The Hook",
+      "sectionIndex": 0
+    },
+    {
+      "id": "mechanics",
+      "emoji": "⚙️",
+      "title": "How It Works",
+      "sectionIndex": 1
+    },
+    {
+      "id": "examples",
+      "emoji": "🌍",
+      "title": "Real Examples",
+      "sectionIndex": 2
+    },
+    {
+      "id": "practice",
+      "emoji": "🛠️",
+      "title": "Do This Now",
+      "sectionIndex": 3
+    },
+    {
+      "id": "warnings",
+      "emoji": "⚠️",
+      "title": "Avoid These",
+      "sectionIndex": 4
+    },
+    {
+      "id": "connections",
+      "emoji": "🔗",
+      "title": "Connections",
+      "sectionIndex": 5
+    },
+    {
+      "id": "test",
+      "emoji": "🎯",
+      "title": "Test Yourself",
+      "sectionIndex": 6
+    },
+    {
+      "id": "growth",
+      "emoji": "📈",
+      "title": "Level Up",
+      "sectionIndex": 7
+    }
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>What is this?</strong><br>The **16-bit Real Mode** is the initial operating mode of an x86 CPU (8086 and all successors) where the CPU operates as a **16-bit processor**, utilizing **16-bit registers** and a **segmented memory addressing scheme** to access a maximum of 1 megabyte (MB) of memory. It is the mandatory starting state upon power-up.<br><br><strong>Historical Context:</strong> It was the native mode of the original Intel 8086/8088 and the foundational environment for MS-DOS and the first IBM PCs.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Why care?</strong><br>It's the **first step in booting any PC**, modern or ancient. Understanding Real Mode is crucial for **BIOS/firmware developers**, **Operating System (OS) developers** who need to manage the transition from 16-bit Real Mode to 64-bit Long Mode, and for **low-level systems engineers** debugging bootloaders and embedded systems.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Mental model:</strong><br>Think of Real Mode as a **simple office with limited filing cabinets** (1 MB). You have to use two pieces of information—a **cabinet number (Segment)** and a **folder number (Offset)**—to find any document. Every calculation is simple and direct, but there's no security guard; any application can access any file in the office without permission.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW IT WORKS",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Core mechanics: Segmented Addressing"
+        },
+        {
+          "type": "paragraph",
+          "content": "The central feature is the **Segmented Memory Addressing** system, which overcomes the 16-bit addressing limit (max 64 KB) to access 1 MB."
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Address Calculation:</strong> The CPU calculates the **20-bit Physical Address** by shifting the 16-bit **Segment** value 4 bits to the left ($\times 16$) and then adding the **16-bit Offset** value. This is the $\text{Segment} \times 16 + \text{Offset}$ formula.",
+            "<strong>Registers:</strong> Uses **16-bit General Purpose Registers** (AX, BX, CX, DX) and **16-bit Segment Registers** (CS, DS, SS, ES) to define the base of code, data, and stack segments."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Governing Principles"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>No Protection:</strong> There is **no hardware-enforced memory protection**. Programs have direct and unrestricted access to all memory and hardware I/O ports.",
+            "<strong>Single-Tasking:</strong> The hardware does not support virtual memory or preemptive multitasking; it is inherently a single-process environment."
+          ]
+        },
+        {
+          "type": "codeblock",
+          "language": "latex",
+          "code": "Physical Address = (\\text{Segment Register Value} \\times 16) + \\text{Offset Register Value}"
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍",
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Case Study 1: MS-DOS Program Execution"
+        },
+        {
+          "type": "paragraph",
+          "content": "MS-DOS is the quintessential Real Mode OS. Programs often run in a **Tiny Memory Model** where CS, DS, SS, and ES all point to the same segment, giving the program a single 64 KB working space."
+        },
+        {
+          "type": "codeblock",
+          "language": "assembly",
+          "code": "; Simple 8086 Real Mode program to print 'Hello' (using MS-DOS INT 21h)\n\nORG 100h       ; Standard starting point for .COM files\n\n  MOV AH, 09h  ; Function 09h: Display String\n  MOV DX, OFFSET message ; DX holds the offset address of the string\n  INT 21h      ; Call MS-DOS service\n\n  MOV AH, 4Ch  ; Function 4Ch: Terminate Program\n  INT 21h      ; Return to MS-DOS\n\nmessage DB 'Hello, Real Mode!$' ; String data"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Case Study 2: The BIOS Boot Process (Mandatory Use)"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Reset Vector:</strong> Upon power-on, the CPU is forced to execute code starting at **FFFF:0000** (a location in the BIOS ROM), which is a hardcoded Real Mode address.",
+            "<strong>POST and MBR:</strong> The BIOS runs the Power-On Self-Test (POST), then loads the **Master Boot Record (MBR)** from the disk into memory (typically $07\text{C00}_{\text{hex}}$), and transfers control to it—all in Real Mode."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "DO THIS NOW",
+      "emoji": "🛠️",
+      "iconClass": "practice",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Immediate Action: Boot Sector Development"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "<strong>Setup:</strong> Install a lightweight x86 assembler (e.g., **NASM**) and a virtual environment (**DOSBox** or **QEMU**).",
+                "<strong>Code:</strong> Write a 512-byte assembly program to be your own MBR/boot sector.",
+                "<strong>Assemble:</strong> Use NASM to compile to a flat binary file (`-f bin`).",
+                "<strong>Test:</strong> Load the binary into QEMU (`qemu-system-i386 -fda boot.bin`) to observe its behavior in a pure Real Mode environment."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>What to look for:</strong> Correct 16-bit register usage (e.g., using `mov ax, [bx+si]`). The program must occupy exactly 512 bytes with the signature $55\text{AA}_{\text{hex}}$ at the end to be recognized as a boot sector.<br><strong>Quick win:</strong> Successfully printing a single character using a BIOS interrupt (e.g., `INT 10h`).",
+              "html": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Common Pitfalls in Real Mode Programming"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "list",
+              "items": [
+                "<strong>The $64$ KB Trap</strong> → **Avoid:** Assuming all memory is easily accessible with a 16-bit offset. **Fix:** Explicitly reload the appropriate **Segment Register** (CS, DS, SS, ES) when accessing data or code that spans beyond the current $64$ KB segment boundary.",
+                "<strong>A20 Line Oversight</strong> → **Avoid:** On 80286+ CPUs, failing to enable the **A20 Gate** when trying to access the **High Memory Area (HMA)** (the $64$ KB block above 1 MB). **Fix:** Your boot code must intentionally enable A20, typically via the keyboard controller, to prevent address wraparound at $1$ MB.",
+                "<strong>Stack Corruption</strong> → **Avoid:** Forgetting that Real Mode stacks are only 16-bit deep by default and prone to overflow. **Fix:** Allocate a sufficiently large **Stack Segment (SS)** and regularly check the **Stack Pointer (SP)** or move to a flat memory model setup if possible."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "connections",
+      "title": "CONNECTIONS",
+      "emoji": "🔗",
+      "iconClass": "connections",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>Prerequisites:</strong> **x86 Assembly Language** (16-bit instruction set), **Binary/Hexadecimal Arithmetic**, and basic knowledge of **CPU Registers**.",
+            "<strong>Related concepts:</strong> **Protected Mode** (the 32-bit successor that introduced memory protection), **Long Mode** (the 64-bit mode of modern CPUs), and **Virtual 8086 Mode** (V86, a protected environment for running Real Mode code).",
+            "<strong>Ecosystem overview:</strong> Real Mode defines the behavior of the **BIOS** and **MBR**, which load the kernel code that then initiates the transition into Protected Mode (or Long Mode) using a complex sequence of control register writes."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "If $\text{CS}=1000_{\text{hex}}$ and $\text{IP}=5000_{\text{hex}}$, calculate the resulting 20-bit Physical Address.",
+            "Explain *why* an 8086 CPU needs segmented addressing instead of simply using a 20-bit offset register.",
+            "What is the single biggest security or stability weakness of Real Mode, and what architectural feature fixes it in Protected Mode?",
+            "Describe the sequence of events (and mode) from CPU reset to the loading of the MBR."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Success criteria:</strong> You can accurately trace a memory access across segment boundaries and explain the $1$ MB limit's origin.<br><strong>Skill demonstration:</strong> Successfully modify a boot sector to load and jump to a small second-stage loader.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>This week (Immediate Skills):</strong> Master **NASM** and complete the boot sector exercise. Practice writing BIOS interrupts (INT 10h, INT 13h).",
+            "<strong>This month (Skill Consolidation):</strong> Study the **80286 architecture**. Write the assembly code required to move the CPU from Real Mode to **Protected Mode**, including setting up the **Global Descriptor Table (GDT)**.",
+            "<strong>Long term (Expertise and Innovation):</strong> Develop a complete **minimal OS kernel** (a **hobby OS**) that starts in Real Mode, switches to Protected Mode, and can manage basic memory allocation and task switching."
+          ]
+        }
+      ]
+    }
+  ],
+  "footer": {
+    "message": "Learning journey completed! Real Mode mastered. Time to explore Protected Mode. 🎉",
+    "completionText": "Mark this topic as mastered"
+  }
+}

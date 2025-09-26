@@ -9,8 +9,8 @@ const GuideGenerator = require('./guide-generator.js');
  */
 const CONFIG = {
     articlesDir: './articles',
-    guidesDir: './guides', 
-    buildDir: './build',
+    guidesDir: './build', 
+    buildDir: './build', // Legacy - now same as guidesDir
     configFile: './guides-config.json',
     schemaFile: './guides-schema.json'
 };

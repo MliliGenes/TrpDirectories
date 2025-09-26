@@ -224,7 +224,7 @@ nav {
 .nav-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 0.75rem;
+    gap: 1.25rem;
 }
 
 /* Base responsive grid - overridden by enhanced responsive section below */
@@ -249,13 +249,13 @@ nav {
 .nav-item {
     display: flex;
     flex-direction: column;
-    padding: 1rem 1.25rem;
+    padding: 1.75rem 2rem;
     background: var(--surface);
     border: 2px solid var(--border);
-    border-radius: 0.75rem;
+    border-radius: 1rem;
     text-decoration: none;
     color: var(--text-primary);
-    font-size: 0.925rem;
+    font-size: 1rem;
     font-weight: 500;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
@@ -263,8 +263,8 @@ nav {
     position: relative;
     overflow: hidden;
     backdrop-filter: blur(10px);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    min-height: auto;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    min-height: 220px;
 }
 
 .nav-item:hover {
@@ -922,7 +922,7 @@ section {
     /* Compact navigation grid */
     .nav-grid {
         grid-template-columns: 1fr;
-        gap: 0.5rem;
+        gap: 1rem;
     }
     
     .nav-item {
@@ -974,7 +974,7 @@ section {
     
     .nav-grid {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
+        gap: 1rem;
     }
 }
 
@@ -1040,8 +1040,8 @@ section {
 /* Tablet Portrait (641px - 768px) */
 @media (min-width: 641px) and (max-width: 768px) {
     .nav-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
     }
     
     .header-nav {
@@ -1067,8 +1067,8 @@ section {
 /* Tablet Landscape (769px - 1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
     .nav-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
     }
     
     .container {
@@ -1091,8 +1091,8 @@ section {
 /* Desktop (1025px - 1200px) */
 @media (min-width: 1025px) and (max-width: 1200px) {
     .nav-grid {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1.25rem;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2rem;
     }
     
     /* Optimal reading width */
@@ -1105,8 +1105,8 @@ section {
 /* Large Desktop (1201px+) */
 @media (min-width: 1201px) {
     .nav-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.5rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2.5rem;
     }
     
     .container {
@@ -1120,7 +1120,8 @@ section {
     }
     
     .nav-item {
-        padding: 1.25rem 1.5rem;
+        padding: 2rem 2.5rem;
+        min-height: 260px;
     }
 }
 
@@ -1130,7 +1131,7 @@ section {
 @media (max-width: 1024px) {
     /* Appropriately sized touch targets */
     .nav-item {
-        min-height: 60px;
+        min-height: 180px;
         cursor: pointer;
         -webkit-tap-highlight-color: transparent;
     }

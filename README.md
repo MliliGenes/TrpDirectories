@@ -20,7 +20,7 @@ lowlevel_blog/
 │   ├── memory-management-basics.json
 │   ├── sockets-poll.json
 │   └── struct-padding-alignment.json
-├── guides/                     # 🌐 Generated HTML guides (auto-created)
+├── build/                      # 🔨 Generated HTML guides (auto-created)
 │   ├── Memory Management Basics/
 │   ├── Sockets & Poll/
 │   └── Struct Padding & Alignment/
@@ -28,7 +28,6 @@ lowlevel_blog/
 │   └── main.css
 ├── imgs/                       # 🖼️ Images and assets
 │   └── favicon.png
-├── build/                      # 🔧 Build artifacts
 ├── build-system.js            # 🏗️ Main build automation
 ├── guide-generator.js         # 📄 HTML generation engine
 ├── guides-config.json         # ⚙️ Auto-generated configuration
@@ -178,7 +177,7 @@ node validate-system.js
 
 ℹ️  Phase 3: Generating HTML content...
 ✅ Generated HTML for: Memory Management Basics
-✅ Deployed guide: guides/Memory Management Basics/index.html
+✅ Deployed guide: build/Memory Management Basics/index.html
 
 📊 Build Summary:
 ✅ Successes: 10
@@ -208,7 +207,7 @@ The `guides-config.json` file is automatically generated and contains:
     {
       "id": "article-slug",
       "title": "Article Title",
-      "path": "./guides/Article Title/",
+      "path": "./build/Article Title/",
       "description": "Article description",
       "tags": ["tag1", "tag2"],
       "difficulty": "intermediate",
@@ -260,7 +259,7 @@ node clean-guides.js
 ```
 
 **What it does:**
-- Removes all directories in `guides/` folder
+- Removes all directories in `build/` folder
 - Resets `guides-config.json` to empty state  
 - Preserves all JSON source files in `articles/`
 - Includes safety checks to prevent accidental deletion

@@ -3,7 +3,7 @@
 /**
  * Clean Guide Script - Remove Generated HTML Guides
  * 
- * This script removes all generated HTML guide directories while preserving:
+ * This script removes all generated HTML guide directories from the build folder while preserving:
  * - JSON source files in articles/
  * - Build system files
  * - CSS and other assets
@@ -16,7 +16,7 @@ const path = require('path');
 
 class GuidesCleaner {
     constructor() {
-        this.guidesDir = path.join(__dirname, 'guides');
+        this.guidesDir = path.join(__dirname, 'build');
         this.configFile = path.join(__dirname, 'guides-config.json');
     }
 
@@ -36,9 +36,9 @@ class GuidesCleaner {
         console.log('🧹 Starting Guide Cleanup Process\n');
         
         try {
-            // Check if guides directory exists
+            // Check if build directory exists
             if (!fs.existsSync(this.guidesDir)) {
-                this.log('warning', 'Guides directory not found, nothing to clean');
+                this.log('warning', 'Build directory not found, nothing to clean');
                 return true;
             }
 
