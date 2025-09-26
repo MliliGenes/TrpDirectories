@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// --DEPRECATED: This file has been superseded by build-system.js
+// Use 'node build-system.js' instead of this script
 
 const fs = require('fs');
 const path = require('path');

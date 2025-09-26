@@ -1,4 +1,6 @@
-# JSON-to-HTML Guide Generator
+# --DEPRECATED-- JSON-to-HTML Guide Generator
+
+**⚠️ DEPRECATED: This documentation is outdated. Please refer to the main README.md and use build-system.js instead.**
 
 This system allows you to generate your learning guide HTML files from structured JSON data, making it easier to maintain and create new guides.
 

@@ -1,4 +1,5 @@
 {
+  "_DEPRECATED": "This file has been superseded by guides-config.json - use build-system.js instead",
   "directories": [
     {
       "name": "Struct Padding & Alignment",

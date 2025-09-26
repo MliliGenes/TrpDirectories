@@ -1,4 +1,6 @@
-# Organized Blog Build System
+# --DEPRECATED-- Organized Blog Build System
+
+**⚠️ DEPRECATED: This documentation is outdated. Please refer to the main README.md for current build system information.**
 
 Your blog now has a clean, organized structure for managing articles as JSON and automatically building them into HTML guides.
 
