@@ -649,9 +649,9 @@ pre {
 }
 
 .code-block {
-    background: var(--code-bg);
-    color: var(--code-text);
-    padding: 1.5rem;
+    /* background: var(--code-bg); */
+    /* color: var(--code-text); */
+    /* padding: 1.5rem; */
     border-radius: 0.5rem;
     overflow-x: auto;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -700,6 +700,156 @@ pre {
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    z-index: 10;
+}
+
+/* CodeMirror Integration Styles */
+.code-block .CodeMirror {
+    background: transparent !important;
+    color: inherit;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    border: none !important;
+    border-radius: 0 !important;
+    height: auto;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.code-block .CodeMirror-scroll {
+    padding: 0;
+    margin: 0;
+    overflow: hidden !important; /* Hide all scrollbars */
+}
+
+.code-block .CodeMirror-gutters {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border: none !important;
+    border-right: none !important;
+    border-left: none !important;
+    border-radius: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.code-block .CodeMirror-linenumber {
+    color: rgba(255, 255, 255, 0.5) !important;
+    padding: 0 8px;
+}
+
+.code-block .CodeMirror-cursor {
+    display: none !important;
+}
+
+.code-block .CodeMirror-selected {
+    background: transparent !important; /* Remove selection highlighting */
+}
+
+/* Hide scrollbars completely */
+.code-block .CodeMirror-vscrollbar,
+.code-block .CodeMirror-hscrollbar {
+    display: none !important;
+}
+
+/* Ensure content fits without scrolling */
+.code-block .CodeMirror-sizer {
+    min-height: auto !important;
+}
+
+.code-block .CodeMirror-line {
+    padding: 0 4px;
+}
+
+/* Hide the original textarea */
+.code-block .codemirror-code {
+    display: none;
+}
+
+/* Comprehensive border removal for all CodeMirror elements */
+.code-block .CodeMirror,
+.code-block .CodeMirror-scroll,
+.code-block .CodeMirror-sizer,
+.code-block .CodeMirror-gutters,
+.code-block .CodeMirror-gutter,
+.code-block .CodeMirror-lines,
+.code-block .CodeMirror-code {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* Custom CodeMirror theme using CSS variables */
+
+/* Light theme CodeMirror colors */
+[data-theme="light"] .code-block .CodeMirror {
+    background: var(--surface) !important;
+    color: var(--text-primary) !important;
+    border: none !important;
+}
+
+[data-theme="light"] .code-block .CodeMirror-gutters {
+    background: var(--surface-hover) !important;
+    border: none !important;
+}
+
+[data-theme="light"] .code-block .CodeMirror-linenumber {
+    color: var(--text-secondary) !important;
+}
+
+[data-theme="light"] .code-block .cm-keyword {
+    color: var(--primary) !important;
+    font-weight: bold;
+}
+
+[data-theme="light"] .code-block .cm-string {
+    color: var(--success) !important;
+}
+
+[data-theme="light"] .code-block .cm-comment {
+    color: var(--text-secondary) !important;
+    font-style: italic;
+}
+
+[data-theme="light"] .code-block .cm-number {
+    color: var(--warning) !important;
+}
+
+[data-theme="light"] .code-block .cm-variable {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .code-block .cm-variable-2 {
+    color: var(--primary) !important;
+}
+
+[data-theme="light"] .code-block .cm-type {
+    color: var(--primary) !important;
+    font-weight: bold;
+}
+
+[data-theme="light"] .code-block .cm-operator {
+    color: var(--text-primary) !important;
+}
+
+[data-theme="light"] .code-block .cm-bracket {
+    color: var(--text-primary) !important;
+}
+
+/* Dark theme CodeMirror colors */
+[data-theme="dark"] .code-block .CodeMirror {
+    background: var(--surface) !important;
+    color: var(--text-primary) !important;
+    border: none !important;
+}
+
+[data-theme="dark"] .code-block .CodeMirror-gutters {
+    background: var(--surface-hover) !important;
+    border: none !important;
+}
+
+[data-theme="dark"] .code-block .CodeMirror-linenumber {
+    color: var(--text-secondary) !important;
 }
 
 /* Scrollbar styling for code blocks */

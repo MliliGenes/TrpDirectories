@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="../../imgs/favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="../../style/main.css">
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/darcula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/default.min.css">
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    
     <title>Sockets & Poll - Learning Guide</title>
 </head>
 <body>
@@ -57,24 +74,135 @@
                 <h2 class="section-title">HOW IT WORKS</h2>
             </div>
             <div class="content">
-                <h3>Core mechanics</h3>
-                <ul>
-                    <li><strong>Socket creation:</strong> <code>socket()</code> creates an endpoint for communication.</li>
-                    <li><strong>Binding & Listening:</strong> Server sockets bind to an address and listen for connections.</li>
-                    <li><strong>Poll monitoring:</strong> <code>poll()</code> watches multiple file descriptors for events without blocking.</li>
-                </ul>
-                <h3>Key components</h3>
-                <ul>
-                    <li><strong>File descriptors:</strong> Sockets are treated as file descriptors in Unix-like systems.</li>
-                    <li><strong>Events:</strong> POLLIN (data ready to read), POLLOUT (ready for write), POLLERR (error condition).</li>
-                    <li><strong>Timeout:</strong> <code>poll()</code> can wait indefinitely, return immediately, or timeout after a specified duration.</li>
-                    <li><strong>Non-blocking I/O:</strong> Sockets can be set to non-blocking mode to avoid hanging operations.</li>
-                </ul>
-                <h3>Governing principles</h3>
+                <h3>Socket Fundamentals</h3>
+                <p>Sockets are communication endpoints that provide a uniform interface for network programming. Understanding their types, lifecycle, and configuration is crucial for building robust servers.</p>
+                <h4>Socket Types & Address Families</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-8u8e99rhe" class="codemirror-code">// TCP socket - reliable, connection-oriented
+int tcp_sock = socket(AF_INET, SOCK_STREAM, 0);
+
+// UDP socket - unreliable, connectionless
+int udp_sock = socket(AF_INET, SOCK_DGRAM, 0);
+
+// Unix domain socket - local inter-process communication
+int unix_sock = socket(AF_UNIX, SOCK_STREAM, 0);
+
+// IPv6 socket
+int ipv6_sock = socket(AF_INET6, SOCK_STREAM, 0);</textarea>
+                </div>
+                <h4>Socket Lifecycle</h4>
                 <ol>
-                    <li>One socket per connection endpoint.</li>
-                    <li>Poll checks multiple sockets in a single system call.</li>
-                    <li>Events are edge-triggered or level-triggered depending on the system.</li>
+                    <li><strong>Creation:</strong> <code>socket()</code> - Creates a new socket endpoint</li>
+                    <li><strong>Configuration:</strong> <code>setsockopt()</code> - Set socket options (reuse addr, timeouts, etc.)</li>
+                    <li><strong>Binding:</strong> <code>bind()</code> - Associate socket with specific address/port</li>
+                    <li><strong>Listening:</strong> <code>listen()</code> - Mark socket as passive (server only)</li>
+                    <li><strong>Connection:</strong> <code>accept()</code>/<code>connect()</code> - Establish connections</li>
+                    <li><strong>Communication:</strong> <code>send()</code>/<code>recv()</code> - Exchange data</li>
+                    <li><strong>Cleanup:</strong> <code>close()</code> - Release resources</li>
+                </ol>
+                <h4>Critical Socket Options</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-3mwgru4jc" class="codemirror-code">// Allow address reuse (prevents "Address already in use" errors)
+int reuse = 1;
+setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
+
+// Set socket to non-blocking mode
+int flags = fcntl(sock_fd, F_GETFL, 0);
+fcntl(sock_fd, F_SETFL, flags | O_NONBLOCK);
+
+// Set receive/send buffer sizes
+int buf_size = 64 * 1024;  // 64KB
+setsockopt(sock_fd, SOL_SOCKET, SO_RCVBUF, &buf_size, sizeof(buf_size));
+setsockopt(sock_fd, SOL_SOCKET, SO_SNDBUF, &buf_size, sizeof(buf_size));
+
+// Set timeouts
+struct timeval timeout = {.tv_sec = 30, .tv_usec = 0};
+setsockopt(sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));</textarea>
+                </div>
+                <h3>Poll Mechanics Deep Dive</h3>
+                <p><code>poll()</code> is a system call that monitors multiple file descriptors for I/O events. It's more scalable than <code>select()</code> and doesn't have the FD_SETSIZE limitation.</p>
+                <h4>Poll Structure & Events</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-g3986k1ws" class="codemirror-code">struct pollfd {
+    int fd;        // File descriptor to monitor
+    short events;  // Events to watch for (input)
+    short revents; // Events that occurred (output)
+};
+
+// Event types you can monitor:
+// POLLIN     - Data available for reading
+// POLLOUT    - Socket ready for writing
+// POLLERR    - Error condition
+// POLLHUP    - Hangup (connection closed by peer)
+// POLLNVAL   - Invalid file descriptor
+// POLLPRI    - Urgent data (out-of-band)
+// POLLRDHUP  - Peer closed writing end (Linux-specific)</textarea>
+                </div>
+                <h4>Poll Timeout Strategies</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-o4kfcy872" class="codemirror-code">// Infinite timeout - wait forever
+int ready = poll(fds, nfds, -1);
+
+// No timeout - return immediately
+int ready = poll(fds, nfds, 0);
+
+// Specific timeout in milliseconds
+int ready = poll(fds, nfds, 5000);  // 5 second timeout
+
+// Handling timeout
+if (ready == 0) {
+    printf("Timeout occurred\n");
+    // Handle timeout logic (heartbeat, cleanup, etc.)
+} else if (ready < 0) {
+    if (errno == EINTR) {
+        // Interrupted by signal, usually safe to retry
+        continue;
+    }
+    perror("poll failed");
+}</textarea>
+                </div>
+                <h3>Combining Sockets & Poll</h3>
+                <p>The power comes from using poll to efficiently manage multiple sockets without blocking or wasting CPU cycles.</p>
+                <h4>Server Architecture Pattern</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-4hh26orsn" class="codemirror-code">// Typical server structure
+#define MAX_CLIENTS 1000
+struct pollfd fds[MAX_CLIENTS + 1];  // +1 for server socket
+int client_count = 0;
+
+// Initialize server socket in fds[0]
+fds[0].fd = server_fd;
+fds[0].events = POLLIN;  // Listen for new connections
+
+while (1) {
+    int ready = poll(fds, client_count + 1, -1);
+    
+    // Check server socket for new connections
+    if (fds[0].revents & POLLIN) {
+        handle_new_connection();
+    }
+    
+    // Check all client sockets
+    for (int i = 1; i <= client_count; i++) {
+        if (fds[i].revents & POLLIN) {
+            handle_client_data(i);
+        }
+        if (fds[i].revents & POLLOUT) {
+            handle_client_write(i);
+        }
+        if (fds[i].revents & (POLLHUP | POLLERR)) {
+            handle_client_disconnect(i);
+        }
+    }
+}</textarea>
+                </div>
+                <h3>Governing Principles</h3>
+                <ol>
+                    <li><strong>Non-blocking everything:</strong> Use non-blocking sockets to prevent any operation from hanging the entire server.</li>
+                    <li><strong>Event-driven architecture:</strong> React to events (data ready, connection closed) rather than polling continuously.</li>
+                    <li><strong>Efficient resource management:</strong> One poll call handles hundreds or thousands of connections.</li>
+                    <li><strong>Graceful degradation:</strong> Handle partial reads/writes and temporary failures elegantly.</li>
+                    <li><strong>State management:</strong> Track connection state, pending operations, and cleanup requirements.</li>
                 </ol>
             </div>
         </section>
@@ -85,55 +213,346 @@
                 <h2 class="section-title">REAL EXAMPLES</h2>
             </div>
             <div class="content">
-                <h3>Basic TCP Server</h3>
-                <div class="code-block">
-                    <pre>int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-struct sockaddr_in addr = {0};
-addr.sin_family = AF_INET;
-addr.sin_addr.s_addr = INADDR_ANY;
-addr.sin_port = htons(8080);
+                <h3>Complete Production-Ready Server</h3>
+                <p>Here's a comprehensive server implementation that handles all the edge cases you'll encounter in production:</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-n3m2eksnf" class="codemirror-code">#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/socket.h>
+#include <sys/poll.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
-bind(server_fd, (struct sockaddr*)&addr, sizeof(addr));
-listen(server_fd, 10);</pre>
+#define MAX_CLIENTS 1000
+#define BUFFER_SIZE 4096
+#define SERVER_PORT 8080
+
+// Client connection state
+typedef struct {
+    int fd;
+    char read_buffer[BUFFER_SIZE];
+    char write_buffer[BUFFER_SIZE];
+    size_t read_pos;
+    size_t write_pos;
+    size_t write_len;
+    int wants_write;
+} client_t;
+
+client_t clients[MAX_CLIENTS];
+struct pollfd fds[MAX_CLIENTS + 1];
+int client_count = 0;</textarea>
                 </div>
-                <h3>Poll-based event loop</h3>
-                <div class="code-block">
-                    <pre>struct pollfd fds[MAX_CLIENTS];
-fds[0].fd = server_fd;
-fds[0].events = POLLIN;
-int nfds = 1;
-
-while (1) {
-    int ready = poll(fds, nfds, -1);
-    
-    if (fds[0].revents & POLLIN) {
-        // Accept new connection
-        int client_fd = accept(server_fd, NULL, NULL);
-        fds[nfds].fd = client_fd;
-        fds[nfds].events = POLLIN;
-        nfds++;
+                <h4>Server Setup with Proper Error Handling</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-ubqn40xro" class="codemirror-code">int setup_server() {
+    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_fd < 0) {
+        perror("socket");
+        return -1;
     }
     
-    for (int i = 1; i < nfds; i++) {
-        if (fds[i].revents & POLLIN) {
-            // Handle client data
-            char buffer[1024];
-            recv(fds[i].fd, buffer, sizeof(buffer), 0);
+    // Enable address reuse to avoid "Address already in use" errors
+    int reuse = 1;
+    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
+        perror("setsockopt SO_REUSEADDR");
+        close(server_fd);
+        return -1;
+    }
+    
+    // Set to non-blocking
+    int flags = fcntl(server_fd, F_GETFL, 0);
+    if (flags < 0 || fcntl(server_fd, F_SETFL, flags | O_NONBLOCK) < 0) {
+        perror("fcntl non-blocking");
+        close(server_fd);
+        return -1;
+    }
+    
+    struct sockaddr_in addr = {0};
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = htons(SERVER_PORT);
+    
+    if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        perror("bind");
+        close(server_fd);
+        return -1;
+    }
+    
+    if (listen(server_fd, 128) < 0) {
+        perror("listen");
+        close(server_fd);
+        return -1;
+    }
+    
+    return server_fd;
+}</textarea>
+                </div>
+                <h4>Handling New Connections with Edge Cases</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-506btwvzy" class="codemirror-code">void handle_new_connection(int server_fd) {
+    while (1) {
+        struct sockaddr_in client_addr;
+        socklen_t addr_len = sizeof(client_addr);
+        
+        int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &addr_len);
+        
+        if (client_fd < 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // No more connections to accept
+                break;
+            }
+            if (errno == EINTR) {
+                // Interrupted by signal, retry
+                continue;
+            }
+            perror("accept");
+            break;
+        }
+        
+        // Check if we have space for more clients
+        if (client_count >= MAX_CLIENTS) {
+            printf("Server full, rejecting connection\n");
+            close(client_fd);
+            continue;
+        }
+        
+        // Set client socket to non-blocking
+        int flags = fcntl(client_fd, F_GETFL, 0);
+        if (flags < 0 || fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) < 0) {
+            perror("fcntl client non-blocking");
+            close(client_fd);
+            continue;
+        }
+        
+        // Initialize client state
+        clients[client_count].fd = client_fd;
+        clients[client_count].read_pos = 0;
+        clients[client_count].write_pos = 0;
+        clients[client_count].write_len = 0;
+        clients[client_count].wants_write = 0;
+        
+        // Add to poll array
+        fds[client_count + 1].fd = client_fd;
+        fds[client_count + 1].events = POLLIN;
+        fds[client_count + 1].revents = 0;
+        
+        client_count++;
+        printf("New client connected (fd=%d, total=%d)\n", client_fd, client_count);
+    }
+}</textarea>
+                </div>
+                <h4>Handling Partial Reads/Writes</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-iouvtnfzf" class="codemirror-code">void handle_client_read(int client_idx) {
+    client_t *client = &clients[client_idx];
+    
+    while (1) {
+        ssize_t bytes_read = recv(client->fd, 
+            client->read_buffer + client->read_pos,
+            BUFFER_SIZE - client->read_pos - 1,  // Leave space for null terminator
+            0);
+            
+        if (bytes_read > 0) {
+            client->read_pos += bytes_read;
+            client->read_buffer[client->read_pos] = '\0';
+            
+            // Process complete messages (assuming line-based protocol)
+            char *line_end;
+            while ((line_end = strchr(client->read_buffer, '\n')) != NULL) {
+                *line_end = '\0';
+                
+                // Echo the message back
+                snprintf(client->write_buffer, BUFFER_SIZE, 
+                    "Echo: %s\n", client->read_buffer);
+                client->write_len = strlen(client->write_buffer);
+                client->write_pos = 0;
+                client->wants_write = 1;
+                
+                // Enable POLLOUT for this client
+                fds[client_idx + 1].events |= POLLOUT;
+                
+                // Move remaining data to beginning of buffer
+                size_t remaining = client->read_pos - (line_end - client->read_buffer + 1);
+                memmove(client->read_buffer, line_end + 1, remaining);
+                client->read_pos = remaining;
+                client->read_buffer[client->read_pos] = '\0';
+            }
+            
+            // Check if buffer is full
+            if (client->read_pos >= BUFFER_SIZE - 1) {
+                printf("Client buffer overflow, disconnecting\n");
+                close_client(client_idx);
+                return;
+            }
+            
+        } else if (bytes_read == 0) {
+            // Client disconnected gracefully
+            printf("Client disconnected (fd=%d)\n", client->fd);
+            close_client(client_idx);
+            return;
+            
+        } else {
+            // Error or would block
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // No more data available
+                break;
+            }
+            if (errno == EINTR) {
+                // Interrupted by signal, retry
+                continue;
+            }
+            perror("recv");
+            close_client(client_idx);
+            return;
         }
     }
-}</pre>
+}</textarea>
                 </div>
-                <h3>Edge case: Connection cleanup</h3>
-                <div class="code-block">
-                    <pre>if (fds[i].revents & (POLLHUP | POLLERR)) {
-    close(fds[i].fd);
-    // Remove from poll array
-    for (int j = i; j < nfds - 1; j++) {
-        fds[j] = fds[j + 1];
+                <h4>Handling Partial Writes</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-0nytd0ak8" class="codemirror-code">void handle_client_write(int client_idx) {
+    client_t *client = &clients[client_idx];
+    
+    while (client->write_pos < client->write_len) {
+        ssize_t bytes_sent = send(client->fd,
+            client->write_buffer + client->write_pos,
+            client->write_len - client->write_pos,
+            0);
+            
+        if (bytes_sent > 0) {
+            client->write_pos += bytes_sent;
+            
+        } else if (bytes_sent == 0) {
+            // Shouldn't happen with send(), but handle it
+            printf("send() returned 0\n");
+            close_client(client_idx);
+            return;
+            
+        } else {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                // Socket buffer full, try again later
+                return;
+            }
+            if (errno == EINTR) {
+                // Interrupted by signal, retry
+                continue;
+            }
+            if (errno == EPIPE) {
+                // Broken pipe (client disconnected)
+                printf("Broken pipe, client disconnected (fd=%d)\n", client->fd);
+                close_client(client_idx);
+                return;
+            }
+            perror("send");
+            close_client(client_idx);
+            return;
+        }
     }
-    nfds--;
-    i--; // Adjust index
-}</pre>
+    
+    // All data sent, disable POLLOUT
+    if (client->write_pos >= client->write_len) {
+        client->wants_write = 0;
+        fds[client_idx + 1].events &= ~POLLOUT;
+    }
+}</textarea>
+                </div>
+                <h4>Proper Client Cleanup</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-y1nc95jb2" class="codemirror-code">void close_client(int client_idx) {
+    if (client_idx < 0 || client_idx >= client_count) {
+        return;
+    }
+    
+    close(clients[client_idx].fd);
+    printf("Closed connection (fd=%d)\n", clients[client_idx].fd);
+    
+    // Move last client to this position to avoid gaps
+    if (client_idx < client_count - 1) {
+        clients[client_idx] = clients[client_count - 1];
+        fds[client_idx + 1] = fds[client_count];
+    }
+    
+    client_count--;
+}</textarea>
+                </div>
+                <h4>Main Event Loop with Signal Handling</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-wyv4anjl5" class="codemirror-code">int main() {
+    int server_fd = setup_server();
+    if (server_fd < 0) {
+        exit(1);
+    }
+    
+    printf("Server listening on port %d\n", SERVER_PORT);
+    
+    // Set up server in poll array
+    fds[0].fd = server_fd;
+    fds[0].events = POLLIN;
+    fds[0].revents = 0;
+    
+    while (1) {
+        // Poll with 1 second timeout for periodic tasks
+        int ready = poll(fds, client_count + 1, 1000);
+        
+        if (ready < 0) {
+            if (errno == EINTR) {
+                // Interrupted by signal (SIGINT, etc.)
+                printf("\nShutting down server...\n");
+                break;
+            }
+            perror("poll");
+            break;
+        }
+        
+        if (ready == 0) {
+            // Timeout - do periodic maintenance
+            printf("Active connections: %d\n", client_count);
+            continue;
+        }
+        
+        // Check for new connections
+        if (fds[0].revents & POLLIN) {
+            handle_new_connection(server_fd);
+        }
+        
+        // Check all client connections
+        for (int i = 0; i < client_count; i++) {
+            int poll_idx = i + 1;
+            
+            if (fds[poll_idx].revents & (POLLHUP | POLLERR | POLLNVAL)) {
+                printf("Connection error/hangup (fd=%d)\n", clients[i].fd);
+                close_client(i);
+                i--; // Adjust index since we removed a client
+                continue;
+            }
+            
+            if (fds[poll_idx].revents & POLLIN) {
+                handle_client_read(i);
+                // Client might have been closed in handle_client_read
+                if (i >= client_count) {
+                    i--;
+                    continue;
+                }
+            }
+            
+            if (fds[poll_idx].revents & POLLOUT) {
+                handle_client_write(i);
+            }
+        }
+    }
+    
+    // Cleanup
+    close(server_fd);
+    for (int i = 0; i < client_count; i++) {
+        close(clients[i].fd);
+    }
+    
+    return 0;
+}</textarea>
                 </div>
             </div>
         </section>
@@ -141,54 +560,367 @@ while (1) {
         <section id="practice">
             <div class="section-header">
                 <div class="section-icon practice">🛠️</div>
-                <h2 class="section-title">DO THIS NOW</h2>
+                <h2 class="section-title">HANDS-ON EXERCISES</h2>
             </div>
             <div class="content">
+                <h3>Exercise 1: Basic Echo Server</h3>
                 <div class="action-box">
-                <ol>
-                    <li>Create a simple echo server:</li>
-                </ol>
-                <div class="code-block">
-                    <pre>#include <sys/socket.h>
+                <p><strong>Goal:</strong> Build a server that echoes back everything clients send to it.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-440pyw5wh" class="codemirror-code">// Starter template - fill in the missing pieces
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/socket.h>
 #include <sys/poll.h>
 #include <netinet/in.h>
-#include <stdio.h>
-#include <unistd.h>
+#include <errno.h>
 
 int main() {
-    int server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    // Set up address, bind, listen
+    // TODO: Create server socket
+    // TODO: Set SO_REUSEADDR
+    // TODO: Bind to port 8080
+    // TODO: Listen for connections
     
     struct pollfd fds[10];
-    fds[0].fd = server_fd;
-    fds[0].events = POLLIN;
+    int nfds = 1;
+    
+    // TODO: Initialize fds[0] with server socket
     
     while (1) {
-        poll(fds, 1, -1);
-        // Handle connections and data
+        // TODO: Call poll() with proper parameters
+        
+        // TODO: Check for new connections on server socket
+        
+        // TODO: Check existing clients for data
+        // TODO: Echo received data back to sender
+        
+        // TODO: Handle client disconnections
     }
-}</pre>
+}</textarea>
                 </div>
-                <ol start="2">
-                    <li>Test with <code>telnet localhost 8080</code></li>
-                    <li>Add multiple client support using poll array.</li>
+                <ol>
+                    <li>Implement the missing TODO sections</li>
+                    <li>Test with: <code>telnet localhost 8080</code></li>
+                    <li>Connect multiple telnet sessions simultaneously</li>
+                    <li>Verify each client gets their own echo</li>
                 </ol>
-                <p><strong>What to look for:</strong> How poll eliminates busy-waiting.<br><strong>Quick win:</strong> See one server handle multiple clients efficiently.</p>
+                <p><strong>Success criteria:</strong> Server handles 5+ concurrent clients without blocking.</p>
                 </div>
+                <h3>Exercise 2: Chat Room Server</h3>
+                <div class="action-box">
+                <p><strong>Goal:</strong> Build a chat server where messages from one client are broadcast to all others.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-e74bfmdiw" class="codemirror-code">// Chat server features to implement:
+// 1. Client nicknames (first message sets nickname)
+// 2. Broadcast messages to all connected clients
+// 3. Join/leave notifications
+// 4. Command support (/quit, /list, /help)
+
+typedef struct {
+    int fd;
+    char nickname[32];
+    char buffer[1024];
+    size_t buffer_pos;
+    int authenticated;
+} chat_client_t;
+
+void broadcast_message(const char *message, int sender_fd) {
+    // TODO: Send message to all clients except sender
+}
+
+void handle_chat_command(chat_client_t *client, const char *message) {
+    if (strncmp(message, "/quit", 5) == 0) {
+        // TODO: Handle quit command
+    } else if (strncmp(message, "/list", 5) == 0) {
+        // TODO: List all connected users
+    } else {
+        // TODO: Broadcast regular message
+    }
+}</textarea>
+                </div>
+                <ol>
+                    <li>Implement client nickname system</li>
+                    <li>Add message broadcasting to all clients</li>
+                    <li>Handle line-based protocol (messages end with \n)</li>
+                    <li>Add commands: /quit, /list, /help</li>
+                    <li>Test with multiple telnet sessions</li>
+                </ol>
+                </div>
+                <h3>Exercise 3: HTTP File Server</h3>
+                <div class="action-box">
+                <p><strong>Goal:</strong> Build a basic HTTP server that serves static files.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-qxweoomky" class="codemirror-code">// HTTP server requirements:
+// 1. Parse HTTP request line (GET /path HTTP/1.1)
+// 2. Serve files from ./public/ directory
+// 3. Return 404 for missing files
+// 4. Set proper Content-Type headers
+// 5. Handle multiple concurrent requests
+
+void parse_http_request(const char *request, char *method, char *path) {
+    // TODO: Parse "GET /index.html HTTP/1.1"
+}
+
+void send_http_response(int client_fd, int status, const char *content_type, 
+                       const char *body, size_t body_len) {
+    char header[512];
+    snprintf(header, sizeof(header),
+        "HTTP/1.1 %d %s\r\n"
+        "Content-Type: %s\r\n"
+        "Content-Length: %zu\r\n"
+        "Connection: close\r\n"
+        "\r\n",
+        status, (status == 200) ? "OK" : "Not Found",
+        content_type, body_len);
+    
+    // TODO: Send header and body
+}
+
+const char* get_mime_type(const char *filename) {
+    // TODO: Return appropriate MIME type based on file extension
+    // .html -> text/html
+    // .css -> text/css
+    // .js -> application/javascript
+    // .png -> image/png
+    // default -> text/plain
+}</textarea>
+                </div>
+                <ol>
+                    <li>Create ./public/ directory with some HTML files</li>
+                    <li>Implement HTTP request parsing</li>
+                    <li>Add file serving with proper MIME types</li>
+                    <li>Handle 404 errors gracefully</li>
+                    <li>Test with web browser: <code>http://localhost:8080/</code></li>
+                    <li><strong>Bonus:</strong> Add directory listing for folders</li>
+                </ol>
+                </div>
+                <h3>Exercise 4: Performance Testing</h3>
+                <div class="action-box">
+                <p><strong>Goal:</strong> Test your server's performance limits and identify bottlenecks.</p>
+                <div class="code-block" data-language="bash">
+                    <textarea id="code-la0frekb4" class="codemirror-code"># Test tools to use:
+
+# 1. Apache Bench (ab) - HTTP load testing
+ab -n 10000 -c 100 http://localhost:8080/
+
+# 2. wrk - Modern HTTP benchmarking tool
+wrk -t4 -c100 -d30s http://localhost:8080/
+
+# 3. Custom client for chat/echo servers
+# Write a client that opens 1000 connections and sends messages
+
+# 4. Monitor system resources
+top -p $(pgrep your_server)
+netstat -an | grep :8080 | wc -l  # Count connections
+lsof -p $(pgrep your_server) | wc -l  # Count file descriptors</textarea>
+                </div>
+                <ol>
+                    <li>Test with increasing number of concurrent connections</li>
+                    <li>Measure: requests/second, memory usage, CPU usage</li>
+                    <li>Find the breaking point (when errors start occurring)</li>
+                    <li>Profile with <code>strace -c</code> to see system call usage</li>
+                    <li>Compare poll() vs simple blocking accept()/recv()</li>
+                </ol>
+                <p><strong>Questions to answer:</strong> How many clients can your server handle? What's the bottleneck? Memory, CPU, or file descriptors?</p>
+                </div>
+                <h3>Exercise 5: Error Injection Testing</h3>
+                <div class="action-box">
+                <p><strong>Goal:</strong> Test how your server handles various failure scenarios.</p>
+                <div class="code-block" data-language="bash">
+                    <textarea id="code-yvhkr993u" class="codemirror-code"># Failure scenarios to test:
+
+# 1. Client sends partial data and disconnects
+echo -n "GET /" | nc localhost 8080
+
+# 2. Client connects but never sends data
+nc localhost 8080
+# (just connect, don't type anything)
+
+# 3. Client sends huge amount of data
+yes "A" | head -1000000 | nc localhost 8080
+
+# 4. Many clients connect and disconnect rapidly
+for i in {1..100}; do
+    echo "test" | nc localhost 8080 &
+done
+
+# 5. Client sends invalid HTTP requests
+echo -e "INVALID REQUEST\r\n\r\n" | nc localhost 8080</textarea>
+                </div>
+                <ol>
+                    <li>Test each failure scenario above</li>
+                    <li>Verify server doesn't crash or hang</li>
+                    <li>Check for memory leaks with <code>valgrind</code></li>
+                    <li>Ensure server logs errors appropriately</li>
+                    <li>Verify server continues handling other clients</li>
+                </ol>
+                </div>
+                <h3>Success Milestones</h3>
+                <ul>
+                    <li><strong>Beginner:</strong> Echo server handles 10+ concurrent clients</li>
+                    <li><strong>Intermediate:</strong> Chat server with commands and proper message framing</li>
+                    <li><strong>Advanced:</strong> HTTP server passing basic performance tests (1000+ req/sec)</li>
+                    <li><strong>Expert:</strong> Server handles all error scenarios gracefully without crashes</li>
+                </ul>
             </div>
         </section>
 
         <section id="warnings">
             <div class="section-header">
                 <div class="section-icon warnings">⚠️</div>
-                <h2 class="section-title">AVOID THESE</h2>
+                <h2 class="section-title">EDGE CASES & GOTCHAS</h2>
             </div>
             <div class="content">
+                <h3>Critical Error Handling</h3>
+                <div class="warning-box">
+                <h4>EAGAIN/EWOULDBLOCK - The Most Common Trap</h4>
+                <p>Non-blocking sockets return these errors when they can't complete immediately. <strong>This is NOT an error!</strong></p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-fp7msqjw0" class="codemirror-code">// WRONG - treating EAGAIN as fatal error
+ssize_t result = recv(fd, buffer, size, 0);
+if (result < 0) {
+    perror("recv failed");  // Will spam errors!
+    close(fd);
+    return;
+}
+
+// CORRECT - handle EAGAIN properly
+ssize_t result = recv(fd, buffer, size, 0);
+if (result < 0) {
+    if (errno == EAGAIN || errno == EWOULDBLOCK) {
+        // No data available right now, try again later
+        return;
+    }
+    // Only now it's a real error
+    perror("recv failed");
+    close(fd);
+}</textarea>
+                </div>
+                </div>
+                <div class="warning-box">
+                <h4>Partial Reads/Writes - Data Fragmentation</h4>
+                <p>TCP can split your data into multiple packets. Never assume one call transfers everything!</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-7udzb8ps2" class="codemirror-code">// WRONG - assumes all data is sent at once
+char msg[] = "Hello, World!";
+send(fd, msg, strlen(msg), 0);  // Might only send part!
+
+// CORRECT - handle partial sends
+size_t total_sent = 0;
+size_t msg_len = strlen(msg);
+while (total_sent < msg_len) {
+    ssize_t sent = send(fd, msg + total_sent, msg_len - total_sent, 0);
+    if (sent < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // Socket buffer full, wait for POLLOUT
+            break;
+        }
+        perror("send");
+        return -1;
+    }
+    total_sent += sent;
+}</textarea>
+                </div>
+                </div>
+                <div class="warning-box">
+                <h4>Signal Interruption (EINTR)</h4>
+                <p>System calls can be interrupted by signals. Always check for EINTR and retry.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-0bwe9jbng" class="codemirror-code">// Handle EINTR properly
+while (1) {
+    int ready = poll(fds, nfds, timeout);
+    if (ready >= 0) {
+        // Success
+        break;
+    }
+    if (errno == EINTR) {
+        // Interrupted by signal, retry
+        continue;
+    }
+    // Real error
+    perror("poll");
+    return -1;
+}</textarea>
+                </div>
+                </div>
+                <h3>Connection Management Pitfalls</h3>
                 <div class="warning-box">
                 <ul>
-                    <li><strong>Blocking operations in poll loop</strong> → Always use non-blocking sockets or handle partial reads/writes.</li>
-                    <li><strong>Not handling POLLHUP/POLLERR</strong> → Disconnected clients will consume CPU if not removed.</li>
-                    <li><strong>Fixed-size poll arrays</strong> → Consider dynamic resizing or use epoll/kqueue for scalability.</li>
+                    <li><strong>Ghost connections:</strong> Always check POLLHUP/POLLERR and remove dead connections immediately.</li>
+                    <li><strong>Buffer overflow:</strong> Malicious clients can send huge amounts of data. Always limit buffer sizes.</li>
+                    <li><strong>Connection flooding:</strong> Accept() can return EMFILE (too many files) - handle gracefully.</li>
+                    <li><strong>Memory leaks:</strong> Each connection allocates resources - ensure cleanup on disconnect.</li>
+                </ul>
+                </div>
+                <h3>Performance Traps</h3>
+                <div class="warning-box">
+                <h4>The Thundering Herd Problem</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-ppqkvp789" class="codemirror-code">// WRONG - accepting only one connection per poll
+if (fds[0].revents & POLLIN) {
+    int client = accept(server_fd, NULL, NULL);
+    // Only handles one connection, others wait
+}
+
+// CORRECT - accept all available connections
+if (fds[0].revents & POLLIN) {
+    while (1) {
+        int client = accept(server_fd, NULL, NULL);
+        if (client < 0) {
+            if (errno == EAGAIN) break;  // No more connections
+            perror("accept");
+            break;
+        }
+        // Handle new client...
+    }
+}</textarea>
+                </div>
+                </div>
+                <div class="warning-box">
+                <h4>Poll Array Management</h4>
+                <ul>
+                    <li><strong>Fixed arrays:</strong> Don't use fixed-size arrays for thousands of connections.</li>
+                    <li><strong>Gap management:</strong> When removing connections, avoid gaps in the array or poll() performance suffers.</li>
+                    <li><strong>Event mask errors:</strong> Forgetting to set/unset POLLOUT when needed causes busy-waiting or missed writes.</li>
+                </ul>
+                </div>
+                <h3>Protocol-Level Issues</h3>
+                <div class="warning-box">
+                <h4>Message Boundary Problems</h4>
+                <p>TCP is a stream protocol - it doesn't preserve message boundaries!</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-9niw6a5qq" class="codemirror-code">// WRONG - assumes one recv() = one message
+char buffer[1024];
+recv(fd, buffer, sizeof(buffer), 0);
+process_message(buffer);  // Might be partial or multiple messages!
+
+// CORRECT - handle message framing
+typedef struct {
+    uint32_t length;  // Message length in network byte order
+    char data[];      // Actual message data
+} message_header_t;
+
+// Read header first, then read exact amount of data
+uint32_t msg_len;
+if (recv_exactly(fd, &msg_len, sizeof(msg_len)) == sizeof(msg_len)) {
+    msg_len = ntohl(msg_len);  // Convert from network byte order
+    char *msg_data = malloc(msg_len);
+    if (recv_exactly(fd, msg_data, msg_len) == msg_len) {
+        process_message(msg_data, msg_len);
+    }
+    free(msg_data);
+}</textarea>
+                </div>
+                </div>
+                <h3>Security Considerations</h3>
+                <div class="warning-box">
+                <ul>
+                    <li><strong>DoS via connection exhaustion:</strong> Limit concurrent connections per IP.</li>
+                    <li><strong>Slowloris attacks:</strong> Set timeouts to disconnect slow/stalled clients.</li>
+                    <li><strong>Buffer overflow attacks:</strong> Validate all input lengths before copying.</li>
+                    <li><strong>Resource exhaustion:</strong> Monitor memory usage, set ulimits, implement rate limiting.</li>
                 </ul>
                 </div>
             </div>
@@ -197,13 +929,171 @@ int main() {
         <section id="connections">
             <div class="section-header">
                 <div class="section-icon connections">🔗</div>
-                <h2 class="section-title">CONNECTIONS</h2>
+                <h2 class="section-title">ADVANCED TOPICS & SCALING</h2>
             </div>
             <div class="content">
+                <h3>Performance Optimization</h3>
+                <h4>When to Move Beyond Poll</h4>
+                <p>Poll has O(n) complexity per call. For high-performance servers (>1000 concurrent connections), consider these alternatives:</p>
                 <ul>
-                    <li><strong>Prerequisites:</strong> File descriptors, system calls, basic networking concepts.</li>
-                    <li><strong>Related concepts:</strong> select(), epoll (Linux), kqueue (BSD), async I/O patterns.</li>
-                    <li><strong>Next steps:</strong> Study epoll for high-performance servers, non-blocking I/O patterns, and protocol design.</li>
+                    <li><strong>epoll (Linux):</strong> O(1) complexity, edge-triggered events, scales to hundreds of thousands of connections.</li>
+                    <li><strong>kqueue (BSD/macOS):</strong> Similar to epoll, excellent performance on BSD systems.</li>
+                    <li><strong>io_uring (Modern Linux):</strong> Asynchronous I/O with zero-copy operations.</li>
+                    <li><strong>IOCP (Windows):</strong> Completion-based I/O for Windows servers.</li>
+                </ul>
+                <h4>Epoll Migration Example</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-xpwjmd22u" class="codemirror-code">#ifdef __linux__
+#include <sys/epoll.h>
+
+// Create epoll instance
+int epoll_fd = epoll_create1(EPOLL_CLOEXEC);
+
+// Add server socket
+struct epoll_event ev = {0};
+ev.events = EPOLLIN | EPOLLET;  // Edge-triggered
+ev.data.fd = server_fd;
+epoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_fd, &ev);
+
+// Main loop
+struct epoll_event events[MAX_EVENTS];
+while (1) {
+    int nready = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);
+    
+    for (int i = 0; i < nready; i++) {
+        if (events[i].data.fd == server_fd) {
+            handle_new_connections();
+        } else {
+            handle_client_event(&events[i]);
+        }
+    }
+}
+#endif</textarea>
+                </div>
+                <h3>Architecture Patterns</h3>
+                <h4>Single-threaded Event Loop</h4>
+                <p>Best for I/O-bound workloads. All events handled in one thread, no locking needed.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-wzuh5rzfz" class="codemirror-code">// Redis/Node.js style - single event loop
+void event_loop() {
+    while (running) {
+        int ready = poll(fds, nfds, 100);  // 100ms timeout
+        
+        // Handle I/O events
+        handle_io_events(ready);
+        
+        // Process timer events
+        process_timers();
+        
+        // Run scheduled callbacks
+        run_callbacks();
+    }
+}</textarea>
+                </div>
+                <h4>Multi-threaded Worker Pool</h4>
+                <p>For CPU-intensive tasks or blocking operations.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-wtq8y91kp" class="codemirror-code">// Main thread handles I/O, workers handle processing
+typedef struct {
+    int client_fd;
+    char *request_data;
+    size_t data_len;
+} work_item_t;
+
+// Main thread
+if (fds[i].revents & POLLIN) {
+    // Read request
+    char buffer[4096];
+    ssize_t len = recv(fds[i].fd, buffer, sizeof(buffer), 0);
+    
+    // Queue work for thread pool
+    work_item_t *item = malloc(sizeof(work_item_t));
+    item->client_fd = fds[i].fd;
+    item->request_data = strdup(buffer);
+    item->data_len = len;
+    
+    thread_pool_submit(item);
+    
+    // Remove from poll until response is ready
+    fds[i].events &= ~POLLIN;
+}</textarea>
+                </div>
+                <h3>Real-World Server Types</h3>
+                <h4>HTTP Server Implementation</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-xmnj8cpc4" class="codemirror-code">void handle_http_request(client_t *client) {
+    // Parse HTTP request line
+    char *method, *url, *version;
+    if (parse_request_line(client->read_buffer, &method, &url, &version) < 0) {
+        send_error_response(client, 400, "Bad Request");
+        return;
+    }
+    
+    // Handle different methods
+    if (strcmp(method, "GET") == 0) {
+        handle_get_request(client, url);
+    } else if (strcmp(method, "POST") == 0) {
+        handle_post_request(client, url);
+    } else {
+        send_error_response(client, 405, "Method Not Allowed");
+    }
+}
+
+void send_http_response(client_t *client, int status, const char *body) {
+    char response[4096];
+    snprintf(response, sizeof(response),
+        "HTTP/1.1 %d %s\r\n"
+        "Content-Length: %zu\r\n"
+        "Connection: keep-alive\r\n"
+        "\r\n"
+        "%s",
+        status, status_text(status), strlen(body), body);
+    
+    // Queue response for sending
+    queue_write_data(client, response, strlen(response));
+}</textarea>
+                </div>
+                <h4>WebSocket Server</h4>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-giici22b8" class="codemirror-code">void handle_websocket_frame(client_t *client) {
+    ws_frame_t frame;
+    if (parse_ws_frame(client->read_buffer, &frame) < 0) {
+        close_client(client);
+        return;
+    }
+    
+    switch (frame.opcode) {
+        case WS_OPCODE_TEXT:
+            // Handle text message
+            broadcast_to_all_clients(frame.payload, frame.payload_len);
+            break;
+            
+        case WS_OPCODE_CLOSE:
+            // Handle close frame
+            send_ws_close(client);
+            close_client(client);
+            break;
+            
+        case WS_OPCODE_PING:
+            // Send pong response
+            send_ws_pong(client, frame.payload, frame.payload_len);
+            break;
+    }
+}</textarea>
+                </div>
+                <h3>Monitoring & Debugging</h3>
+                <ul>
+                    <li><strong>Connection tracking:</strong> Log connect/disconnect events with timestamps and client info.</li>
+                    <li><strong>Performance metrics:</strong> Track connections/second, bytes transferred, average response time.</li>
+                    <li><strong>Error rates:</strong> Monitor EAGAIN frequency, connection drops, protocol errors.</li>
+                    <li><strong>Resource usage:</strong> Watch file descriptor usage, memory per connection, CPU utilization.</li>
+                    <li><strong>Tools:</strong> strace for system call debugging, netstat for connection states, wireshark for protocol analysis.</li>
+                </ul>
+                <h3>Prerequisites & Next Steps</h3>
+                <ul>
+                    <li><strong>Prerequisites:</strong> File descriptors, system calls, TCP/IP basics, C memory management.</li>
+                    <li><strong>Related concepts:</strong> select(), epoll/kqueue, async I/O, thread pools, load balancing.</li>
+                    <li><strong>Next steps:</strong> Study high-performance servers (nginx, Redis), protocol design, distributed systems.</li>
                 </ul>
             </div>
         </section>
@@ -329,6 +1219,140 @@ int main() {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         });
+
+        // Initialize CodeMirror for all code blocks
+        let initAttempts = 0;
+        const maxAttempts = 50; // Max 5 seconds of retries
+        
+        function initializeCodeMirror() {
+            initAttempts++;
+            
+            // Check if CodeMirror is loaded
+            if (typeof CodeMirror === 'undefined') {
+                if (initAttempts >= maxAttempts) {
+                    console.error('Failed to load CodeMirror after', maxAttempts, 'attempts. Using fallback styling.');
+                    // Fallback: Style textareas as basic code blocks
+                    document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                        textarea.style.fontFamily = 'Monaco, Menlo, "Ubuntu Mono", monospace';
+                        textarea.style.fontSize = '14px';
+                        textarea.style.lineHeight = '1.5';
+                        textarea.style.padding = '10px';
+                        textarea.style.border = '1px solid var(--border)';
+                        textarea.style.borderRadius = '4px';
+                        textarea.style.background = 'var(--code-bg)';
+                        textarea.style.color = 'var(--code-text)';
+                        textarea.style.resize = 'none';
+                        textarea.style.minHeight = '100px';
+                        textarea.readOnly = true;
+                    });
+                    return;
+                }
+                console.warn('CodeMirror not loaded, retrying in 100ms... (attempt', initAttempts, '/', maxAttempts, ')');
+                setTimeout(initializeCodeMirror, 100);
+                return;
+            }
+            
+            const codeTextareas = document.querySelectorAll('.codemirror-code');
+            console.log('Initializing CodeMirror for', codeTextareas.length, 'code blocks');
+            
+            codeTextareas.forEach(textarea => {
+                const codeBlock = textarea.closest('.code-block');
+                const language = codeBlock.dataset.language;
+                
+                // Map language to CodeMirror mode
+                let mode = 'text';
+                switch(language) {
+                    case 'c':
+                    case 'cpp':
+                    case 'c++':
+                        mode = 'text/x-csrc';
+                        break;
+                    case 'javascript':
+                    case 'js':
+                        mode = 'javascript';
+                        break;
+                    case 'bash':
+                    case 'shell':
+                    case 'sh':
+                        mode = 'shell';
+                        break;
+                    case 'css':
+                        mode = 'css';
+                        break;
+                    case 'html':
+                        mode = 'htmlmixed';
+                        break;
+                    case 'json':
+                        mode = 'application/json';
+                        break;
+                    default:
+                        mode = 'text';
+                }
+                
+                // Get current theme
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
+                
+                try {
+                    const editor = CodeMirror.fromTextArea(textarea, {
+                        mode: mode,
+                        theme: cmTheme,
+                        lineNumbers: true,
+                        readOnly: 'nocursor',  // Disable cursor and selection
+                        lineWrapping: true,    // Enable line wrapping to avoid horizontal scroll
+                        scrollbarStyle: 'null', // Remove scrollbars
+                        viewportMargin: Infinity, // Show all content without scrolling
+                        matchBrackets: false,  // Disable bracket matching highlights
+                        styleActiveLine: false, // Disable active line highlighting
+                        indentUnit: 4,
+                        tabSize: 4
+                    });
+                    
+                    // Store editor reference for theme switching
+                    textarea.codeMirrorInstance = editor;
+                    
+                    // Auto-refresh editor size and ensure no scrollbars
+                    setTimeout(() => {
+                        editor.refresh();
+                        editor.setSize(null, 'auto'); // Auto-height based on content
+                    }, 100);
+                    
+                    console.log('CodeMirror initialized for language:', language, 'mode:', mode);
+                } catch (error) {
+                    console.error('Failed to initialize CodeMirror for textarea:', error);
+                }
+            });
+        }
+        
+        // Update CodeMirror themes when switching app theme
+        function updateCodeMirrorThemes() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
+            
+            document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                if (textarea.codeMirrorInstance) {
+                    textarea.codeMirrorInstance.setOption('theme', cmTheme);
+                }
+            });
+        }
+        
+        // Override the original toggleTheme to also update CodeMirror
+        const originalToggleTheme = toggleTheme;
+        toggleTheme = function() {
+            originalToggleTheme();
+            updateCodeMirrorThemes();
+        };
+        
+        // Initialize CodeMirror when DOM and scripts are fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait a bit more for all scripts to load
+                setTimeout(initializeCodeMirror, 200);
+            });
+        } else {
+            // Document already loaded, wait for scripts
+            setTimeout(initializeCodeMirror, 200);
+        }
     </script>
 </body>
 </html>

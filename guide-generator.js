@@ -40,6 +40,23 @@ class GuideGenerator {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="${this.guide.meta.favicon || '../../imgs/favicon.png'}" type="image/x-icon">
     <link rel="stylesheet" href="${this.guide.meta.stylesheet || '../../style/main.css'}">
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/darcula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/default.min.css">
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    
     <title>${this.guide.meta.title} - Learning Guide</title>
 </head>
 <body>
@@ -125,9 +142,13 @@ ${listItems}
                 </${tag}>`;
                 
             case 'codeblock':
-                const code = item.withSyntaxHighlight ? this.applySyntaxHighlighting(item.code) : item.code;
-                return `                <div class="code-block">
-                    <pre>${code}</pre>
+                const codeId = `code-${Math.random().toString(36).substr(2, 9)}`;
+                const language = item.language || 'c'; // Default to 'c' for better syntax highlighting
+                if (!item.language) {
+                    console.warn(`Warning: Codeblock missing 'language' field, defaulting to 'c'`);
+                }
+                return `                <div class="code-block" data-language="${language}">
+                    <textarea id="${codeId}" class="codemirror-code">${item.code}</textarea>
                 </div>`;
                 
             case 'actionbox':
@@ -274,6 +295,122 @@ ${title ? '                    ' + title : ''}${boxContent}
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         });
+
+        // Initialize CodeMirror for all code blocks
+        let initAttempts = 0;
+        const maxAttempts = 50; // Max 5 seconds of retries
+        
+        function initializeCodeMirror() {
+            initAttempts++;
+            
+            // Check if CodeMirror is loaded
+            if (typeof CodeMirror === 'undefined') {
+                if (initAttempts >= maxAttempts) {
+                    console.error('Failed to load CodeMirror after', maxAttempts, 'attempts. Using fallback styling.');
+                    // Fallback: Style textareas as basic code blocks
+                    document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                        textarea.style.fontFamily = 'Monaco, Menlo, "Ubuntu Mono", monospace';
+                        textarea.style.fontSize = '14px';
+                        textarea.style.lineHeight = '1.5';
+                        textarea.style.padding = '10px';
+                        textarea.style.border = '1px solid var(--border)';
+                        textarea.style.borderRadius = '4px';
+                        textarea.style.background = 'var(--code-bg)';
+                        textarea.style.color = 'var(--code-text)';
+                        textarea.style.resize = 'none';
+                        textarea.style.minHeight = '100px';
+                        textarea.readOnly = true;
+                    });
+                    return;
+                }
+                console.warn('CodeMirror not loaded, retrying in 100ms... (attempt', initAttempts, '/', maxAttempts, ')');
+                setTimeout(initializeCodeMirror, 100);
+                return;
+            }
+            
+            const codeTextareas = document.querySelectorAll('.codemirror-code');
+            console.log('Initializing CodeMirror for', codeTextareas.length, 'code blocks');
+            
+            codeTextareas.forEach(textarea => {
+                const codeBlock = textarea.closest('.code-block');
+                const language = codeBlock.dataset.language;
+                
+                // Map language to CodeMirror mode
+                let mode = 'text';
+                switch(language) {
+                    case 'c':
+                    case 'cpp':
+                    case 'c++':
+                        mode = 'text/x-csrc';
+                        break;
+                    case 'javascript':
+                    case 'js':
+                        mode = 'javascript';
+                        break;
+                    case 'bash':
+                    case 'shell':
+                    case 'sh':
+                        mode = 'shell';
+                        break;
+                    case 'css':
+                        mode = 'css';
+                        break;
+                    case 'html':
+                        mode = 'htmlmixed';
+                        break;
+                    case 'json':
+                        mode = 'application/json';
+                        break;
+                    default:
+                        mode = 'text';
+                }
+                
+                // Use custom theme that respects CSS variables
+                const cmTheme = 'default'; // We'll override with CSS
+                
+                try {
+                    const editor = CodeMirror.fromTextArea(textarea, {
+                        mode: mode,
+                        theme: cmTheme,
+                        lineNumbers: true,
+                        readOnly: 'nocursor',  // Disable cursor and selection
+                        lineWrapping: true,    // Enable line wrapping to avoid horizontal scroll
+                        scrollbarStyle: 'null', // Remove scrollbars
+                        viewportMargin: Infinity, // Show all content without scrolling
+                        matchBrackets: false,  // Disable bracket matching highlights
+                        styleActiveLine: false, // Disable active line highlighting
+                        indentUnit: 4,
+                        tabSize: 4
+                    });
+                    
+                    // Store editor reference for theme switching
+                    textarea.codeMirrorInstance = editor;
+                    
+                    // Auto-refresh editor size and ensure no scrollbars
+                    setTimeout(() => {
+                        editor.refresh();
+                        editor.setSize(null, 'auto'); // Auto-height based on content
+                    }, 100);
+                    
+                    console.log('CodeMirror initialized for language:', language, 'mode:', mode);
+                } catch (error) {
+                    console.error('Failed to initialize CodeMirror for textarea:', error);
+                }
+            });
+        }
+        
+        // CodeMirror themes are handled by CSS variables, no need to update programmatically
+        
+        // Initialize CodeMirror when DOM and scripts are fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait a bit more for all scripts to load
+                setTimeout(initializeCodeMirror, 200);
+            });
+        } else {
+            // Document already loaded, wait for scripts
+            setTimeout(initializeCodeMirror, 200);
+        }
     </script>`;
     }
 }

@@ -84,7 +84,8 @@
                     "language": {"type": "string", "default": "c"},
                     "code": {"type": "string"},
                     "withSyntaxHighlight": {"type": "boolean", "default": true}
-                  }
+                  },
+                  "required": ["type", "language", "code"]
                 },
                 {
                   "type": "object",

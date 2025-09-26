@@ -50,42 +50,112 @@
         {
           "type": "heading",
           "level": 3,
-          "content": "Core mechanics"
+          "content": "Socket Fundamentals"
         },
         {
-          "type": "list",
-          "items": [
-            "<strong>Socket creation:</strong> <code>socket()</code> creates an endpoint for communication.",
-            "<strong>Binding & Listening:</strong> Server sockets bind to an address and listen for connections.",
-            "<strong>Poll monitoring:</strong> <code>poll()</code> watches multiple file descriptors for events without blocking."
-          ]
+          "type": "paragraph",
+          "content": "Sockets are communication endpoints that provide a uniform interface for network programming. Understanding their types, lifecycle, and configuration is crucial for building robust servers."
         },
         {
           "type": "heading",
-          "level": 3,
-          "content": "Key components"
+          "level": 4,
+          "content": "Socket Types & Address Families"
         },
         {
-          "type": "list",
-          "items": [
-            "<strong>File descriptors:</strong> Sockets are treated as file descriptors in Unix-like systems.",
-            "<strong>Events:</strong> POLLIN (data ready to read), POLLOUT (ready for write), POLLERR (error condition).",
-            "<strong>Timeout:</strong> <code>poll()</code> can wait indefinitely, return immediately, or timeout after a specified duration.",
-            "<strong>Non-blocking I/O:</strong> Sockets can be set to non-blocking mode to avoid hanging operations."
-          ]
+          "type": "codeblock",
+          "language": "c",
+          "code": "// TCP socket - reliable, connection-oriented\nint tcp_sock = socket(AF_INET, SOCK_STREAM, 0);\n\n// UDP socket - unreliable, connectionless\nint udp_sock = socket(AF_INET, SOCK_DGRAM, 0);\n\n// Unix domain socket - local inter-process communication\nint unix_sock = socket(AF_UNIX, SOCK_STREAM, 0);\n\n// IPv6 socket\nint ipv6_sock = socket(AF_INET6, SOCK_STREAM, 0);"
         },
         {
           "type": "heading",
-          "level": 3,
-          "content": "Governing principles"
+          "level": 4,
+          "content": "Socket Lifecycle"
         },
         {
           "type": "list",
           "ordered": true,
           "items": [
-            "One socket per connection endpoint.",
-            "Poll checks multiple sockets in a single system call.",
-            "Events are edge-triggered or level-triggered depending on the system."
+            "<strong>Creation:</strong> <code>socket()</code> - Creates a new socket endpoint",
+            "<strong>Configuration:</strong> <code>setsockopt()</code> - Set socket options (reuse addr, timeouts, etc.)",
+            "<strong>Binding:</strong> <code>bind()</code> - Associate socket with specific address/port",
+            "<strong>Listening:</strong> <code>listen()</code> - Mark socket as passive (server only)",
+            "<strong>Connection:</strong> <code>accept()</code>/<code>connect()</code> - Establish connections",
+            "<strong>Communication:</strong> <code>send()</code>/<code>recv()</code> - Exchange data",
+            "<strong>Cleanup:</strong> <code>close()</code> - Release resources"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Critical Socket Options"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "// Allow address reuse (prevents \"Address already in use\" errors)\nint reuse = 1;\nsetsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));\n\n// Set socket to non-blocking mode\nint flags = fcntl(sock_fd, F_GETFL, 0);\nfcntl(sock_fd, F_SETFL, flags | O_NONBLOCK);\n\n// Set receive/send buffer sizes\nint buf_size = 64 * 1024;  // 64KB\nsetsockopt(sock_fd, SOL_SOCKET, SO_RCVBUF, &buf_size, sizeof(buf_size));\nsetsockopt(sock_fd, SOL_SOCKET, SO_SNDBUF, &buf_size, sizeof(buf_size));\n\n// Set timeouts\nstruct timeval timeout = {.tv_sec = 30, .tv_usec = 0};\nsetsockopt(sock_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Poll Mechanics Deep Dive"
+        },
+        {
+          "type": "paragraph",
+          "content": "<code>poll()</code> is a system call that monitors multiple file descriptors for I/O events. It's more scalable than <code>select()</code> and doesn't have the FD_SETSIZE limitation."
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Poll Structure & Events"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "struct pollfd {\n    int fd;        // File descriptor to monitor\n    short events;  // Events to watch for (input)\n    short revents; // Events that occurred (output)\n};\n\n// Event types you can monitor:\n// POLLIN     - Data available for reading\n// POLLOUT    - Socket ready for writing\n// POLLERR    - Error condition\n// POLLHUP    - Hangup (connection closed by peer)\n// POLLNVAL   - Invalid file descriptor\n// POLLPRI    - Urgent data (out-of-band)\n// POLLRDHUP  - Peer closed writing end (Linux-specific)"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Poll Timeout Strategies"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "// Infinite timeout - wait forever\nint ready = poll(fds, nfds, -1);\n\n// No timeout - return immediately\nint ready = poll(fds, nfds, 0);\n\n// Specific timeout in milliseconds\nint ready = poll(fds, nfds, 5000);  // 5 second timeout\n\n// Handling timeout\nif (ready == 0) {\n    printf(\"Timeout occurred\\n\");\n    // Handle timeout logic (heartbeat, cleanup, etc.)\n} else if (ready < 0) {\n    if (errno == EINTR) {\n        // Interrupted by signal, usually safe to retry\n        continue;\n    }\n    perror(\"poll failed\");\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Combining Sockets & Poll"
+        },
+        {
+          "type": "paragraph",
+          "content": "The power comes from using poll to efficiently manage multiple sockets without blocking or wasting CPU cycles."
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Server Architecture Pattern"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "// Typical server structure\n#define MAX_CLIENTS 1000\nstruct pollfd fds[MAX_CLIENTS + 1];  // +1 for server socket\nint client_count = 0;\n\n// Initialize server socket in fds[0]\nfds[0].fd = server_fd;\nfds[0].events = POLLIN;  // Listen for new connections\n\nwhile (1) {\n    int ready = poll(fds, client_count + 1, -1);\n    \n    // Check server socket for new connections\n    if (fds[0].revents & POLLIN) {\n        handle_new_connection();\n    }\n    \n    // Check all client sockets\n    for (int i = 1; i <= client_count; i++) {\n        if (fds[i].revents & POLLIN) {\n            handle_client_data(i);\n        }\n        if (fds[i].revents & POLLOUT) {\n            handle_client_write(i);\n        }\n        if (fds[i].revents & (POLLHUP | POLLERR)) {\n            handle_client_disconnect(i);\n        }\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Governing Principles"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "<strong>Non-blocking everything:</strong> Use non-blocking sockets to prevent any operation from hanging the entire server.",
+            "<strong>Event-driven architecture:</strong> React to events (data ready, connection closed) rather than polling continuously.",
+            "<strong>Efficient resource management:</strong> One poll call handles hundreds or thousands of connections.",
+            "<strong>Graceful degradation:</strong> Handle partial reads/writes and temporary failures elegantly.",
+            "<strong>State management:</strong> Track connection state, pending operations, and cleanup requirements."
           ]
         }
       ]
@@ -99,79 +169,341 @@
         {
           "type": "heading",
           "level": 3,
-          "content": "Basic TCP Server"
+          "content": "Complete Production-Ready Server"
+        },
+        {
+          "type": "paragraph",
+          "content": "Here's a comprehensive server implementation that handles all the edge cases you'll encounter in production:"
         },
         {
           "type": "codeblock",
           "language": "c",
-          "code": "int server_fd = socket(AF_INET, SOCK_STREAM, 0);\nstruct sockaddr_in addr = {0};\naddr.sin_family = AF_INET;\naddr.sin_addr.s_addr = INADDR_ANY;\naddr.sin_port = htons(8080);\n\nbind(server_fd, (struct sockaddr*)&addr, sizeof(addr));\nlisten(server_fd, 10);"
+          "code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <unistd.h>\n#include <errno.h>\n#include <fcntl.h>\n#include <sys/socket.h>\n#include <sys/poll.h>\n#include <netinet/in.h>\n#include <arpa/inet.h>\n\n#define MAX_CLIENTS 1000\n#define BUFFER_SIZE 4096\n#define SERVER_PORT 8080\n\n// Client connection state\ntypedef struct {\n    int fd;\n    char read_buffer[BUFFER_SIZE];\n    char write_buffer[BUFFER_SIZE];\n    size_t read_pos;\n    size_t write_pos;\n    size_t write_len;\n    int wants_write;\n} client_t;\n\nclient_t clients[MAX_CLIENTS];\nstruct pollfd fds[MAX_CLIENTS + 1];\nint client_count = 0;"
         },
         {
           "type": "heading",
-          "level": 3,
-          "content": "Poll-based event loop"
+          "level": 4,
+          "content": "Server Setup with Proper Error Handling"
         },
         {
           "type": "codeblock",
           "language": "c",
-          "code": "struct pollfd fds[MAX_CLIENTS];\nfds[0].fd = server_fd;\nfds[0].events = POLLIN;\nint nfds = 1;\n\nwhile (1) {\n    int ready = poll(fds, nfds, -1);\n    \n    if (fds[0].revents & POLLIN) {\n        // Accept new connection\n        int client_fd = accept(server_fd, NULL, NULL);\n        fds[nfds].fd = client_fd;\n        fds[nfds].events = POLLIN;\n        nfds++;\n    }\n    \n    for (int i = 1; i < nfds; i++) {\n        if (fds[i].revents & POLLIN) {\n            // Handle client data\n            char buffer[1024];\n            recv(fds[i].fd, buffer, sizeof(buffer), 0);\n        }\n    }\n}"
+          "code": "int setup_server() {\n    int server_fd = socket(AF_INET, SOCK_STREAM, 0);\n    if (server_fd < 0) {\n        perror(\"socket\");\n        return -1;\n    }\n    \n    // Enable address reuse to avoid \"Address already in use\" errors\n    int reuse = 1;\n    if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {\n        perror(\"setsockopt SO_REUSEADDR\");\n        close(server_fd);\n        return -1;\n    }\n    \n    // Set to non-blocking\n    int flags = fcntl(server_fd, F_GETFL, 0);\n    if (flags < 0 || fcntl(server_fd, F_SETFL, flags | O_NONBLOCK) < 0) {\n        perror(\"fcntl non-blocking\");\n        close(server_fd);\n        return -1;\n    }\n    \n    struct sockaddr_in addr = {0};\n    addr.sin_family = AF_INET;\n    addr.sin_addr.s_addr = INADDR_ANY;\n    addr.sin_port = htons(SERVER_PORT);\n    \n    if (bind(server_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {\n        perror(\"bind\");\n        close(server_fd);\n        return -1;\n    }\n    \n    if (listen(server_fd, 128) < 0) {\n        perror(\"listen\");\n        close(server_fd);\n        return -1;\n    }\n    \n    return server_fd;\n}"
         },
         {
           "type": "heading",
-          "level": 3,
-          "content": "Edge case: Connection cleanup"
+          "level": 4,
+          "content": "Handling New Connections with Edge Cases"
         },
         {
           "type": "codeblock",
           "language": "c",
-          "code": "if (fds[i].revents & (POLLHUP | POLLERR)) {\n    close(fds[i].fd);\n    // Remove from poll array\n    for (int j = i; j < nfds - 1; j++) {\n        fds[j] = fds[j + 1];\n    }\n    nfds--;\n    i--; // Adjust index\n}"
+          "code": "void handle_new_connection(int server_fd) {\n    while (1) {\n        struct sockaddr_in client_addr;\n        socklen_t addr_len = sizeof(client_addr);\n        \n        int client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &addr_len);\n        \n        if (client_fd < 0) {\n            if (errno == EAGAIN || errno == EWOULDBLOCK) {\n                // No more connections to accept\n                break;\n            }\n            if (errno == EINTR) {\n                // Interrupted by signal, retry\n                continue;\n            }\n            perror(\"accept\");\n            break;\n        }\n        \n        // Check if we have space for more clients\n        if (client_count >= MAX_CLIENTS) {\n            printf(\"Server full, rejecting connection\\n\");\n            close(client_fd);\n            continue;\n        }\n        \n        // Set client socket to non-blocking\n        int flags = fcntl(client_fd, F_GETFL, 0);\n        if (flags < 0 || fcntl(client_fd, F_SETFL, flags | O_NONBLOCK) < 0) {\n            perror(\"fcntl client non-blocking\");\n            close(client_fd);\n            continue;\n        }\n        \n        // Initialize client state\n        clients[client_count].fd = client_fd;\n        clients[client_count].read_pos = 0;\n        clients[client_count].write_pos = 0;\n        clients[client_count].write_len = 0;\n        clients[client_count].wants_write = 0;\n        \n        // Add to poll array\n        fds[client_count + 1].fd = client_fd;\n        fds[client_count + 1].events = POLLIN;\n        fds[client_count + 1].revents = 0;\n        \n        client_count++;\n        printf(\"New client connected (fd=%d, total=%d)\\n\", client_fd, client_count);\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Handling Partial Reads/Writes"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "void handle_client_read(int client_idx) {\n    client_t *client = &clients[client_idx];\n    \n    while (1) {\n        ssize_t bytes_read = recv(client->fd, \n            client->read_buffer + client->read_pos,\n            BUFFER_SIZE - client->read_pos - 1,  // Leave space for null terminator\n            0);\n            \n        if (bytes_read > 0) {\n            client->read_pos += bytes_read;\n            client->read_buffer[client->read_pos] = '\\0';\n            \n            // Process complete messages (assuming line-based protocol)\n            char *line_end;\n            while ((line_end = strchr(client->read_buffer, '\\n')) != NULL) {\n                *line_end = '\\0';\n                \n                // Echo the message back\n                snprintf(client->write_buffer, BUFFER_SIZE, \n                    \"Echo: %s\\n\", client->read_buffer);\n                client->write_len = strlen(client->write_buffer);\n                client->write_pos = 0;\n                client->wants_write = 1;\n                \n                // Enable POLLOUT for this client\n                fds[client_idx + 1].events |= POLLOUT;\n                \n                // Move remaining data to beginning of buffer\n                size_t remaining = client->read_pos - (line_end - client->read_buffer + 1);\n                memmove(client->read_buffer, line_end + 1, remaining);\n                client->read_pos = remaining;\n                client->read_buffer[client->read_pos] = '\\0';\n            }\n            \n            // Check if buffer is full\n            if (client->read_pos >= BUFFER_SIZE - 1) {\n                printf(\"Client buffer overflow, disconnecting\\n\");\n                close_client(client_idx);\n                return;\n            }\n            \n        } else if (bytes_read == 0) {\n            // Client disconnected gracefully\n            printf(\"Client disconnected (fd=%d)\\n\", client->fd);\n            close_client(client_idx);\n            return;\n            \n        } else {\n            // Error or would block\n            if (errno == EAGAIN || errno == EWOULDBLOCK) {\n                // No more data available\n                break;\n            }\n            if (errno == EINTR) {\n                // Interrupted by signal, retry\n                continue;\n            }\n            perror(\"recv\");\n            close_client(client_idx);\n            return;\n        }\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Handling Partial Writes"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "void handle_client_write(int client_idx) {\n    client_t *client = &clients[client_idx];\n    \n    while (client->write_pos < client->write_len) {\n        ssize_t bytes_sent = send(client->fd,\n            client->write_buffer + client->write_pos,\n            client->write_len - client->write_pos,\n            0);\n            \n        if (bytes_sent > 0) {\n            client->write_pos += bytes_sent;\n            \n        } else if (bytes_sent == 0) {\n            // Shouldn't happen with send(), but handle it\n            printf(\"send() returned 0\\n\");\n            close_client(client_idx);\n            return;\n            \n        } else {\n            if (errno == EAGAIN || errno == EWOULDBLOCK) {\n                // Socket buffer full, try again later\n                return;\n            }\n            if (errno == EINTR) {\n                // Interrupted by signal, retry\n                continue;\n            }\n            if (errno == EPIPE) {\n                // Broken pipe (client disconnected)\n                printf(\"Broken pipe, client disconnected (fd=%d)\\n\", client->fd);\n                close_client(client_idx);\n                return;\n            }\n            perror(\"send\");\n            close_client(client_idx);\n            return;\n        }\n    }\n    \n    // All data sent, disable POLLOUT\n    if (client->write_pos >= client->write_len) {\n        client->wants_write = 0;\n        fds[client_idx + 1].events &= ~POLLOUT;\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Proper Client Cleanup"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "void close_client(int client_idx) {\n    if (client_idx < 0 || client_idx >= client_count) {\n        return;\n    }\n    \n    close(clients[client_idx].fd);\n    printf(\"Closed connection (fd=%d)\\n\", clients[client_idx].fd);\n    \n    // Move last client to this position to avoid gaps\n    if (client_idx < client_count - 1) {\n        clients[client_idx] = clients[client_count - 1];\n        fds[client_idx + 1] = fds[client_count];\n    }\n    \n    client_count--;\n}"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Main Event Loop with Signal Handling"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "int main() {\n    int server_fd = setup_server();\n    if (server_fd < 0) {\n        exit(1);\n    }\n    \n    printf(\"Server listening on port %d\\n\", SERVER_PORT);\n    \n    // Set up server in poll array\n    fds[0].fd = server_fd;\n    fds[0].events = POLLIN;\n    fds[0].revents = 0;\n    \n    while (1) {\n        // Poll with 1 second timeout for periodic tasks\n        int ready = poll(fds, client_count + 1, 1000);\n        \n        if (ready < 0) {\n            if (errno == EINTR) {\n                // Interrupted by signal (SIGINT, etc.)\n                printf(\"\\nShutting down server...\\n\");\n                break;\n            }\n            perror(\"poll\");\n            break;\n        }\n        \n        if (ready == 0) {\n            // Timeout - do periodic maintenance\n            printf(\"Active connections: %d\\n\", client_count);\n            continue;\n        }\n        \n        // Check for new connections\n        if (fds[0].revents & POLLIN) {\n            handle_new_connection(server_fd);\n        }\n        \n        // Check all client connections\n        for (int i = 0; i < client_count; i++) {\n            int poll_idx = i + 1;\n            \n            if (fds[poll_idx].revents & (POLLHUP | POLLERR | POLLNVAL)) {\n                printf(\"Connection error/hangup (fd=%d)\\n\", clients[i].fd);\n                close_client(i);\n                i--; // Adjust index since we removed a client\n                continue;\n            }\n            \n            if (fds[poll_idx].revents & POLLIN) {\n                handle_client_read(i);\n                // Client might have been closed in handle_client_read\n                if (i >= client_count) {\n                    i--;\n                    continue;\n                }\n            }\n            \n            if (fds[poll_idx].revents & POLLOUT) {\n                handle_client_write(i);\n            }\n        }\n    }\n    \n    // Cleanup\n    close(server_fd);\n    for (int i = 0; i < client_count; i++) {\n        close(clients[i].fd);\n    }\n    \n    return 0;\n}"
         }
       ]
     },
     {
       "id": "practice",
-      "title": "DO THIS NOW",
+      "title": "HANDS-ON EXERCISES",
       "emoji": "🛠️",
       "iconClass": "practice",
       "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Exercise 1: Basic Echo Server"
+        },
         {
           "type": "actionbox",
           "boxType": "action",
           "content": [
             {
-              "type": "list",
-              "ordered": true,
-              "items": ["Create a simple echo server:"]
+              "type": "paragraph",
+              "content": "<strong>Goal:</strong> Build a server that echoes back everything clients send to it."
             },
             {
               "type": "codeblock",
               "language": "c",
-              "code": "#include <sys/socket.h>\n#include <sys/poll.h>\n#include <netinet/in.h>\n#include <stdio.h>\n#include <unistd.h>\n\nint main() {\n    int server_fd = socket(AF_INET, SOCK_STREAM, 0);\n    // Set up address, bind, listen\n    \n    struct pollfd fds[10];\n    fds[0].fd = server_fd;\n    fds[0].events = POLLIN;\n    \n    while (1) {\n        poll(fds, 1, -1);\n        // Handle connections and data\n    }\n}"
+              "code": "// Starter template - fill in the missing pieces\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <unistd.h>\n#include <sys/socket.h>\n#include <sys/poll.h>\n#include <netinet/in.h>\n#include <errno.h>\n\nint main() {\n    // TODO: Create server socket\n    // TODO: Set SO_REUSEADDR\n    // TODO: Bind to port 8080\n    // TODO: Listen for connections\n    \n    struct pollfd fds[10];\n    int nfds = 1;\n    \n    // TODO: Initialize fds[0] with server socket\n    \n    while (1) {\n        // TODO: Call poll() with proper parameters\n        \n        // TODO: Check for new connections on server socket\n        \n        // TODO: Check existing clients for data\n        // TODO: Echo received data back to sender\n        \n        // TODO: Handle client disconnections\n    }\n}"
             },
             {
               "type": "list",
               "ordered": true,
-              "startFrom": 2,
               "items": [
-                "Test with <code>telnet localhost 8080</code>",
-                "Add multiple client support using poll array."
+                "Implement the missing TODO sections",
+                "Test with: <code>telnet localhost 8080</code>",
+                "Connect multiple telnet sessions simultaneously",
+                "Verify each client gets their own echo"
               ]
             },
             {
               "type": "paragraph",
-              "content": "<strong>What to look for:</strong> How poll eliminates busy-waiting.<br><strong>Quick win:</strong> See one server handle multiple clients efficiently.",
+              "content": "<strong>Success criteria:</strong> Server handles 5+ concurrent clients without blocking.",
               "html": true
             }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Exercise 2: Chat Room Server"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": "<strong>Goal:</strong> Build a chat server where messages from one client are broadcast to all others."
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "// Chat server features to implement:\n// 1. Client nicknames (first message sets nickname)\n// 2. Broadcast messages to all connected clients\n// 3. Join/leave notifications\n// 4. Command support (/quit, /list, /help)\n\ntypedef struct {\n    int fd;\n    char nickname[32];\n    char buffer[1024];\n    size_t buffer_pos;\n    int authenticated;\n} chat_client_t;\n\nvoid broadcast_message(const char *message, int sender_fd) {\n    // TODO: Send message to all clients except sender\n}\n\nvoid handle_chat_command(chat_client_t *client, const char *message) {\n    if (strncmp(message, \"/quit\", 5) == 0) {\n        // TODO: Handle quit command\n    } else if (strncmp(message, \"/list\", 5) == 0) {\n        // TODO: List all connected users\n    } else {\n        // TODO: Broadcast regular message\n    }\n}"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "Implement client nickname system",
+                "Add message broadcasting to all clients",
+                "Handle line-based protocol (messages end with \\n)",
+                "Add commands: /quit, /list, /help",
+                "Test with multiple telnet sessions"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Exercise 3: HTTP File Server"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": "<strong>Goal:</strong> Build a basic HTTP server that serves static files."
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "// HTTP server requirements:\n// 1. Parse HTTP request line (GET /path HTTP/1.1)\n// 2. Serve files from ./public/ directory\n// 3. Return 404 for missing files\n// 4. Set proper Content-Type headers\n// 5. Handle multiple concurrent requests\n\nvoid parse_http_request(const char *request, char *method, char *path) {\n    // TODO: Parse \"GET /index.html HTTP/1.1\"\n}\n\nvoid send_http_response(int client_fd, int status, const char *content_type, \n                       const char *body, size_t body_len) {\n    char header[512];\n    snprintf(header, sizeof(header),\n        \"HTTP/1.1 %d %s\\r\\n\"\n        \"Content-Type: %s\\r\\n\"\n        \"Content-Length: %zu\\r\\n\"\n        \"Connection: close\\r\\n\"\n        \"\\r\\n\",\n        status, (status == 200) ? \"OK\" : \"Not Found\",\n        content_type, body_len);\n    \n    // TODO: Send header and body\n}\n\nconst char* get_mime_type(const char *filename) {\n    // TODO: Return appropriate MIME type based on file extension\n    // .html -> text/html\n    // .css -> text/css\n    // .js -> application/javascript\n    // .png -> image/png\n    // default -> text/plain\n}"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "Create ./public/ directory with some HTML files",
+                "Implement HTTP request parsing",
+                "Add file serving with proper MIME types",
+                "Handle 404 errors gracefully",
+                "Test with web browser: <code>http://localhost:8080/</code>",
+                "<strong>Bonus:</strong> Add directory listing for folders"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Exercise 4: Performance Testing"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": "<strong>Goal:</strong> Test your server's performance limits and identify bottlenecks."
+            },
+            {
+              "type": "codeblock",
+              "language": "bash",
+              "code": "# Test tools to use:\n\n# 1. Apache Bench (ab) - HTTP load testing\nab -n 10000 -c 100 http://localhost:8080/\n\n# 2. wrk - Modern HTTP benchmarking tool\nwrk -t4 -c100 -d30s http://localhost:8080/\n\n# 3. Custom client for chat/echo servers\n# Write a client that opens 1000 connections and sends messages\n\n# 4. Monitor system resources\ntop -p $(pgrep your_server)\nnetstat -an | grep :8080 | wc -l  # Count connections\nlsof -p $(pgrep your_server) | wc -l  # Count file descriptors"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "Test with increasing number of concurrent connections",
+                "Measure: requests/second, memory usage, CPU usage",
+                "Find the breaking point (when errors start occurring)",
+                "Profile with <code>strace -c</code> to see system call usage",
+                "Compare poll() vs simple blocking accept()/recv()"
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>Questions to answer:</strong> How many clients can your server handle? What's the bottleneck? Memory, CPU, or file descriptors?"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Exercise 5: Error Injection Testing"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": "<strong>Goal:</strong> Test how your server handles various failure scenarios."
+            },
+            {
+              "type": "codeblock",
+              "language": "bash",
+              "code": "# Failure scenarios to test:\n\n# 1. Client sends partial data and disconnects\necho -n \"GET /\" | nc localhost 8080\n\n# 2. Client connects but never sends data\nnc localhost 8080\n# (just connect, don't type anything)\n\n# 3. Client sends huge amount of data\nyes \"A\" | head -1000000 | nc localhost 8080\n\n# 4. Many clients connect and disconnect rapidly\nfor i in {1..100}; do\n    echo \"test\" | nc localhost 8080 &\ndone\n\n# 5. Client sends invalid HTTP requests\necho -e \"INVALID REQUEST\\r\\n\\r\\n\" | nc localhost 8080"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "Test each failure scenario above",
+                "Verify server doesn't crash or hang",
+                "Check for memory leaks with <code>valgrind</code>",
+                "Ensure server logs errors appropriately",
+                "Verify server continues handling other clients"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Success Milestones"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Beginner:</strong> Echo server handles 10+ concurrent clients",
+            "<strong>Intermediate:</strong> Chat server with commands and proper message framing",
+            "<strong>Advanced:</strong> HTTP server passing basic performance tests (1000+ req/sec)",
+            "<strong>Expert:</strong> Server handles all error scenarios gracefully without crashes"
           ]
         }
       ]
     },
     {
       "id": "warnings",
-      "title": "AVOID THESE",
+      "title": "EDGE CASES & GOTCHAS",
       "emoji": "⚠️",
       "iconClass": "warnings",
       "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Critical Error Handling"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 4,
+              "content": "EAGAIN/EWOULDBLOCK - The Most Common Trap"
+            },
+            {
+              "type": "paragraph",
+              "content": "Non-blocking sockets return these errors when they can't complete immediately. <strong>This is NOT an error!</strong>"
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "// WRONG - treating EAGAIN as fatal error\nssize_t result = recv(fd, buffer, size, 0);\nif (result < 0) {\n    perror(\"recv failed\");  // Will spam errors!\n    close(fd);\n    return;\n}\n\n// CORRECT - handle EAGAIN properly\nssize_t result = recv(fd, buffer, size, 0);\nif (result < 0) {\n    if (errno == EAGAIN || errno == EWOULDBLOCK) {\n        // No data available right now, try again later\n        return;\n    }\n    // Only now it's a real error\n    perror(\"recv failed\");\n    close(fd);\n}"
+            }
+          ]
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 4,
+              "content": "Partial Reads/Writes - Data Fragmentation"
+            },
+            {
+              "type": "paragraph",
+              "content": "TCP can split your data into multiple packets. Never assume one call transfers everything!"
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "// WRONG - assumes all data is sent at once\nchar msg[] = \"Hello, World!\";\nsend(fd, msg, strlen(msg), 0);  // Might only send part!\n\n// CORRECT - handle partial sends\nsize_t total_sent = 0;\nsize_t msg_len = strlen(msg);\nwhile (total_sent < msg_len) {\n    ssize_t sent = send(fd, msg + total_sent, msg_len - total_sent, 0);\n    if (sent < 0) {\n        if (errno == EAGAIN || errno == EWOULDBLOCK) {\n            // Socket buffer full, wait for POLLOUT\n            break;\n        }\n        perror(\"send\");\n        return -1;\n    }\n    total_sent += sent;\n}"
+            }
+          ]
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 4,
+              "content": "Signal Interruption (EINTR)"
+            },
+            {
+              "type": "paragraph",
+              "content": "System calls can be interrupted by signals. Always check for EINTR and retry."
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "// Handle EINTR properly\nwhile (1) {\n    int ready = poll(fds, nfds, timeout);\n    if (ready >= 0) {\n        // Success\n        break;\n    }\n    if (errno == EINTR) {\n        // Interrupted by signal, retry\n        continue;\n    }\n    // Real error\n    perror(\"poll\");\n    return -1;\n}"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Connection Management Pitfalls"
+        },
         {
           "type": "actionbox",
           "boxType": "warning",
@@ -179,9 +511,95 @@
             {
               "type": "list",
               "items": [
-                "<strong>Blocking operations in poll loop</strong> → Always use non-blocking sockets or handle partial reads/writes.",
-                "<strong>Not handling POLLHUP/POLLERR</strong> → Disconnected clients will consume CPU if not removed.",
-                "<strong>Fixed-size poll arrays</strong> → Consider dynamic resizing or use epoll/kqueue for scalability."
+                "<strong>Ghost connections:</strong> Always check POLLHUP/POLLERR and remove dead connections immediately.",
+                "<strong>Buffer overflow:</strong> Malicious clients can send huge amounts of data. Always limit buffer sizes.",
+                "<strong>Connection flooding:</strong> Accept() can return EMFILE (too many files) - handle gracefully.",
+                "<strong>Memory leaks:</strong> Each connection allocates resources - ensure cleanup on disconnect."
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Performance Traps"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 4,
+              "content": "The Thundering Herd Problem"
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "// WRONG - accepting only one connection per poll\nif (fds[0].revents & POLLIN) {\n    int client = accept(server_fd, NULL, NULL);\n    // Only handles one connection, others wait\n}\n\n// CORRECT - accept all available connections\nif (fds[0].revents & POLLIN) {\n    while (1) {\n        int client = accept(server_fd, NULL, NULL);\n        if (client < 0) {\n            if (errno == EAGAIN) break;  // No more connections\n            perror(\"accept\");\n            break;\n        }\n        // Handle new client...\n    }\n}"
+            }
+          ]
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 4,
+              "content": "Poll Array Management"
+            },
+            {
+              "type": "list",
+              "items": [
+                "<strong>Fixed arrays:</strong> Don't use fixed-size arrays for thousands of connections.",
+                "<strong>Gap management:</strong> When removing connections, avoid gaps in the array or poll() performance suffers.",
+                "<strong>Event mask errors:</strong> Forgetting to set/unset POLLOUT when needed causes busy-waiting or missed writes."
+              ]
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Protocol-Level Issues"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 4,
+              "content": "Message Boundary Problems"
+            },
+            {
+              "type": "paragraph",
+              "content": "TCP is a stream protocol - it doesn't preserve message boundaries!"
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "// WRONG - assumes one recv() = one message\nchar buffer[1024];\nrecv(fd, buffer, sizeof(buffer), 0);\nprocess_message(buffer);  // Might be partial or multiple messages!\n\n// CORRECT - handle message framing\ntypedef struct {\n    uint32_t length;  // Message length in network byte order\n    char data[];      // Actual message data\n} message_header_t;\n\n// Read header first, then read exact amount of data\nuint32_t msg_len;\nif (recv_exactly(fd, &msg_len, sizeof(msg_len)) == sizeof(msg_len)) {\n    msg_len = ntohl(msg_len);  // Convert from network byte order\n    char *msg_data = malloc(msg_len);\n    if (recv_exactly(fd, msg_data, msg_len) == msg_len) {\n        process_message(msg_data, msg_len);\n    }\n    free(msg_data);\n}"
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Security Considerations"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "list",
+              "items": [
+                "<strong>DoS via connection exhaustion:</strong> Limit concurrent connections per IP.",
+                "<strong>Slowloris attacks:</strong> Set timeouts to disconnect slow/stalled clients.",
+                "<strong>Buffer overflow attacks:</strong> Validate all input lengths before copying.",
+                "<strong>Resource exhaustion:</strong> Monitor memory usage, set ulimits, implement rate limiting."
               ]
             }
           ]
@@ -190,16 +608,127 @@
     },
     {
       "id": "connections",
-      "title": "CONNECTIONS",
+      "title": "ADVANCED TOPICS & SCALING",
       "emoji": "🔗",
       "iconClass": "connections",
       "content": [
         {
+          "type": "heading",
+          "level": 3,
+          "content": "Performance Optimization"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "When to Move Beyond Poll"
+        },
+        {
+          "type": "paragraph",
+          "content": "Poll has O(n) complexity per call. For high-performance servers (>1000 concurrent connections), consider these alternatives:"
+        },
+        {
           "type": "list",
           "items": [
-            "<strong>Prerequisites:</strong> File descriptors, system calls, basic networking concepts.",
-            "<strong>Related concepts:</strong> select(), epoll (Linux), kqueue (BSD), async I/O patterns.",
-            "<strong>Next steps:</strong> Study epoll for high-performance servers, non-blocking I/O patterns, and protocol design."
+            "<strong>epoll (Linux):</strong> O(1) complexity, edge-triggered events, scales to hundreds of thousands of connections.",
+            "<strong>kqueue (BSD/macOS):</strong> Similar to epoll, excellent performance on BSD systems.",
+            "<strong>io_uring (Modern Linux):</strong> Asynchronous I/O with zero-copy operations.",
+            "<strong>IOCP (Windows):</strong> Completion-based I/O for Windows servers."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Epoll Migration Example"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "#ifdef __linux__\n#include <sys/epoll.h>\n\n// Create epoll instance\nint epoll_fd = epoll_create1(EPOLL_CLOEXEC);\n\n// Add server socket\nstruct epoll_event ev = {0};\nev.events = EPOLLIN | EPOLLET;  // Edge-triggered\nev.data.fd = server_fd;\nepoll_ctl(epoll_fd, EPOLL_CTL_ADD, server_fd, &ev);\n\n// Main loop\nstruct epoll_event events[MAX_EVENTS];\nwhile (1) {\n    int nready = epoll_wait(epoll_fd, events, MAX_EVENTS, -1);\n    \n    for (int i = 0; i < nready; i++) {\n        if (events[i].data.fd == server_fd) {\n            handle_new_connections();\n        } else {\n            handle_client_event(&events[i]);\n        }\n    }\n}\n#endif"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Architecture Patterns"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Single-threaded Event Loop"
+        },
+        {
+          "type": "paragraph",
+          "content": "Best for I/O-bound workloads. All events handled in one thread, no locking needed."
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "// Redis/Node.js style - single event loop\nvoid event_loop() {\n    while (running) {\n        int ready = poll(fds, nfds, 100);  // 100ms timeout\n        \n        // Handle I/O events\n        handle_io_events(ready);\n        \n        // Process timer events\n        process_timers();\n        \n        // Run scheduled callbacks\n        run_callbacks();\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Multi-threaded Worker Pool"
+        },
+        {
+          "type": "paragraph",
+          "content": "For CPU-intensive tasks or blocking operations."
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "// Main thread handles I/O, workers handle processing\ntypedef struct {\n    int client_fd;\n    char *request_data;\n    size_t data_len;\n} work_item_t;\n\n// Main thread\nif (fds[i].revents & POLLIN) {\n    // Read request\n    char buffer[4096];\n    ssize_t len = recv(fds[i].fd, buffer, sizeof(buffer), 0);\n    \n    // Queue work for thread pool\n    work_item_t *item = malloc(sizeof(work_item_t));\n    item->client_fd = fds[i].fd;\n    item->request_data = strdup(buffer);\n    item->data_len = len;\n    \n    thread_pool_submit(item);\n    \n    // Remove from poll until response is ready\n    fds[i].events &= ~POLLIN;\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Real-World Server Types"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "HTTP Server Implementation"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "void handle_http_request(client_t *client) {\n    // Parse HTTP request line\n    char *method, *url, *version;\n    if (parse_request_line(client->read_buffer, &method, &url, &version) < 0) {\n        send_error_response(client, 400, \"Bad Request\");\n        return;\n    }\n    \n    // Handle different methods\n    if (strcmp(method, \"GET\") == 0) {\n        handle_get_request(client, url);\n    } else if (strcmp(method, \"POST\") == 0) {\n        handle_post_request(client, url);\n    } else {\n        send_error_response(client, 405, \"Method Not Allowed\");\n    }\n}\n\nvoid send_http_response(client_t *client, int status, const char *body) {\n    char response[4096];\n    snprintf(response, sizeof(response),\n        \"HTTP/1.1 %d %s\\r\\n\"\n        \"Content-Length: %zu\\r\\n\"\n        \"Connection: keep-alive\\r\\n\"\n        \"\\r\\n\"\n        \"%s\",\n        status, status_text(status), strlen(body), body);\n    \n    // Queue response for sending\n    queue_write_data(client, response, strlen(response));\n}"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "WebSocket Server"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "void handle_websocket_frame(client_t *client) {\n    ws_frame_t frame;\n    if (parse_ws_frame(client->read_buffer, &frame) < 0) {\n        close_client(client);\n        return;\n    }\n    \n    switch (frame.opcode) {\n        case WS_OPCODE_TEXT:\n            // Handle text message\n            broadcast_to_all_clients(frame.payload, frame.payload_len);\n            break;\n            \n        case WS_OPCODE_CLOSE:\n            // Handle close frame\n            send_ws_close(client);\n            close_client(client);\n            break;\n            \n        case WS_OPCODE_PING:\n            // Send pong response\n            send_ws_pong(client, frame.payload, frame.payload_len);\n            break;\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Monitoring & Debugging"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Connection tracking:</strong> Log connect/disconnect events with timestamps and client info.",
+            "<strong>Performance metrics:</strong> Track connections/second, bytes transferred, average response time.",
+            "<strong>Error rates:</strong> Monitor EAGAIN frequency, connection drops, protocol errors.",
+            "<strong>Resource usage:</strong> Watch file descriptor usage, memory per connection, CPU utilization.",
+            "<strong>Tools:</strong> strace for system call debugging, netstat for connection states, wireshark for protocol analysis."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Prerequisites & Next Steps"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Prerequisites:</strong> File descriptors, system calls, TCP/IP basics, C memory management.",
+            "<strong>Related concepts:</strong> select(), epoll/kqueue, async I/O, thread pools, load balancing.",
+            "<strong>Next steps:</strong> Study high-performance servers (nginx, Redis), protocol design, distributed systems."
           ]
         }
       ]

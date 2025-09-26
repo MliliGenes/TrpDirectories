@@ -5,6 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="shortcut icon" href="../../imgs/favicon.png" type="image/x-icon">
     <link rel="stylesheet" href="../../style/main.css">
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/darcula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/default.min.css">
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    
     <title>Struct Padding & Alignment - Learning Guide</title>
 </head>
 <body>
@@ -80,11 +97,11 @@
             </div>
             <div class="content">
                 <h3>Simple case</h3>
-                <div class="code-block">
-                    <pre>struct A {
+                <div class="code-block" data-language="c">
+                    <textarea id="code-jepnxvv3l" class="codemirror-code">struct A {
     char c;  // 1 byte
     int i;   // 4 bytes
-};</pre>
+};</textarea>
                 </div>
                 <p>On 32-bit or 64-bit:</p>
                 <ul>
@@ -94,12 +111,12 @@
                     <li><strong>Struct size = 8 bytes (not 5).</strong></li>
                 </ul>
                 <h3>Professional use</h3>
-                <div class="code-block">
-                    <pre>struct B {
+                <div class="code-block" data-language="c">
+                    <textarea id="code-mn4k615lc" class="codemirror-code">struct B {
     char c;   // 1
     char d;   // 1
     int i;    // 4
-};</pre>
+};</textarea>
                 </div>
                 <p>Layout:</p>
                 <ul>
@@ -110,31 +127,31 @@
                     <li><strong>Size = 8 bytes</strong>.</li>
                 </ul>
                 <p>Efficient if reordered:</p>
-                <div class="code-block">
-                    <pre>struct B_opt {
+                <div class="code-block" data-language="c">
+                    <textarea id="code-afidrqihh" class="codemirror-code">struct B_opt {
     int i;    // 4
     char c;   // 1
     char d;   // 1
-}; // size = 8 but better packing for arrays</pre>
+}; // size = 8 but better packing for arrays</textarea>
                 </div>
                 <h3>Edge case: Arrays & nested structs</h3>
-                <div class="code-block">
-                    <pre>struct Point {
+                <div class="code-block" data-language="c">
+                    <textarea id="code-xmoiw1u3a" class="codemirror-code">struct Point {
     char c;
     int i;
 };
 struct Shape {
     int id;
     struct Point p;
-};</pre>
+};</textarea>
                 </div>
                 <ul>
                     <li><code>Point</code> size = 8 (due to padding).</li>
                     <li><code>Shape</code>: <ul><li><code>id</code> at offset 0–3</li><li>padding 4–7</li><li><code>p</code> at offset 8–15</li><li><strong>Size = 16 bytes</strong>, not 12.</li></ul></li>
                 </ul>
                 <p>For an array:</p>
-                <div class="code-block">
-                    <pre>struct Point arr[3];</pre>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-zltb4sgc4" class="codemirror-code">struct Point arr[3];</textarea>
                 </div>
                 <p>Each element takes 8 bytes, so total = 24 bytes. Padding ensures each <code>i</code> stays 4-byte aligned.</p>
             </div>
@@ -150,8 +167,8 @@ struct Shape {
                 <ol>
                     <li>Write a small C program:</li>
                 </ol>
-                <div class="code-block">
-                    <pre>#include <stdio.h>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-p5g7ujfv0" class="codemirror-code">#include <stdio.h>
 
 struct X { char c; int i; };
 struct Y { int i; char c; };
@@ -159,7 +176,7 @@ struct Y { int i; char c; };
 int main() {
     printf("sizeof(struct X) = %zu\n", sizeof(struct X));
     printf("sizeof(struct Y) = %zu\n", sizeof(struct Y));
-}</pre>
+}</textarea>
                 </div>
                 <ol start="2">
                     <li>Compile and run.</li>
@@ -321,6 +338,140 @@ int main() {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             });
         });
+
+        // Initialize CodeMirror for all code blocks
+        let initAttempts = 0;
+        const maxAttempts = 50; // Max 5 seconds of retries
+        
+        function initializeCodeMirror() {
+            initAttempts++;
+            
+            // Check if CodeMirror is loaded
+            if (typeof CodeMirror === 'undefined') {
+                if (initAttempts >= maxAttempts) {
+                    console.error('Failed to load CodeMirror after', maxAttempts, 'attempts. Using fallback styling.');
+                    // Fallback: Style textareas as basic code blocks
+                    document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                        textarea.style.fontFamily = 'Monaco, Menlo, "Ubuntu Mono", monospace';
+                        textarea.style.fontSize = '14px';
+                        textarea.style.lineHeight = '1.5';
+                        textarea.style.padding = '10px';
+                        textarea.style.border = '1px solid var(--border)';
+                        textarea.style.borderRadius = '4px';
+                        textarea.style.background = 'var(--code-bg)';
+                        textarea.style.color = 'var(--code-text)';
+                        textarea.style.resize = 'none';
+                        textarea.style.minHeight = '100px';
+                        textarea.readOnly = true;
+                    });
+                    return;
+                }
+                console.warn('CodeMirror not loaded, retrying in 100ms... (attempt', initAttempts, '/', maxAttempts, ')');
+                setTimeout(initializeCodeMirror, 100);
+                return;
+            }
+            
+            const codeTextareas = document.querySelectorAll('.codemirror-code');
+            console.log('Initializing CodeMirror for', codeTextareas.length, 'code blocks');
+            
+            codeTextareas.forEach(textarea => {
+                const codeBlock = textarea.closest('.code-block');
+                const language = codeBlock.dataset.language;
+                
+                // Map language to CodeMirror mode
+                let mode = 'text';
+                switch(language) {
+                    case 'c':
+                    case 'cpp':
+                    case 'c++':
+                        mode = 'text/x-csrc';
+                        break;
+                    case 'javascript':
+                    case 'js':
+                        mode = 'javascript';
+                        break;
+                    case 'bash':
+                    case 'shell':
+                    case 'sh':
+                        mode = 'shell';
+                        break;
+                    case 'css':
+                        mode = 'css';
+                        break;
+                    case 'html':
+                        mode = 'htmlmixed';
+                        break;
+                    case 'json':
+                        mode = 'application/json';
+                        break;
+                    default:
+                        mode = 'text';
+                }
+                
+                // Get current theme
+                const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+                const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
+                
+                try {
+                    const editor = CodeMirror.fromTextArea(textarea, {
+                        mode: mode,
+                        theme: cmTheme,
+                        lineNumbers: true,
+                        readOnly: 'nocursor',  // Disable cursor and selection
+                        lineWrapping: true,    // Enable line wrapping to avoid horizontal scroll
+                        scrollbarStyle: 'null', // Remove scrollbars
+                        viewportMargin: Infinity, // Show all content without scrolling
+                        matchBrackets: false,  // Disable bracket matching highlights
+                        styleActiveLine: false, // Disable active line highlighting
+                        indentUnit: 4,
+                        tabSize: 4
+                    });
+                    
+                    // Store editor reference for theme switching
+                    textarea.codeMirrorInstance = editor;
+                    
+                    // Auto-refresh editor size and ensure no scrollbars
+                    setTimeout(() => {
+                        editor.refresh();
+                        editor.setSize(null, 'auto'); // Auto-height based on content
+                    }, 100);
+                    
+                    console.log('CodeMirror initialized for language:', language, 'mode:', mode);
+                } catch (error) {
+                    console.error('Failed to initialize CodeMirror for textarea:', error);
+                }
+            });
+        }
+        
+        // Update CodeMirror themes when switching app theme
+        function updateCodeMirrorThemes() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const cmTheme = currentTheme === 'dark' ? 'darcula' : 'default';
+            
+            document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                if (textarea.codeMirrorInstance) {
+                    textarea.codeMirrorInstance.setOption('theme', cmTheme);
+                }
+            });
+        }
+        
+        // Override the original toggleTheme to also update CodeMirror
+        const originalToggleTheme = toggleTheme;
+        toggleTheme = function() {
+            originalToggleTheme();
+            updateCodeMirrorThemes();
+        };
+        
+        // Initialize CodeMirror when DOM and scripts are fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait a bit more for all scripts to load
+                setTimeout(initializeCodeMirror, 200);
+            });
+        } else {
+            // Document already loaded, wait for scripts
+            setTimeout(initializeCodeMirror, 200);
+        }
     </script>
 </body>
 </html>

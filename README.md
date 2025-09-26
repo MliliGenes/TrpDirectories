@@ -117,10 +117,11 @@ Articles are written in JSON format with the following structure:
 
 ### Content Features
 
-- **Code Blocks**: Use triple backticks with language specification
-- **Syntax Highlighting**: Automatic highlighting for C, JavaScript, bash, etc.
+- **Code Blocks**: CodeMirror-powered syntax highlighting with language specification (required)
+- **Syntax Highlighting**: Supports C, C++, JavaScript, bash, CSS, HTML, JSON, and more
 - **Interactive Navigation**: Auto-generated table of contents
 - **Cross-references**: Link between sections using anchor IDs
+- **Language Field**: All codeblocks must include a `language` field for proper syntax highlighting
 
 ### Example Content Types
 

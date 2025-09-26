@@ -225,9 +225,9 @@ Use this template to create new learning guide articles. Save as `your-article-t
 ```json
 {
   "type": "codeblock",
-  "language": "c",
+  "language": "c", // Required: c, javascript, bash, css, html, json, etc.
   "code": "int main() {\\n    return 0;\\n}",
-  "withSyntaxHighlight": true
+  "withSyntaxHighlight": true // Optional: defaults to true
 }
 ```
 

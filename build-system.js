@@ -113,7 +113,39 @@ class BuildSystem {
             this.log('warn', `Navigation items (${articleData.navigation.length}) don't match sections (${articleData.sections.length}) in ${filename}`);
         }
 
+        // Validate codeblocks have language field
+        this.validateCodeblocks(articleData, filename);
+
         return true;
+    }
+
+    /**
+     * Validate that all codeblocks have language field
+     */
+    validateCodeblocks(articleData, filename) {
+        const validateContent = (content, path = '') => {
+            if (Array.isArray(content)) {
+                content.forEach((item, index) => {
+                    const itemPath = `${path}[${index}]`;
+                    if (item.type === 'codeblock') {
+                        if (!item.language) {
+                            this.log('warn', `Codeblock missing 'language' field at ${itemPath} in ${filename}. CodeMirror syntax highlighting may not work properly.`);
+                        }
+                    }
+                    // Recursively check nested content (like in actionboxes)
+                    if (item.content && Array.isArray(item.content)) {
+                        validateContent(item.content, `${itemPath}.content`);
+                    }
+                });
+            }
+        };
+
+        // Check all sections
+        articleData.sections.forEach((section, sectionIndex) => {
+            if (section.content && Array.isArray(section.content)) {
+                validateContent(section.content, `sections[${sectionIndex}].content`);
+            }
+        });
     }
 
     /**
