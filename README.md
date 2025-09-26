@@ -1,113 +1,204 @@
-# Low-Level Programming Blog
+# TrpDirectories - Low-Level Programming Blog
 
-A comprehensive educational resource for low-level programming concepts, featuring an automated build system that converts JSON articles into beautifully formatted HTML guides.
+A comprehensive educational resource for low-level programming concepts, featuring an automated build system that converts JSON articles into beautifully formatted HTML guides, plus an interactive JSON Builder for easy content creation.
 
 ## 🚀 Features
 
-- **Automated Build System**: JSON-to-HTML conversion with error handling
-- **Organized Content Structure**: Clean separation of source and generated content
-- **Interactive Navigation**: Dynamic table of contents and section jumping
-- **Syntax Highlighting**: Code examples with proper highlighting
-- **Responsive Design**: Mobile-friendly layout with dark/light theme support
-- **Comprehensive Validation**: JSON schema validation and error recovery
+- **Interactive JSON Builder**: Visual interface for creating structured learning guides
+- **Automated Build System**: JSON-to-HTML conversion with comprehensive error handling
+- **Makefile Integration**: Simple build targets (`make all`, `make re`, `make clean`)
+- **Organized Content Structure**: Clean separation of source articles and generated guides
+- **Dynamic Navigation**: Auto-generated table of contents with section jumping
+- **Advanced Syntax Highlighting**: CodeMirror-powered code examples with 20+ languages
+- **Responsive Design**: Mobile-first layout with persistent dark/light theme toggle
+- **Comprehensive Validation**: JSON schema validation and system integrity checks
+- **Tag System**: Categorized content with visual tag indicators
 
 ## 📁 Project Structure
 
-```
+```text
 lowlevel_blog/
-├── articles/                    # 📝 JSON source files for articles
-│   ├── TEMPLATE.md             # Article template and documentation
-│   ├── memory-management-basics.json
-│   ├── sockets-poll.json
-│   └── struct-padding-alignment.json
-├── build/                      # 🔨 Generated HTML guides (auto-created)
-│   ├── Memory Management Basics/
-│   ├── Sockets & Poll/
-│   └── Struct Padding & Alignment/
-├── style/                      # 🎨 Stylesheets
-│   └── main.css
-├── imgs/                       # 🖼️ Images and assets
+├── articles/                           # 📝 JSON source files for articles
+│   ├── TEMPLATE.md                    # Article template and documentation
+│   ├── sockets-poll.json              # Advanced networking guide
+│   ├── struct-padding-alignment.json  # Memory alignment guide
+│   └── x86cpu-16-bit-real-mode.json  # CPU architecture guide
+├── guides/                            # 🔨 Generated HTML guides (auto-created)
+│   ├── sockets-poll/
+│   │   └── index.html
+│   ├── struct-padding-alignment/
+│   │   └── index.html
+│   └── x86-cpu-16-bit-real-mode/
+│       └── index.html
+├── style/                             # 🎨 Stylesheets and theming
+│   ├── main.css                       # Main styling with theme system
+│   └── json-builder.css              # JSON Builder specific styles
+├── imgs/                              # 🖼️ Images and assets
 │   └── favicon.png
-├── build-system.js            # 🏗️ Main build automation
-├── guide-generator.js         # 📄 HTML generation engine
-├── guides-config.json         # ⚙️ Auto-generated configuration
-├── index.html                 # 🏠 Main landing page
-└── README.md                  # 📖 This file
+├── json-builder.html                  # 🛠️ Interactive guide creator
+├── index.html                        # � Main landing page
+├── Makefile                          # 🏗️ Build system automation
+├── build-system.js                   # 📄 HTML generation engine
+├── guide-generator.js                # � Legacy guide generator
+├── validate-system.js                # ✅ System validation and health check
+├── clean-guides.js                   # 🧹 Cleanup automation
+├── guides-config.json                # ⚙️ Auto-generated configuration
+├── guides-schema.json                # 📋 JSON validation schema
+└── README.md                         # 📖 This comprehensive guide
 ```
 
 ## 🛠️ Getting Started
 
 ### Prerequisites
 
-- Node.js (for running the build system)
-- A text editor for creating JSON articles
+- Node.js (for running the build system and validation)
+- Python 3 (optional, for development server)
+- A modern web browser (for the JSON Builder interface)
 
 ### Quick Start
 
 1. **Clone the repository**:
+
    ```bash
    git clone <repository-url>
    cd lowlevel_blog
    ```
 
-2. **Create a new article**:
+2. **Validate system integrity**:
+
+   ```bash
+   make validate
+   # or: node validate-system.js
+   ```
+
+3. **Create content using JSON Builder** (Recommended):
+
+   ```bash
+   make serve
+   # Open http://localhost:8000/json-builder.html in browser
+   # Use the visual interface to create guides
+   ```
+
+4. **Or create manually**:
+
    ```bash
    cp articles/TEMPLATE.md articles/my-new-article.json
-   # Edit the JSON file with your content
+   # Edit the JSON file following the schema
    ```
 
-3. **Build the guides**:
+5. **Build all guides**:
+
    ```bash
-   node build-system.js
+   make all
+   # or: node build-system.js
    ```
 
-4. **Clean generated guides** (optional):
+6. **Start development server**:
+
    ```bash
-   node clean-guides.js
+   make serve
+   # Open http://localhost:8000 in browser
    ```
 
-5. **Open in browser**:
-   ```bash
-   open index.html
-   ```
+### Build System Commands
 
-## 📝 Writing Articles
+The project includes a comprehensive Makefile for easy development:
+
+```bash
+make all      # Validate and build all guides (default)
+make re       # Clean rebuild from scratch  
+make clean    # Remove generated files
+make serve    # Start development server on port 8000
+make validate # Check system integrity
+make watch    # Auto-rebuild on file changes (requires entr)
+make help     # Show all available commands
+```
+
+## 🎨 JSON Builder Interface
+
+The JSON Builder (`json-builder.html`) provides a visual interface for creating structured learning guides without manual JSON editing.
+
+### Features
+
+- **Visual Form Builder**: Step-by-step guide creation
+- **Real-time Preview**: See JSON structure as you build
+- **Content Type Support**: Paragraph, heading, code blocks, lists, quotes
+- **Icon Class Selection**: Color-coded visual selection for section types
+- **Tag System**: Auto-complete tag suggestions with categories
+- **Import/Export**: Load existing guides for editing
+- **Theme Integration**: Consistent light/dark theme support
+- **Validation**: Real-time structure validation
+
+### Content Types Available
+
+- **Paragraph**: Rich text content with HTML support
+- **Heading**: Structured headings (H2, H3, H4) with proper hierarchy  
+- **Code Block**: Syntax-highlighted code with 20+ language support
+- **List**: Ordered/unordered lists with multiple items
+- **Quote**: Blockquotes with optional author attribution
+
+### Using the JSON Builder
+
+1. Open `json-builder.html` in your browser (or use `make serve`)
+2. Fill in guide metadata (title, description, author, difficulty)
+3. Add tags using the autocomplete system
+4. Create sections with appropriate icons and content
+5. Add multiple content items per section as needed
+6. Preview the generated JSON in real-time
+7. Export the completed JSON to the `articles/` directory
+8. Run `make all` to build the HTML guide
+
+## 📝 Manual Article Creation
 
 ### Article Structure
 
-Articles are written in JSON format with the following structure:
+For advanced users or automated workflows, articles use this JSON structure:
 
 ```json
 {
   "meta": {
     "title": "Your Article Title",
-    "description": "Brief description of the article",
-    "tags": ["tag1", "tag2", "tag3"],
+    "description": "Brief description of the article",  
+    "author": "Your Name",
+    "tags": ["networking", "c programming", "systems"],
     "difficulty": "beginner|intermediate|advanced",
     "lastUpdated": "2024-09-26"
   },
   "navigation": [
     {
-      "title": "Section Title",
-      "id": "section-id",
-      "subsections": [
-        {
-          "title": "Subsection Title",
-          "id": "subsection-id"
-        }
-      ]
+      "id": "hook",
+      "emoji": "🎯", 
+      "title": "The Hook",
+      "sectionIndex": 0
+    },
+    {
+      "id": "mechanics",
+      "emoji": "⚙️",
+      "title": "How It Works", 
+      "sectionIndex": 1
     }
   ],
   "sections": [
     {
-      "id": "section-id",
-      "title": "Section Title",
-      "content": "Your content here...",
-      "subsections": [
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
         {
-          "id": "subsection-id",
-          "title": "Subsection Title",
-          "content": "Subsection content..."
+          "type": "paragraph",
+          "content": "Opening paragraph explaining the concept...",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "c", 
+          "code": "int main() {\n    printf(\"Hello World!\\n\");\n    return 0;\n}"
+        },
+        {
+          "type": "list",
+          "ordered": false,
+          "items": ["Key point 1", "Key point 2", "Key point 3"]
         }
       ]
     }
@@ -350,26 +441,47 @@ For issues, questions, or contributions:
 
 ## 🎯 Roadmap
 
-### Version 2.2.0
+### Version 2.2.0 (Next Release)
+
+- [ ] Enhanced JSON Builder with preview mode
 - [ ] Incremental builds (only process changed files)
 - [ ] Article dependencies and cross-references
-- [ ] Enhanced search functionality
-- [ ] Performance metrics and analytics
+- [ ] Advanced search functionality with filtering
+- [ ] Performance metrics and build analytics
 
-### Version 2.3.0
-- [ ] Multi-language support
-- [ ] Interactive code examples
-- [ ] Video embedding support
+### Version 2.3.0 (Future)
+
+- [ ] Multi-language content support
+- [ ] Interactive code examples with live execution
+- [ ] Video embedding and multimedia support
 - [ ] Comment system integration
+- [ ] Advanced tag categorization and filtering
 
-### Version 3.0.0
-- [ ] Static site generator migration
-- [ ] Content management interface
-- [ ] Collaborative editing features
-- [ ] Advanced theming system
+### Version 3.0.0 (Long-term Vision)
+
+- [ ] Static site generator migration (Gatsby/Next.js)
+- [ ] Full-featured content management interface
+- [ ] Collaborative editing and review system
+- [ ] Advanced theming and customization
+- [ ] Plugin architecture for extensibility
+
+## 📊 Current Status
+
+✅ **Completed Features:**
+- Interactive JSON Builder with visual interface
+- Makefile-based build system with multiple targets
+- Comprehensive validation and error handling
+- Responsive design with theme persistence
+- Advanced syntax highlighting (CodeMirror)
+- Tag system with visual indicators
+
+🚧 **In Development:**
+- Enhanced content type support
+- Improved mobile responsiveness
+- Performance optimizations
 
 ---
 
-**Happy coding and learning! 🚀**
+## Happy Coding and Learning! 🚀
 
 *Built with ❤️ for the low-level programming community*
