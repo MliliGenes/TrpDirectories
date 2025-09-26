@@ -589,7 +589,7 @@ pre::-webkit-scrollbar-thumb:hover {
     background: var(--surface);
     border: 2px solid var(--border);
     border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 1rem;
     color: var(--text-primary);
     text-decoration: none;
     font-size: 0.875rem;
@@ -613,7 +613,6 @@ pre::-webkit-scrollbar-thumb:hover {
 }
 
 .back-to-index::before {
-    content: '←';
     font-weight: bold;
     font-size: 1rem;
 }
