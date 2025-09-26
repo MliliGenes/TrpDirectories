@@ -63,7 +63,7 @@ class GuideGenerator {
                     ${authorInfo}
                 </div>
                 <div class="header-nav">
-                    <a href="../../index.html" class="back-to-index">
+                    <a href="../../" class="back-to-index">
                         Back to Index
                     </a>
                     <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>

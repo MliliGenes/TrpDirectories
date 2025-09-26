@@ -26,6 +26,18 @@
                 <p>Explore the different topics and learning guides available in this collection. Each directory contains in-depth content about low-level programming concepts.</p>
             </div>
 
+            <div class="search-section">
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="Search by guide name, tags, or author..." />
+                        <button id="clearSearch" class="clear-btn" style="display: none;">✕</button>
+                    </div>
+                    <div class="search-stats" id="searchStats" style="display: none;">
+                        <span id="searchResults"></span>
+                    </div>
+                </div>
+            </div>
+
             <div class="directory-section">
                 <div class="section-header">
                     <div class="section-icon">📚</div>
@@ -119,8 +131,15 @@
                 loadingElement.style.display = 'none';
 
                 if (!data.directories || data.directories.length === 0) {
+                    // Store empty array for search functionality
+                    allDirectories = [];
+                    filteredDirectories = [];
                     emptyElement.style.display = 'block';
                 } else {
+                    // Store directories for search functionality
+                    allDirectories = [...data.directories];
+                    filteredDirectories = [...data.directories];
+                    
                     gridElement.style.display = 'grid';
                     
                     // Display metadata info
@@ -132,6 +151,10 @@
             } catch (error) {
                 console.error('Error loading directories:', error);
                 loadingElement.innerHTML = '<p>Error loading directories. Please refresh the page.</p>';
+                
+                // Reset search arrays on error
+                allDirectories = [];
+                filteredDirectories = [];
             }
         }
 
@@ -288,10 +311,128 @@
             });
         }
 
+        // Search functionality
+        let allDirectories = [];
+        let filteredDirectories = [];
+
+        function initializeSearch() {
+            const searchInput = document.getElementById('searchInput');
+            const clearBtn = document.getElementById('clearSearch');
+            const searchStats = document.getElementById('searchStats');
+            const searchResults = document.getElementById('searchResults');
+
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                
+                if (query.length > 0) {
+                    clearBtn.style.display = 'flex';
+                    performSearch(query);
+                } else {
+                    clearBtn.style.display = 'none';
+                    clearSearch();
+                }
+            });
+
+            clearBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                clearSearch();
+                searchInput.focus();
+            });
+
+            // Clear search on Escape key
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    searchInput.value = '';
+                    clearSearch();
+                }
+            });
+        }
+
+        function performSearch(query) {
+            const searchStats = document.getElementById('searchStats');
+            const searchResults = document.getElementById('searchResults');
+            
+            const lowerQuery = query.toLowerCase();
+            
+            filteredDirectories = allDirectories.filter(directory => {
+                // Search in title
+                const titleMatch = directory.name.toLowerCase().includes(lowerQuery);
+                
+                // Search in tags
+                const tagsMatch = directory.tags && directory.tags.some(tag => 
+                    tag.toLowerCase().includes(lowerQuery)
+                );
+                
+                // Search in author
+                const authorMatch = directory.author && 
+                    directory.author.toLowerCase().includes(lowerQuery);
+                
+                return titleMatch || tagsMatch || authorMatch;
+            });
+
+            // Update search stats
+            const totalGuides = allDirectories.length;
+            const foundGuides = filteredDirectories.length;
+            
+            searchResults.textContent = foundGuides === totalGuides ? 
+                `Showing all ${totalGuides} guides` :
+                `Found ${foundGuides} of ${totalGuides} guides`;
+            
+            searchStats.style.display = 'block';
+            
+            // Update display
+            populateDirectoryGrid(filteredDirectories);
+            
+            // Show/hide empty state
+            const gridElement = document.getElementById('directoryGrid');
+            const emptyElement = document.getElementById('emptyState');
+            
+            if (filteredDirectories.length === 0) {
+                gridElement.style.display = 'none';
+                emptyElement.style.display = 'block';
+                emptyElement.innerHTML = `
+                    <div class="icon">🔍</div>
+                    <p>No guides found matching "${query}"</p>
+                    <small>Try searching for different keywords, tags, or authors</small>
+                `;
+            } else {
+                gridElement.style.display = 'grid';
+                emptyElement.style.display = 'none';
+            }
+        }
+
+        function clearSearch() {
+            const searchStats = document.getElementById('searchStats');
+            const clearBtn = document.getElementById('clearSearch');
+            const emptyElement = document.getElementById('emptyState');
+            const gridElement = document.getElementById('directoryGrid');
+            
+            searchStats.style.display = 'none';
+            clearBtn.style.display = 'none';
+            
+            // Reset to show all directories
+            filteredDirectories = [...allDirectories];
+            populateDirectoryGrid(filteredDirectories);
+            
+            // Reset empty state
+            if (allDirectories.length === 0) {
+                gridElement.style.display = 'none';
+                emptyElement.style.display = 'block';
+                emptyElement.innerHTML = `
+                    <div class="icon">📭</div>
+                    <p>No directories found in the current location.</p>
+                `;
+            } else {
+                gridElement.style.display = 'grid';
+                emptyElement.style.display = 'none';
+            }
+        }
+
         // Initialize the page
         document.addEventListener('DOMContentLoaded', () => {
             loadTheme();
             loadDirectories();
+            initializeSearch();
         });
     </script>
 </body>
