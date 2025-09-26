@@ -7,6 +7,7 @@
     --danger: #ef4444;
     --background: #f9fafb;
     --surface: #ffffff;
+    --surface-hover: #f3f4f6;
     --text-primary: #111827;
     --text-secondary: #6b7280;
     --border: #d1d5db;
@@ -23,6 +24,7 @@
     --danger: #ef4444;
     --background: #000000;
     --surface: #000000;
+    --surface-hover: #111111;
     --text-primary: #f9fafb;
     --text-secondary: #9ca3af;
     --border: #1f1f1f;
@@ -330,6 +332,79 @@ footer {
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+/* ==== GUIDE NAVIGATION STYLES ==== */
+/* Compact navigation for inside guide pages - separate from main directory grid */
+
+.guide-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.guide-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-align: left;
+    min-height: auto;
+}
+
+.guide-nav-item:hover {
+    border-color: var(--primary);
+    background: var(--surface-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.guide-nav-item:active {
+    transform: translateY(0);
+}
+
+/* Responsive adjustments for guide navigation */
+@media (max-width: 640px) {
+    .guide-nav-grid {
+        grid-template-columns: 1fr;
+        gap: 0.375rem;
+    }
+    
+    .guide-nav-item {
+        padding: 0.625rem 0.875rem;
+        font-size: 0.8rem;
+    }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+    .guide-nav-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .guide-nav-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.625rem;
+    }
+}
+
+@media (min-width: 1025px) {
+    .guide-nav-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
     }
 }
 

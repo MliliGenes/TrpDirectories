@@ -75,12 +75,12 @@ class GuideGenerator {
 
     generateNavigation() {
         const navItems = this.guide.navigation.map(item => 
-            `                <a class="nav-item" href="#${item.id}" data-section="${item.sectionIndex}">${item.emoji} ${item.title}</a>`
+            `                <a class="guide-nav-item" href="#${item.id}" data-section="${item.sectionIndex}">${item.emoji} ${item.title}</a>`
         ).join('\n');
 
         return `    <nav>
         <div class="container">
-            <div class="nav-grid">
+            <div class="guide-nav-grid">
 ${navItems}
             </div>
         </div>
