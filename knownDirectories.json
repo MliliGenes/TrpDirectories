@@ -7,14 +7,6 @@
       "tags": ["memory", "structs", "alignment", "padding", "c programming"],
       "difficulty": "intermediate",
       "lastUpdated": "2024-09-26"
-    },
-    {
-      "name": "Sockets & Poll",
-      "path": "./Sockets & Poll - Learning Guide/",
-      "description": "Master network programming with sockets and efficient I/O multiplexing using poll",
-      "tags": ["networking", "sockets", "poll", "server programming", "I/O multiplexing"],
-      "difficulty": "advanced",
-      "lastUpdated": "2024-09-26"
     }
   ],
   "metadata": {
