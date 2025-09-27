@@ -22,14 +22,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
     
-    <title>Struct Padding & Alignment - Learning Guide</title>
+    <title>C++ Enums vs Enum Classes: A Complete Guide - Learning Guide</title>
 </head>
 <body>
         <header>
         <div class="container">
             <div class="header-content">
                 <div class="header-title">
-                    <h1>Struct Padding & Alignment</h1>
+                    <h1>C++ Enums vs Enum Classes: A Complete Guide</h1>
                     <div class="author-info">By sel-mlil</div>
                 </div>
                 <div class="header-nav">
@@ -47,8 +47,8 @@
                 <a class="guide-nav-item" href="#hook" data-section="0">🎯 The Hook</a>
                 <a class="guide-nav-item" href="#mechanics" data-section="1">⚙️ How It Works</a>
                 <a class="guide-nav-item" href="#examples" data-section="2">🌍 Real Examples</a>
-                <a class="guide-nav-item" href="#practice" data-section="3">🛠️ Do This Now</a>
-                <a class="guide-nav-item" href="#warnings" data-section="4">⚠️ Avoid These</a>
+                <a class="guide-nav-item" href="#practice" data-section="3">🛠️ Hands-On Practice</a>
+                <a class="guide-nav-item" href="#warnings" data-section="4">⚠️ Common Pitfalls</a>
                 <a class="guide-nav-item" href="#connections" data-section="5">🔗 Connections</a>
                 <a class="guide-nav-item" href="#test" data-section="6">🎯 Test Yourself</a>
                 <a class="guide-nav-item" href="#growth" data-section="7">📈 Level Up</a>
@@ -62,9 +62,9 @@
                 <h2 class="section-title">THE HOOK</h2>
             </div>
             <div class="content">
-                <p><strong>What is this?</strong><br>Struct padding and alignment are rules that determine how data is laid out in memory so the CPU can read it efficiently.</p>
-                <p><strong>Why care?</strong><br>They directly affect <strong>memory usage, performance, and binary compatibility</strong> in C programs. Get it wrong, and you waste space or cause crashes (misaligned access).</p>
-                <p><strong>Mental model:</strong><br>Think of it like a <strong>bookshelf</strong>: each shelf holds books of a certain fixed width. If you try to put a big book halfway across two shelves, you'll struggle to pull it out. Padding is the extra empty space added so each book starts neatly at the correct shelf boundary.</p>
+                <p><strong>What is this?</strong><br><code>enum</code> in C++98 is a set of integral constants grouped under one type, while <code>enum class</code> (introduced in C++11) is a scoped, strongly typed version that avoids implicit conversions and name collisions.</p>
+                <p><strong>Why care?</strong><br>Enums structure symbolic constants in parsers, state machines, and tokenizers. <code>enum class</code> provides type safety and clarity, but in C++98 you must rely on classic enums with careful design.</p>
+                <p><strong>Mental model:</strong><br>Think of old <code>enum</code> as sticky notes scattered on a wall (easy but messy). <code>enum class</code> is like putting those notes into clearly labeled folders (organized and safe).</p>
             </div>
         </section>
 
@@ -76,17 +76,15 @@
             <div class="content">
                 <h3>Core mechanics</h3>
                 <ul>
-                    <li><strong>CPU word:</strong> 32-bit CPU = 4 bytes, 64-bit CPU = 8 bytes. Accessing aligned data takes 1 cycle, misaligned data may take multiple cycles or even cause a bus error.</li>
-                    <li><strong>Members:</strong> Each member inside a struct is aligned independently.</li>
-                    <li><strong>Arrays:</strong> Each element in an array of structs must align properly, so the <em>stride</em> (element size) is the padded struct size.</li>
-                    <li><strong>Nested structs:</strong> Alignment rules propagate — the nested struct behaves like a member with its own alignment requirements.</li>
+                    <li><strong>Classic enum:</strong> Weakly typed, values injected into outer scope, implicitly convertible to <code>int</code>.</li>
+                    <li><strong>Enum class:</strong> Scoped to their type, no implicit conversion to <code>int</code>, comparisons only within the same enum.</li>
                 </ul>
                 <h3>Governing principles</h3>
-                <ol>
-                    <li>Each member starts at an offset that is a multiple of its alignment.</li>
-                    <li>Padding is added between members as needed.</li>
-                    <li>Total struct size is padded to be a multiple of the largest alignment.</li>
-                </ol>
+                <ul>
+                    <li>C++98 → only old enums available.</li>
+                    <li>C++11+ → enum classes provide safer scoping and typing.</li>
+                    <li>Trade-off: old enums are concise but error-prone; enum classes are verbose but safer.</li>
+                </ul>
             </div>
         </section>
 
@@ -96,64 +94,30 @@
                 <h2 class="section-title">REAL EXAMPLES</h2>
             </div>
             <div class="content">
-                <h3>Simple case</h3>
-                <div class="code-block" data-language="c">
-                    <textarea id="code-wf3iyfu38" class="codemirror-code">struct A {
-    char c;  // 1 byte
-    int i;   // 4 bytes
+                <h3>C++98 JSON parser tokens</h3>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-sfofmibuf" class="codemirror-code">enum TokenType {
+    TOKEN_STRING,
+    TOKEN_NUMBER,
+    TOKEN_LBRACE,
+    TOKEN_RBRACE,
+    TOKEN_COLON,
+    TOKEN_COMMA,
+    TOKEN_EOF
 };</textarea>
                 </div>
-                <p>On 32-bit or 64-bit:</p>
-                <ul>
-                    <li><code>c</code> at offset 0</li>
-                    <li>3 bytes padding</li>
-                    <li><code>i</code> at offset 4–7</li>
-                    <li><strong>Struct size = 8 bytes (not 5).</strong></li>
-                </ul>
-                <h3>Professional use</h3>
-                <div class="code-block" data-language="c">
-                    <textarea id="code-y68mmjhh4" class="codemirror-code">struct B {
-    char c;   // 1
-    char d;   // 1
-    int i;    // 4
+                <h3>C++11+ safer design</h3>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-kcb895oqh" class="codemirror-code">enum class TokenType {
+    String,
+    Number,
+    LBrace,
+    RBrace,
+    Colon,
+    Comma,
+    EndOfFile
 };</textarea>
                 </div>
-                <p>Layout:</p>
-                <ul>
-                    <li><code>c</code> offset 0</li>
-                    <li><code>d</code> offset 1</li>
-                    <li>2 bytes padding</li>
-                    <li><code>i</code> offset 4–7</li>
-                    <li><strong>Size = 8 bytes</strong>.</li>
-                </ul>
-                <p>Efficient if reordered:</p>
-                <div class="code-block" data-language="c">
-                    <textarea id="code-vq0gpbl2a" class="codemirror-code">struct B_opt {
-    int i;    // 4
-    char c;   // 1
-    char d;   // 1
-}; // size = 8 but better packing for arrays</textarea>
-                </div>
-                <h3>Edge case: Arrays & nested structs</h3>
-                <div class="code-block" data-language="c">
-                    <textarea id="code-dy837diu3" class="codemirror-code">struct Point {
-    char c;
-    int i;
-};
-struct Shape {
-    int id;
-    struct Point p;
-};</textarea>
-                </div>
-                <ul>
-                    <li><code>Point</code> size = 8 (due to padding).</li>
-                    <li><code>Shape</code>: <ul><li><code>id</code> at offset 0–3</li><li>padding 4–7</li><li><code>p</code> at offset 8–15</li><li><strong>Size = 16 bytes</strong>, not 12.</li></ul></li>
-                </ul>
-                <p>For an array:</p>
-                <div class="code-block" data-language="c">
-                    <textarea id="code-quwxtb9mp" class="codemirror-code">struct Point arr[3];</textarea>
-                </div>
-                <p>Each element takes 8 bytes, so total = 24 bytes. Padding ensures each <code>i</code> stays 4-byte aligned.</p>
             </div>
         </section>
 
@@ -165,24 +129,13 @@ struct Shape {
             <div class="content">
                 <div class="action-box">
                 <ol>
-                    <li>Write a small C program:</li>
+                    <li>Define enums for JSON value types (Null, Boolean, Number, String, Array, Object).</li>
+                    <li>Define enums for token types (braces, brackets, comma, colon, string, number).</li>
+                    <li>Write a tokenizer function that returns a <code>TokenType</code>.</li>
+                    <li>Use <code>switch</code> on <code>TokenType</code> to handle parsing logic.</li>
+                    <li>Wrap enums inside a <code>namespace json</code> to avoid naming collisions.</li>
                 </ol>
-                <div class="code-block" data-language="c">
-                    <textarea id="code-j689sms5r" class="codemirror-code">#include <stdio.h>
-
-struct X { char c; int i; };
-struct Y { int i; char c; };
-
-int main() {
-    printf("sizeof(struct X) = %zu\n", sizeof(struct X));
-    printf("sizeof(struct Y) = %zu\n", sizeof(struct Y));
-}</textarea>
-                </div>
-                <ol start="2">
-                    <li>Compile and run.</li>
-                    <li>Notice how both are 8, but layouts differ (you can confirm with <code>offsetof</code>).</li>
-                </ol>
-                <p><strong>What to look for:</strong> The difference between field order and struct size.<br><strong>Quick win:</strong> See that reordering fields doesn't always reduce size, but often improves cache efficiency.</p>
+                <p><strong>What to look for:</strong> Clear token categories, no magic numbers.<br><strong>Quick win:</strong> Easier to extend parser logic without fragile constants.</p>
                 </div>
             </div>
         </section>
@@ -195,9 +148,10 @@ int main() {
             <div class="content">
                 <div class="warning-box">
                 <ul>
-                    <li><strong>Assuming struct size = sum of members</strong> → Always check <code>sizeof</code>.</li>
-                    <li><strong>Forgetting about arrays of structs</strong> → Padding inside one element gets multiplied across the array.</li>
-                    <li><strong>Embedding structs blindly</strong> → Nested structs carry their alignment rules into parents.</li>
+                    <li><strong>Mixing ints and enums</strong> → Avoid using <code>if (token == 0)</code>, use enum names instead.</li>
+                    <li><strong>Name collisions</strong> → Different enums using the same value like <code>STRING</code> can conflict.</li>
+                    <li><strong>Assuming enum size</strong> → Underlying type is compiler-defined in C++98.</li>
+                    <li><strong>Using enums as bitmasks carelessly</strong> → Requires manual operator overloads.</li>
                 </ul>
                 </div>
             </div>
@@ -210,9 +164,9 @@ int main() {
             </div>
             <div class="content">
                 <ul>
-                    <li><strong>Prerequisites:</strong> Pointers, memory addressing, word size.</li>
-                    <li><strong>Related concepts:</strong> Cache lines, ABI (Application Binary Interface), <code>#pragma pack</code> / <code>__attribute__((packed))</code>.</li>
-                    <li><strong>Next steps:</strong> Study how padding interacts with bitfields, unions, and serialization.</li>
+                    <li><strong>Prerequisites:</strong> Macros vs constants; namespaces for scoping.</li>
+                    <li><strong>Related concepts:</strong> Switch-case exhaustiveness, typedefs, strong typing.</li>
+                    <li><strong>Next steps:</strong> Explore enum classes in C++11+, then modern variants like <code>std::variant</code> for representing JSON values.</li>
                 </ul>
             </div>
         </section>
@@ -224,11 +178,13 @@ int main() {
             </div>
             <div class="content">
                 <ol>
-                    <li>Why does <code>sizeof(struct {char c; int i;})</code> equal 8, not 5?</li>
-                    <li>What happens to array size when padding is inside the struct?</li>
-                    <li>How does the largest member influence total struct size?</li>
+                    <li>What’s the main safety issue with old enums?</li>
+                    <li>Why does <code>if (token == 0)</code> compile with old enums but fail with enum class?</li>
+                    <li>How do you avoid name clashes in C++98 enums?</li>
+                    <li>How do you simulate <code>enum class</code> in C++98?</li>
+                    <li>Write an enum for JSON parser states (Start, ParsingArray, ParsingObject, Done).</li>
                 </ol>
-                <p><strong>Success criteria:</strong> You can predict struct size and explain why padding appears.<br><strong>Review triggers:</strong> Any time you serialize structs across systems (e.g., networking, file formats).</p>
+                <p><strong>Success criteria:</strong> You can model JSON tokens and values with enums cleanly.<br><strong>Review triggers:</strong> If you find yourself using raw integers for tokens or states.</p>
             </div>
         </section>
 
@@ -239,9 +195,9 @@ int main() {
             </div>
             <div class="content">
                 <ul>
-                    <li><strong>This week:</strong> Experiment with <code>sizeof</code> and <code>offsetof</code> for different struct layouts.</li>
-                    <li><strong>This month:</strong> Learn ABI rules for your platform (x86, ARM).</li>
-                    <li><strong>Long term:</strong> Master cache-aware struct design, packed structs for networking, and alignment for SIMD/vectorization.</li>
+                    <li><strong>This week:</strong> Implement enums for your JSON parser tokens and wrap them in a namespace.</li>
+                    <li><strong>This month:</strong> Refactor tokenizer and parser logic to exclusively use enums instead of constants.</li>
+                    <li><strong>Long term:</strong> Transition to modern C++ and replace with enum classes, then explore <code>std::variant</code> for representing JSON values robustly.</li>
                 </ul>
             </div>
         </section>
@@ -294,12 +250,12 @@ int main() {
                 this.classList.toggle('completed');
                 const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
                     .map(el => el.getAttribute('data-section'));
-                localStorage.setItem('completed-struct-padding---alignment', JSON.stringify(completedSections));
+                localStorage.setItem('completed-c---enums-vs-enum-classes--a-complete-guide', JSON.stringify(completedSections));
             });
         });
 
         // Load saved progress
-        const savedProgress = localStorage.getItem('completed-struct-padding---alignment');
+        const savedProgress = localStorage.getItem('completed-c---enums-vs-enum-classes--a-complete-guide');
         if (savedProgress) {
             const completed = JSON.parse(savedProgress);
             completed.forEach(sectionNum => {
@@ -313,15 +269,15 @@ int main() {
             checkbox.classList.toggle('checked');
             if (checkbox.classList.contains('checked')) {
                 checkbox.innerHTML = '✓';
-                localStorage.setItem('mastered-struct-padding---alignment', 'true');
+                localStorage.setItem('mastered-c---enums-vs-enum-classes--a-complete-guide', 'true');
             } else {
                 checkbox.innerHTML = '';
-                localStorage.setItem('mastered-struct-padding---alignment', 'false');
+                localStorage.setItem('mastered-c---enums-vs-enum-classes--a-complete-guide', 'false');
             }
         }
 
         // Load mastery status
-        const masteryStatus = localStorage.getItem('mastered-struct-padding---alignment');
+        const masteryStatus = localStorage.getItem('mastered-c---enums-vs-enum-classes--a-complete-guide');
         if (masteryStatus === 'true') {
             const masteryCheckbox = document.querySelector('footer .checkbox');
             if (masteryCheckbox) {

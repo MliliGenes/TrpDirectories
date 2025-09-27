@@ -1,0 +1,215 @@
+{
+  "meta": {
+    "title": "C++ Enums vs Enum Classes: A Complete Guide",
+    "description": "A comprehensive guide to understanding the differences between C++98 enums and modern enum classes, including their mechanics, use cases, pitfalls, and best practices for building clean structures such as a JSON parser.",
+    "author": "sel-mlil",
+    "tags": ["c++", "enums", "enum class", "json parser", "intermediate"],
+    "difficulty": "intermediate",
+    "lastUpdated": "2025-09-27"
+  },
+  "navigation": [
+    {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},
+    {"id": "mechanics", "emoji": "⚙️", "title": "How It Works", "sectionIndex": 1},
+    {"id": "examples", "emoji": "🌍", "title": "Real Examples", "sectionIndex": 2},
+    {"id": "practice", "emoji": "🛠️", "title": "Hands-On Practice", "sectionIndex": 3},
+    {"id": "warnings", "emoji": "⚠️", "title": "Common Pitfalls", "sectionIndex": 4},
+    {"id": "connections", "emoji": "🔗", "title": "Connections", "sectionIndex": 5},
+    {"id": "test", "emoji": "🎯", "title": "Test Yourself", "sectionIndex": 6},
+    {"id": "growth", "emoji": "📈", "title": "Level Up", "sectionIndex": 7}
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>What is this?</strong><br><code>enum</code> in C++98 is a set of integral constants grouped under one type, while <code>enum class</code> (introduced in C++11) is a scoped, strongly typed version that avoids implicit conversions and name collisions.",
+          "html": true
+        },
+        {
+          "type": "paragraph", 
+          "content": "<strong>Why care?</strong><br>Enums structure symbolic constants in parsers, state machines, and tokenizers. <code>enum class</code> provides type safety and clarity, but in C++98 you must rely on classic enums with careful design.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Mental model:</strong><br>Think of old <code>enum</code> as sticky notes scattered on a wall (easy but messy). <code>enum class</code> is like putting those notes into clearly labeled folders (organized and safe).",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW IT WORKS",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Core mechanics"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Classic enum:</strong> Weakly typed, values injected into outer scope, implicitly convertible to <code>int</code>.",
+            "<strong>Enum class:</strong> Scoped to their type, no implicit conversion to <code>int</code>, comparisons only within the same enum."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Governing principles"
+        },
+        {
+          "type": "list",
+          "items": [
+            "C++98 → only old enums available.",
+            "C++11+ → enum classes provide safer scoping and typing.",
+            "Trade-off: old enums are concise but error-prone; enum classes are verbose but safer."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍", 
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "C++98 JSON parser tokens"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "enum TokenType {\n    TOKEN_STRING,\n    TOKEN_NUMBER,\n    TOKEN_LBRACE,\n    TOKEN_RBRACE,\n    TOKEN_COLON,\n    TOKEN_COMMA,\n    TOKEN_EOF\n};"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "C++11+ safer design"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "enum class TokenType {\n    String,\n    Number,\n    LBrace,\n    RBrace,\n    Colon,\n    Comma,\n    EndOfFile\n};"
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "DO THIS NOW",
+      "emoji": "🛠️",
+      "iconClass": "practice", 
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "Define enums for JSON value types (Null, Boolean, Number, String, Array, Object).",
+                "Define enums for token types (braces, brackets, comma, colon, string, number).",
+                "Write a tokenizer function that returns a <code>TokenType</code>.",
+                "Use <code>switch</code> on <code>TokenType</code> to handle parsing logic.",
+                "Wrap enums inside a <code>namespace json</code> to avoid naming collisions."
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>What to look for:</strong> Clear token categories, no magic numbers.<br><strong>Quick win:</strong> Easier to extend parser logic without fragile constants.",
+              "html": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "list",
+              "items": [
+                "<strong>Mixing ints and enums</strong> → Avoid using <code>if (token == 0)</code>, use enum names instead.",
+                "<strong>Name collisions</strong> → Different enums using the same value like <code>STRING</code> can conflict.",
+                "<strong>Assuming enum size</strong> → Underlying type is compiler-defined in C++98.",
+                "<strong>Using enums as bitmasks carelessly</strong> → Requires manual operator overloads."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "connections",
+      "title": "CONNECTIONS", 
+      "emoji": "🔗",
+      "iconClass": "connections",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>Prerequisites:</strong> Macros vs constants; namespaces for scoping.",
+            "<strong>Related concepts:</strong> Switch-case exhaustiveness, typedefs, strong typing.",
+            "<strong>Next steps:</strong> Explore enum classes in C++11+, then modern variants like <code>std::variant</code> for representing JSON values."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {
+          "type": "list", 
+          "ordered": true,
+          "items": [
+            "What’s the main safety issue with old enums?",
+            "Why does <code>if (token == 0)</code> compile with old enums but fail with enum class?",
+            "How do you avoid name clashes in C++98 enums?",
+            "How do you simulate <code>enum class</code> in C++98?",
+            "Write an enum for JSON parser states (Start, ParsingArray, ParsingObject, Done)."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Success criteria:</strong> You can model JSON tokens and values with enums cleanly.<br><strong>Review triggers:</strong> If you find yourself using raw integers for tokens or states.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth", 
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>This week:</strong> Implement enums for your JSON parser tokens and wrap them in a namespace.",
+            "<strong>This month:</strong> Refactor tokenizer and parser logic to exclusively use enums instead of constants.",
+            "<strong>Long term:</strong> Transition to modern C++ and replace with enum classes, then explore <code>std::variant</code> for representing JSON values robustly."
+          ]
+        }
+      ]
+    }
+  ]
+}
