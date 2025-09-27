@@ -17,6 +17,24 @@
       "lastUpdated": "2025-09-27"
     },
     {
+      "id": "c--98-stl-containers--vector-and-map-mastery-guide",
+      "title": "C++98 STL Containers: Vector and Map Mastery Guide",
+      "path": "guides/c98-stl-containers-vector-and-map-mastery-guide/",
+      "description": "An exhaustive, deep-dive guide covering the STL, focusing on std::vector and std::map from basic concepts to advanced use cases, performance characteristics, and best practices essential for C++98 professional mastery.",
+      "author": "sel-mlil",
+      "tags": [
+        "c++",
+        "c++98",
+        "stl",
+        "vector",
+        "map",
+        "data-structures",
+        "performance"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2024-09-27"
+    },
+    {
       "id": "sockets---poll",
       "title": "Sockets & Poll",
       "path": "guides/sockets-poll/",
@@ -68,8 +86,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-27T02:16:57.713Z",
-    "totalGuides": 4,
+    "lastModified": "2025-09-27T04:03:51.442Z",
+    "totalGuides": 5,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }

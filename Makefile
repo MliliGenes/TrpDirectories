@@ -19,7 +19,7 @@ RED = \033[0;31m
 NC = \033[0m # No Color
 
 # Default target
-.PHONY: all re clean help
+.PHONY: all re clean deploy help
 
 # Build all guides and validate the system
 all: build
@@ -93,6 +93,17 @@ watch:
 		exit 1; \
 	fi
 
+# Deploy: rebuild, commit with timestamp, and push to main
+deploy: re
+	@echo "$(YELLOW)🚀 Deploying to main branch...$(NC)"
+	@echo "$(YELLOW)📦 Adding all changes to git...$(NC)"
+	@git add .
+	@echo "$(YELLOW)💾 Committing with timestamp...$(NC)"
+	@git commit -m "Deploy: $(shell date '+%Y-%m-%d %H:%M:%S')" || echo "$(YELLOW)ℹ️  No changes to commit$(NC)"
+	@echo "$(YELLOW)⬆️  Pushing to main origin...$(NC)"
+	@git push origin main
+	@echo "$(GREEN)✅ Deployment complete! Changes pushed to main branch.$(NC)"
+
 # Show help information
 help:
 	@echo "$(GREEN)TrpDirectories Blog Build System$(NC)"
@@ -105,6 +116,7 @@ help:
 	@echo "  $(YELLOW)build$(NC)    - Generate HTML guides from JSON articles"
 	@echo "  $(YELLOW)serve$(NC)    - Start local development server on port 8000"
 	@echo "  $(YELLOW)watch$(NC)    - Watch for file changes and auto-rebuild"
+	@echo "  $(YELLOW)deploy$(NC)   - Rebuild, commit with timestamp, and push to main"
 	@echo "  $(YELLOW)help$(NC)     - Show this help message"
 	@echo ""
 	@echo "Examples:"
@@ -112,5 +124,6 @@ help:
 	@echo "  make re      # Full clean rebuild"
 	@echo "  make clean   # Clean generated files"
 	@echo "  make serve   # Start dev server"
+	@echo "  make deploy  # Deploy to main branch"
 	@echo ""
 	@echo "$(GREEN)Happy coding! 🚀$(NC)"
