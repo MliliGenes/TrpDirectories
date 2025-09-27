@@ -86,7 +86,7 @@
                     <li><strong>Single-Tasking:</strong> The hardware does not support virtual memory or preemptive multitasking; it is inherently a single-process environment.</li>
                 </ul>
                 <div class="code-block" data-language="latex">
-                    <textarea id="code-wrwuksvfe" class="codemirror-code">Physical Address = (\text{Segment Register Value} \times 16) + \text{Offset Register Value}</textarea>
+                    <textarea id="code-s6ssgza81" class="codemirror-code">Physical Address = (\text{Segment Register Value} \times 16) + \text{Offset Register Value}</textarea>
                 </div>
             </div>
         </section>
@@ -100,7 +100,7 @@
                 <h3>Case Study 1: MS-DOS Program Execution</h3>
                 <p>MS-DOS is the quintessential Real Mode OS. Programs often run in a **Tiny Memory Model** where CS, DS, SS, and ES all point to the same segment, giving the program a single 64 KB working space.</p>
                 <div class="code-block" data-language="assembly">
-                    <textarea id="code-3fsy9qgnc" class="codemirror-code">; Simple 8086 Real Mode program to print 'Hello' (using MS-DOS INT 21h)
+                    <textarea id="code-7ifnq6h52" class="codemirror-code">; Simple 8086 Real Mode program to print 'Hello' (using MS-DOS INT 21h)
 
 ORG 100h       ; Standard starting point for .COM files
 

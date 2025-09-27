@@ -35,6 +35,25 @@
       "lastUpdated": "2024-09-27"
     },
     {
+      "id": "lexical-analysis-mastery--building-high-performance-lexers-from-scratch",
+      "title": "Lexical Analysis Mastery: Building High-Performance Lexers from Scratch",
+      "path": "guides/lexical-analysis-mastery-building-high-performance-lexers-from-scratch/",
+      "description": "A comprehensive deep-dive guide covering lexical analysis from basic concepts to production-ready implementations, focusing on tokenization, pattern recognition, and performance optimization essential for compiler construction and language processing.",
+      "author": "sel-mlil",
+      "tags": [
+        "compiler-theory",
+        "lexical-analysis",
+        "tokenization",
+        "parsing",
+        "c",
+        "cpp",
+        "performance",
+        "language-design"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2024-09-27"
+    },
+    {
       "id": "sockets---poll",
       "title": "Sockets & Poll",
       "path": "guides/sockets-poll/",
@@ -86,8 +105,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-27T04:03:51.442Z",
-    "totalGuides": 5,
+    "lastModified": "2025-09-27T06:40:46.575Z",
+    "totalGuides": 6,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }

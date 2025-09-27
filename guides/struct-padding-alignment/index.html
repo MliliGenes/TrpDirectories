@@ -98,7 +98,7 @@
             <div class="content">
                 <h3>Simple case</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-seyb7yw7r" class="codemirror-code">struct A {
+                    <textarea id="code-x86uaz3g0" class="codemirror-code">struct A {
     char c;  // 1 byte
     int i;   // 4 bytes
 };</textarea>
@@ -112,7 +112,7 @@
                 </ul>
                 <h3>Professional use</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-2l1xi3am0" class="codemirror-code">struct B {
+                    <textarea id="code-p7gnbvkor" class="codemirror-code">struct B {
     char c;   // 1
     char d;   // 1
     int i;    // 4
@@ -128,7 +128,7 @@
                 </ul>
                 <p>Efficient if reordered:</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-if8tr7gtl" class="codemirror-code">struct B_opt {
+                    <textarea id="code-49opwdbyd" class="codemirror-code">struct B_opt {
     int i;    // 4
     char c;   // 1
     char d;   // 1
@@ -136,7 +136,7 @@
                 </div>
                 <h3>Edge case: Arrays & nested structs</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-107v24ath" class="codemirror-code">struct Point {
+                    <textarea id="code-e54sz03jz" class="codemirror-code">struct Point {
     char c;
     int i;
 };
@@ -151,7 +151,7 @@ struct Shape {
                 </ul>
                 <p>For an array:</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-t0i48ksjk" class="codemirror-code">struct Point arr[3];</textarea>
+                    <textarea id="code-nd2pso81n" class="codemirror-code">struct Point arr[3];</textarea>
                 </div>
                 <p>Each element takes 8 bytes, so total = 24 bytes. Padding ensures each <code>i</code> stays 4-byte aligned.</p>
             </div>
@@ -168,7 +168,7 @@ struct Shape {
                     <li>Write a small C program:</li>
                 </ol>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-g8zjfsatw" class="codemirror-code">#include <stdio.h>
+                    <textarea id="code-vvpdgh9a6" class="codemirror-code">#include <stdio.h>
 
 struct X { char c; int i; };
 struct Y { int i; char c; };

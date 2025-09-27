@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="../../imgs/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="../../style/main.css">
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/darcula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/default.min.css">
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    
+    <title>Lexical Analysis Mastery: Building High-Performance Lexers from Scratch - Learning Guide</title>
+</head>
+<body>
+        <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Lexical Analysis Mastery: Building High-Performance Lexers from Scratch</h1>
+                    <div class="author-info">By sel-mlil</div>
+                </div>
+                <div class="header-nav">
+                    <a href="../../" class="back-to-index">
+                        Back to Index
+                    </a>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+                </div>
+            </div>
+        </div>
+    </header>
+        <nav>
+        <div class="container">
+            <div class="guide-nav-grid">
+                <a class="guide-nav-item" href="#hook" data-section="0">🎯 The Hook</a>
+                <a class="guide-nav-item" href="#concept" data-section="1">💡 Core Concepts</a>
+                <a class="guide-nav-item" href="#mechanics" data-section="2">⚙️ How Lexers Work</a>
+                <a class="guide-nav-item" href="#examples" data-section="3">🌍 Real Examples</a>
+                <a class="guide-nav-item" href="#practice" data-section="4">🛠️ DO THIS NOW (Build a Lexer)</a>
+                <a class="guide-nav-item" href="#debugging" data-section="5">🐛 Debugging & Troubleshooting</a>
+                <a class="guide-nav-item" href="#performance" data-section="6">🚀 Performance & Optimization</a>
+                <a class="guide-nav-item" href="#warnings" data-section="7">⚠️ AVOID THESE (Critical Pitfalls)</a>
+                <a class="guide-nav-item" href="#advanced" data-section="8">🎓 Advanced Topics</a>
+                <a class="guide-nav-item" href="#test" data-section="9">🎯 Test Yourself</a>
+                <a class="guide-nav-item" href="#growth" data-section="10">📈 LEVEL UP</a>
+            </div>
+        </div>
+    </nav>
+        <main class="container">
+        <section id="hook">
+            <div class="section-header">
+                <div class="section-icon hook">🎯</div>
+                <h2 class="section-title">THE HOOK</h2>
+            </div>
+            <div class="content">
+                <p><strong>What is this?</strong><br>A lexer (lexical analyzer) is a component that breaks down raw text into meaningful tokens - the fundamental building blocks of programming languages, configuration files, or any structured text format. Think of it as a <strong>word recognizer</strong> that converts a stream of characters into a stream of categorized symbols that a parser can understand.</p>
+                <p><strong>Why care?</strong><br>Understanding lexers unlocks the ability to build interpreters, domain-specific languages, configuration parsers, and data processing tools from scratch. Core skill for compiler engineers ($120K-200K+ salary), language designers, IDE developers, and anyone building developer tools or automation systems.</p>
+                <p><strong>Mental model:</strong><br>Like a <strong>librarian</strong> who quickly scans books and puts colored sticky notes on different types of content - nouns get blue tabs, verbs get red tabs, numbers get green tabs. Or a <strong>factory quality inspector</strong> who examines products on a conveyor belt, categorizing each item and rejecting malformed ones.</p>
+            </div>
+        </section>
+
+        <section id="concept">
+            <div class="section-header">
+                <div class="section-icon concept">💡</div>
+                <h2 class="section-title">Core Concepts</h2>
+            </div>
+            <div class="content">
+                <h3>Lexical Analysis Fundamentals</h3>
+                <ul>
+                    <li><strong>Tokenization:</strong> Converting character sequences into meaningful units (tokens) like keywords, identifiers, operators, and literals.</li>
+                    <li><strong>Pattern Recognition:</strong> Matching character sequences against predefined rules using finite state machines or lookup tables.</li>
+                    <li><strong>Position Tracking:</strong> Maintaining line and column information for error reporting and debugging capabilities.</li>
+                    <li><strong>State Management:</strong> Handling context-sensitive parsing (inside strings, comments, different language modes).</li>
+                </ul>
+                <h3>Token Categories</h3>
+                <ul>
+                    <li><strong>Keywords:</strong> Reserved words like <code>if</code>, <code>while</code>, <code>class</code> - language-specific tokens with fixed meaning.</li>
+                    <li><strong>Identifiers:</strong> User-defined names for variables, functions, types - alphanumeric sequences starting with letter/underscore.</li>
+                    <li><strong>Literals:</strong> Constant values like numbers (<code>42</code>, <code>3.14</code>), strings (<code>"hello"</code>), characters (<code>'a'</code>).</li>
+                    <li><strong>Operators:</strong> Symbols for operations like <code>+</code>, <code>-</code>, <code>==</code>, <code>&&</code> - can be single or multi-character.</li>
+                    <li><strong>Delimiters:</strong> Structural symbols like <code>()</code>, <code>{}</code>, <code>;</code>, <code>,</code> - define syntax boundaries.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="mechanics">
+            <div class="section-header">
+                <div class="section-icon mechanics">⚙️</div>
+                <h2 class="section-title">HOW LEXERS WORK</h2>
+            </div>
+            <div class="content">
+                <h3>Core Mechanics</h3>
+                <ol>
+                    <li><strong>Character Consumption:</strong> Read input character by character, maintaining position tracking for error reporting.</li>
+                    <li><strong>Pattern Recognition:</strong> Match character sequences against predefined rules (keywords, operators, literals).</li>
+                    <li><strong>Token Generation:</strong> Create token objects with type, value, and position information.</li>
+                    <li><strong>State Management:</strong> Track lexer state (inside string, comment, etc.) for context-sensitive parsing.</li>
+                    <li><strong>Error Handling:</strong> Detect and report invalid character sequences with precise location information.</li>
+                </ol>
+                <h3>Key Components</h3>
+                <ul>
+                    <li><strong>Input Buffer:</strong> Stores source text with efficient access patterns and lookahead capability.</li>
+                    <li><strong>Position Tracker:</strong> Maintains line/column information for error reporting and debugging.</li>
+                    <li><strong>Token Classifier:</strong> Maps character patterns to token types using finite state machines or lookup tables.</li>
+                    <li><strong>Symbol Table:</strong> Stores identifiers and their attributes (optional, often handled by parser).</li>
+                    <li><strong>Error Handler:</strong> Manages malformed input and recovery strategies.</li>
+                </ul>
+                <h3>Governing Principles</h3>
+                <ul>
+                    <li><strong>Maximal Munch:</strong> Always consume the longest possible token (e.g., <code>123.45</code> as one float, not <code>123</code>, <code>.</code>, <code>45</code>).</li>
+                    <li><strong>Priority Ordering:</strong> Keywords take precedence over identifiers (<code>if</code> is IF_TOKEN, not IDENTIFIER).</li>
+                    <li><strong>Deterministic Scanning:</strong> Same input always produces same token sequence for predictable behavior.</li>
+                    <li><strong>Linear Time Complexity:</strong> $O(n)$ performance where $n$ is input length - essential for large codebases.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="examples">
+            <div class="section-header">
+                <div class="section-icon examples">🌍</div>
+                <h2 class="section-title">REAL EXAMPLES</h2>
+            </div>
+            <div class="content">
+                <h3>Basic Arithmetic Lexer (C)</h3>
+                <p>A simple lexer for mathematical expressions demonstrating core tokenization concepts:</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-d218cajju" class="codemirror-code">typedef enum {
+    TOKEN_NUMBER, TOKEN_PLUS, TOKEN_MINUS, TOKEN_MULTIPLY,
+    TOKEN_DIVIDE, TOKEN_LPAREN, TOKEN_RPAREN, TOKEN_EOF, TOKEN_ERROR
+} TokenType;
+
+typedef struct {
+    TokenType type;
+    char* value;
+    int line, column;
+} Token;
+
+typedef struct {
+    char* input;
+    int position, line, column;
+    char current_char;
+} Lexer;
+
+Token lexer_next_token(Lexer* lexer) {
+    while (lexer->current_char != '\0') {
+        if (isspace(lexer->current_char)) {
+            lexer_advance(lexer);
+            continue;
+        }
+        
+        if (isdigit(lexer->current_char)) {
+            return lexer_read_number(lexer);
+        }
+        
+        switch (lexer->current_char) {
+            case '+': return create_token(TOKEN_PLUS, "+", lexer);
+            case '-': return create_token(TOKEN_MINUS, "-", lexer);
+            case '*': return create_token(TOKEN_MULTIPLY, "*", lexer);
+            // ... other operators
+        }
+    }
+    return create_token(TOKEN_EOF, NULL, lexer);
+}</textarea>
+                </div>
+                <h3>Professional JSON Lexer (C++)</h3>
+                <p>Production-quality lexer with proper error handling and Unicode support:</p>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-8z8cqtdex" class="codemirror-code">class JsonLexer {
+public:
+    enum TokenType {
+        STRING, NUMBER, TRUE_VAL, FALSE_VAL, NULL_VAL,
+        LEFT_BRACE, RIGHT_BRACE, LEFT_BRACKET, RIGHT_BRACKET,
+        COMMA, COLON, END_OF_FILE, INVALID
+    };
+    
+    struct Token {
+        TokenType type;
+        std::string value;
+        size_t line, column;
+    };
+
+private:
+    std::string input_;
+    size_t position_, line_, column_;
+    char current_char_;
+    
+    Token read_string() {
+        size_t start_line = line_, start_column = column_;
+        std::string result;
+        
+        advance(); // Skip opening quote
+        
+        while (current_char_ != '\0' && current_char_ != '"') {
+            if (current_char_ == '\\') {
+                advance();
+                switch (current_char_) {
+                    case 'n': result += '\n'; break;
+                    case 't': result += '\t'; break;
+                    case '\\': result += '\\'; break;
+                    case '"': result += '"'; break;
+                    default: return Token{INVALID, "Invalid escape", start_line, start_column};
+                }
+            } else {
+                result += current_char_;
+            }
+            advance();
+        }
+        
+        if (current_char_ != '"') {
+            return Token{INVALID, "Unterminated string", start_line, start_column};
+        }
+        
+        advance(); // Skip closing quote
+        return Token{STRING, result, start_line, start_column};
+    }
+};</textarea>
+                </div>
+                <h3>Advanced Multi-Language Lexer</h3>
+                <p>State machine-based lexer supporting multiple parsing contexts:</p>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-v223uipmx" class="codemirror-code">class AdvancedLexer {
+    enum State { NORMAL, IN_STRING, IN_COMMENT, IN_MULTILINE_COMMENT, IN_REGEX };
+    
+    struct LexerState {
+        State current_state;
+        std::stack<State> state_stack;
+        std::unordered_map<std::string, TokenType> keywords;
+        bool case_sensitive;
+    };
+    
+    // SIMD-accelerated whitespace skipping
+    void skip_whitespace_fast() {
+        while (position_ < input_.length()) {
+            // Use SIMD to check 16 characters at once
+            if (position_ + 16 <= input_.length()) {
+                __m128i chunk = _mm_loadu_si128(
+                    reinterpret_cast<const __m128i*>(&input_[position_])
+                );
+                // SIMD whitespace detection implementation
+            }
+            // Fallback to character-by-character checking
+        }
+    }
+};</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="practice">
+            <div class="section-header">
+                <div class="section-icon practice">🛠️</div>
+                <h2 class="section-title">DO THIS NOW (Build a Lexer)</h2>
+            </div>
+            <div class="content">
+                <div class="action-box">
+                <p><strong>Build a Complete Lexer:</strong> Implement a lexer that can tokenize basic programming language constructs including identifiers, numbers, strings, and operators.</p>
+                <ol>
+                    <li><strong>Header Setup:</strong> Define <code>TokenType</code> enum and <code>Token</code>/<code>Lexer</code> structures with proper memory management.</li>
+                    <li><strong>Core Functions:</strong> Implement <code>lexer_advance()</code>, <code>lexer_peek()</code>, and <code>lexer_skip_whitespace()</code> for navigation.</li>
+                    <li><strong>Token Readers:</strong> Create <code>lexer_read_number()</code>, <code>lexer_read_string()</code>, and <code>lexer_read_identifier()</code> functions.</li>
+                    <li><strong>Main Loop:</strong> Build <code>lexer_next_token()</code> that dispatches to appropriate token readers based on current character.</li>
+                    <li><strong>Test Program:</strong> Write a test that tokenizes <code>"x = 42 + \"hello\"; y = 3.14;"</code> and prints each token with position.</li>
+                </ol>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-hctk1cux5" class="codemirror-code">// Expected output for test:
+// Token: IDENTIFIER  Value: x              Line: 1 Column: 1
+// Token: ASSIGN       Value: =              Line: 1 Column: 3
+// Token: NUMBER       Value: 42             Line: 1 Column: 5
+// Token: PLUS         Value: +              Line: 1 Column: 8
+// Token: STRING       Value: hello          Line: 1 Column: 10
+// Token: SEMICOLON    Value: ;              Line: 1 Column: 17
+// Token: IDENTIFIER   Value: y              Line: 1 Column: 19
+// Token: ASSIGN       Value: =              Line: 1 Column: 21
+// Token: NUMBER       Value: 3.14           Line: 1 Column: 23
+// Token: SEMICOLON    Value: ;              Line: 1 Column: 27</textarea>
+                </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="debugging">
+            <div class="section-header">
+                <div class="section-icon debugging">🐛</div>
+                <h2 class="section-title">Debugging & Troubleshooting</h2>
+            </div>
+            <div class="content">
+                <h3>Common Lexer Issues</h3>
+                <ul>
+                    <li><strong>Position Tracking Bugs:</strong> Line/column numbers incorrect, especially after newlines. <strong>Fix:</strong> Increment line and reset column on <code>'\n'</code>, increment column on other characters.</li>
+                    <li><strong>Memory Leaks:</strong> Token values not freed, lexer structure not cleaned up. <strong>Fix:</strong> Implement <code>token_destroy()</code> and <code>lexer_destroy()</code> functions, use valgrind for detection.</li>
+                    <li><strong>Buffer Overflows:</strong> Token values exceed allocated space, no bounds checking. <strong>Fix:</strong> Use dynamic allocation or check buffer limits before writing.</li>
+                    <li><strong>Infinite Loops:</strong> Lexer doesn't advance on unknown characters or error conditions. <strong>Fix:</strong> Always advance position in error cases, add loop counters for debugging.</li>
+                </ul>
+                <h3>String Handling Problems</h3>
+                <ul>
+                    <li><strong>Unterminated Strings:</strong> Missing closing quote causes lexer to read beyond input. <strong>Fix:</strong> Check for end-of-input in string reading loop, return ERROR token.</li>
+                    <li><strong>Escape Sequence Bugs:</strong> Invalid escapes crash or produce wrong output. <strong>Fix:</strong> Validate escape characters, handle unknown escapes gracefully.</li>
+                    <li><strong>Unicode Issues:</strong> Multi-byte characters break position tracking or cause crashes. <strong>Fix:</strong> Use proper UTF-8 handling libraries, test with international text.</li>
+                </ul>
+                <h3>Performance Problems</h3>
+                <ul>
+                    <li><strong>Excessive Memory Allocation:</strong> Creating new strings for every token. <strong>Fix:</strong> Use string interning or token value pools for common tokens.</li>
+                    <li><strong>Inefficient Character Processing:</strong> Re-reading same characters multiple times. <strong>Fix:</strong> Implement proper lookahead, cache character classifications.</li>
+                    <li><strong>Poor Cache Locality:</strong> Jumping around in input buffer unpredictably. <strong>Fix:</strong> Process input linearly, minimize random access patterns.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="performance">
+            <div class="section-header">
+                <div class="section-icon performance">🚀</div>
+                <h2 class="section-title">Performance & Optimization</h2>
+            </div>
+            <div class="content">
+                <h3>Speed Optimization Techniques</h3>
+                <ul>
+                    <li><strong>Character Classification Tables:</strong> Pre-compute <code>isalpha</code>, <code>isdigit</code> lookups in 256-byte arrays. Gives 2-3x speedup over function calls.</li>
+                    <li><strong>SIMD Acceleration:</strong> Process 16+ characters simultaneously for whitespace skipping and pattern matching. Can achieve 5-10x speedup for large files.</li>
+                    <li><strong>Branch Prediction Optimization:</strong> Order <code>switch</code> cases by frequency, use lookup tables instead of nested <code>if</code> statements.</li>
+                    <li><strong>String Interning:</strong> Store common tokens (keywords, operators) once and reuse pointers. Reduces memory allocation overhead by 50-80%.</li>
+                </ul>
+                <h3>Memory Optimization</h3>
+                <ul>
+                    <li><strong>Token Pooling:</strong> Pre-allocate token objects and reuse them instead of malloc/free per token. Reduces allocation overhead and fragmentation.</li>
+                    <li><strong>Compact Token Representation:</strong> Pack token type, position, and small values into single 64-bit word. Improves cache performance.</li>
+                    <li><strong>Streaming Processing:</strong> Process input in chunks instead of loading entire file. Enables constant memory usage for arbitrarily large files.</li>
+                    <li><strong>Copy-Free String Handling:</strong> Store token values as pointers into original input buffer with length, avoid string duplication.</li>
+                </ul>
+                <h3>Benchmark Targets</h3>
+                <ul>
+                    <li><strong>Throughput:</strong> Modern lexers should process 100-500 MB/second of typical source code on standard hardware.</li>
+                    <li><strong>Memory Usage:</strong> Peak memory should be 2-5x input file size, with streaming lexers using constant memory.</li>
+                    <li><strong>Latency:</strong> First token should be available within microseconds for interactive applications like IDEs.</li>
+                    <li><strong>Scalability:</strong> Performance should remain linear with input size, no quadratic behaviors.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="warnings">
+            <div class="section-header">
+                <div class="section-icon warnings">⚠️</div>
+                <h2 class="section-title">AVOID THESE (Critical Pitfalls)</h2>
+            </div>
+            <div class="content">
+                <div class="warning-box">
+                <ul>
+                    <li><strong>Failing to Advance on Errors</strong> → Always increment position when encountering invalid characters, or the lexer will loop infinitely on the same bad input.</li>
+                    <li><strong>Incorrect Maximal Munch</strong> → Always consume the longest possible token. <code>"123.45e-6"</code> should be one NUMBER token, not separate NUMBER, DOT, NUMBER tokens.</li>
+                    <li><strong>Memory Management Neglect</strong> → Every <code>malloc</code> for token values must have corresponding <code>free</code>. Use valgrind to catch leaks during development.</li>
+                    <li><strong>Position Tracking Errors</strong> → Line numbers are critical for error reporting. Forgetting to increment line on <code>'\n'</code> makes debugging impossible for users.</li>
+                    <li><strong>Buffer Overflow Vulnerabilities</strong> → Always check bounds when writing to token value buffers. Use <code>strncpy</code> instead of <code>strcpy</code>, validate input lengths.</li>
+                    <li><strong>Unicode Ignorance</strong> → Modern code contains Unicode. ASCII-only lexers will crash or mangle international text. Plan for UTF-8 from the start.</li>
+                </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="advanced">
+            <div class="section-header">
+                <div class="section-icon advanced">🎓</div>
+                <h2 class="section-title">Advanced Topics</h2>
+            </div>
+            <div class="content">
+                <h3>Finite State Machines</h3>
+                <p>Lexers are essentially finite state machines (FSMs). Each state represents a parsing context, and character inputs trigger state transitions. Understanding FSM theory enables building lexers for complex languages with context-sensitive tokens.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-ml1yo4y3i" class="codemirror-code">typedef enum {
+    STATE_NORMAL,
+    STATE_IN_STRING,
+    STATE_IN_ESCAPE,
+    STATE_IN_COMMENT,
+    STATE_IN_MULTILINE_COMMENT
+} LexerState;
+
+typedef struct {
+    LexerState state;
+    LexerState (*transition_table)[256];
+    TokenType (*action_table)[256];
+} StateMachine;
+
+// Table-driven lexer using FSM
+Token fsm_next_token(Lexer* lexer, StateMachine* fsm) {
+    while (lexer->current_char != '\0') {
+        LexerState next_state = fsm->transition_table[fsm->state][lexer->current_char];
+        TokenType action = fsm->action_table[fsm->state][lexer->current_char];
+        
+        if (action != TOKEN_NONE) {
+            return create_token(action, lexer);
+        }
+        
+        fsm->state = next_state;
+        lexer_advance(lexer);
+    }
+}</textarea>
+                </div>
+                <h3>Regular Expression Integration</h3>
+                <p>Many modern lexers are generated from regular expression specifications. Tools like <strong>flex</strong> and <strong>re2c</strong> compile regex patterns into optimized C code, balancing maintainability with performance.</p>
+                <h3>Incremental Lexing</h3>
+                <p>For interactive applications like IDEs, <strong>incremental lexing</strong> re-tokenizes only changed portions of the input. This requires careful state management and checkpoint mechanisms but enables real-time syntax highlighting for large files.</p>
+                <h3>Error Recovery Strategies</h3>
+                <ul>
+                    <li><strong>Panic Mode:</strong> Skip characters until reaching a synchronization point (e.g., semicolon, newline).</li>
+                    <li><strong>Error Tokens:</strong> Generate ERROR tokens for invalid sequences, allowing parser to continue processing.</li>
+                    <li><strong>Correction Suggestions:</strong> Use edit distance algorithms to suggest corrections for misspelled keywords.</li>
+                    <li><strong>Multiple Error Reporting:</strong> Collect multiple lexical errors in single pass instead of stopping at first error.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="test">
+            <div class="section-header">
+                <div class="section-icon test">🎯</div>
+                <h2 class="section-title">TEST YOURSELF</h2>
+            </div>
+            <div class="content">
+                <ol>
+                    <li><strong>Token Classification:</strong> Given input <code>"if (x >= 42.5e-3) { return \"hello\"; }"</code>, list all tokens with their types in order. Include position information.</li>
+                    <li><strong>Maximal Munch Rule:</strong> Explain why <code>"++x"</code> should be tokenized as <code>[INCREMENT, IDENTIFIER]</code> rather than <code>[PLUS, PLUS, IDENTIFIER]</code>. What happens if a lexer violates this rule?</li>
+                    <li><strong>Error Handling:</strong> How should a lexer handle the input <code>"string s = \"unterminated string;"</code>? Describe the error token generation and recovery strategy.</li>
+                    <li><strong>Performance Analysis:</strong> A lexer processes 1MB of source code in 50ms. Calculate the throughput in MB/second. Is this acceptable for a production compiler?</li>
+                    <li><strong>State Machine Design:</strong> Draw a finite state machine for tokenizing C-style comments (<code>/* ... */</code>) that can be nested. Include all states and transitions.</li>
+                </ol>
+                <p><strong>Success Criteria:</strong> Correctly identify all 11 tokens in the test input, explain maximal munch with specific examples, design appropriate error recovery that doesn't halt lexing, and understand performance implications of lexer design choices.</p>
+            </div>
+        </section>
+
+        <section id="growth">
+            <div class="section-header">
+                <div class="section-icon growth">📈</div>
+                <h2 class="section-title">LEVEL UP</h2>
+            </div>
+            <div class="content">
+                <ul>
+                    <li><strong>This week (Extensions):</strong> Extend your basic lexer to handle keywords (if, while, for), multi-character operators (==, <=, ++), and C-style comments (// and /* */). Add comprehensive error reporting with line/column information.</li>
+                    <li><strong>This month (Production Quality):</strong> Implement a lexer generator that takes regular expression specifications and produces optimized C code. Include Unicode support, incremental lexing capabilities, and SIMD optimizations.</li>
+                    <li><strong>Long term (Language Design):</strong> Design and implement a complete domain-specific language with custom syntax. Build the lexer, parser, and interpreter. Consider ergonomics, error messages, and IDE integration from the start.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+        <footer>
+        <div class="container">
+            <p>Learning journey completed! 🎉</p>
+            <div class="checkbox-item" style="justify-content: center; margin-top: 1rem;">
+                <div class="checkbox" onclick="toggleComplete(this)"></div>
+                <span>Mark this topic as mastered</span>
+            </div>
+        </div>
+    </footer>
+        <script>
+        // Theme toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button text
+            updateThemeButton(newTheme);
+        }
+
+        // Update theme button text based on current theme
+        function updateThemeButton(currentTheme) {
+            const button = document.querySelector('.theme-toggle');
+            if (currentTheme === 'dark') {
+                button.innerHTML = '☀️ Light Mode';
+            } else {
+                button.innerHTML = '🌙 Dark Mode';
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', loadTheme);
+
+        // Section completion
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
+                    .map(el => el.getAttribute('data-section'));
+                localStorage.setItem('completed-lexical-analysis-mastery--building-high-performance-lexers-from-scratch', JSON.stringify(completedSections));
+            });
+        });
+
+        // Load saved progress
+        const savedProgress = localStorage.getItem('completed-lexical-analysis-mastery--building-high-performance-lexers-from-scratch');
+        if (savedProgress) {
+            const completed = JSON.parse(savedProgress);
+            completed.forEach(sectionNum => {
+                const navItem = document.querySelector(`[data-section="${sectionNum}"]`);
+                if (navItem) navItem.classList.add('completed');
+            });
+        }
+
+        // Checkbox functionality
+        function toggleComplete(checkbox) {
+            checkbox.classList.toggle('checked');
+            if (checkbox.classList.contains('checked')) {
+                checkbox.innerHTML = '✓';
+                localStorage.setItem('mastered-lexical-analysis-mastery--building-high-performance-lexers-from-scratch', 'true');
+            } else {
+                checkbox.innerHTML = '';
+                localStorage.setItem('mastered-lexical-analysis-mastery--building-high-performance-lexers-from-scratch', 'false');
+            }
+        }
+
+        // Load mastery status
+        const masteryStatus = localStorage.getItem('mastered-lexical-analysis-mastery--building-high-performance-lexers-from-scratch');
+        if (masteryStatus === 'true') {
+            const masteryCheckbox = document.querySelector('footer .checkbox');
+            if (masteryCheckbox) {
+                masteryCheckbox.classList.add('checked');
+                masteryCheckbox.innerHTML = '✓';
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Initialize CodeMirror for all code blocks
+        let initAttempts = 0;
+        const maxAttempts = 50; // Max 5 seconds of retries
+        
+        function initializeCodeMirror() {
+            initAttempts++;
+            
+            // Check if CodeMirror is loaded
+            if (typeof CodeMirror === 'undefined') {
+                if (initAttempts >= maxAttempts) {
+                    console.error('Failed to load CodeMirror after', maxAttempts, 'attempts. Using fallback styling.');
+                    // Fallback: Style textareas as basic code blocks
+                    document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                        textarea.style.fontFamily = 'Monaco, Menlo, "Ubuntu Mono", monospace';
+                        textarea.style.fontSize = '14px';
+                        textarea.style.lineHeight = '1.5';
+                        textarea.style.padding = '10px';
+                        textarea.style.border = '1px solid var(--border)';
+                        textarea.style.borderRadius = '4px';
+                        textarea.style.background = 'var(--code-bg)';
+                        textarea.style.color = 'var(--code-text)';
+                        textarea.style.resize = 'none';
+                        textarea.style.minHeight = '100px';
+                        textarea.readOnly = true;
+                    });
+                    return;
+                }
+                console.warn('CodeMirror not loaded, retrying in 100ms... (attempt', initAttempts, '/', maxAttempts, ')');
+                setTimeout(initializeCodeMirror, 100);
+                return;
+            }
+            
+            const codeTextareas = document.querySelectorAll('.codemirror-code');
+            console.log('Initializing CodeMirror for', codeTextareas.length, 'code blocks');
+            
+            codeTextareas.forEach(textarea => {
+                const codeBlock = textarea.closest('.code-block');
+                const language = codeBlock.dataset.language;
+                
+                // Map language to CodeMirror mode
+                let mode = 'text';
+                switch(language) {
+                    case 'c':
+                    case 'cpp':
+                    case 'c++':
+                        mode = 'text/x-csrc';
+                        break;
+                    case 'javascript':
+                    case 'js':
+                        mode = 'javascript';
+                        break;
+                    case 'bash':
+                    case 'shell':
+                    case 'sh':
+                        mode = 'shell';
+                        break;
+                    case 'css':
+                        mode = 'css';
+                        break;
+                    case 'html':
+                        mode = 'htmlmixed';
+                        break;
+                    case 'json':
+                        mode = 'application/json';
+                        break;
+                    default:
+                        mode = 'text';
+                }
+                
+                // Use custom theme that respects CSS variables
+                const cmTheme = 'default'; // We'll override with CSS
+                
+                try {
+                    const editor = CodeMirror.fromTextArea(textarea, {
+                        mode: mode,
+                        theme: cmTheme,
+                        lineNumbers: true,
+                        readOnly: 'nocursor',  // Disable cursor and selection
+                        lineWrapping: true,    // Enable line wrapping to avoid horizontal scroll
+                        scrollbarStyle: 'null', // Remove scrollbars
+                        viewportMargin: Infinity, // Show all content without scrolling
+                        matchBrackets: false,  // Disable bracket matching highlights
+                        styleActiveLine: false, // Disable active line highlighting
+                        indentUnit: 4,
+                        tabSize: 4
+                    });
+                    
+                    // Store editor reference for theme switching
+                    textarea.codeMirrorInstance = editor;
+                    
+                    // Auto-refresh editor size and ensure no scrollbars
+                    setTimeout(() => {
+                        editor.refresh();
+                        editor.setSize(null, 'auto'); // Auto-height based on content
+                    }, 100);
+                    
+                    console.log('CodeMirror initialized for language:', language, 'mode:', mode);
+                } catch (error) {
+                    console.error('Failed to initialize CodeMirror for textarea:', error);
+                }
+            });
+        }
+        
+        // CodeMirror themes are handled by CSS variables, no need to update programmatically
+        
+        // Initialize CodeMirror when DOM and scripts are fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait a bit more for all scripts to load
+                setTimeout(initializeCodeMirror, 200);
+            });
+        } else {
+            // Document already loaded, wait for scripts
+            setTimeout(initializeCodeMirror, 200);
+        }
+    </script>
+</body>
+</html>

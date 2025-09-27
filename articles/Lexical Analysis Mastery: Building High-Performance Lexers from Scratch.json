@@ -1,0 +1,510 @@
+{
+  "meta": {
+    "title": "Lexical Analysis Mastery: Building High-Performance Lexers from Scratch",
+    "description": "A comprehensive deep-dive guide covering lexical analysis from basic concepts to production-ready implementations, focusing on tokenization, pattern recognition, and performance optimization essential for compiler construction and language processing.",
+    "author": "sel-mlil",
+    "tags": [
+      "compiler-theory",
+      "lexical-analysis",
+      "tokenization",
+      "parsing",
+      "c",
+      "cpp",
+      "performance",
+      "language-design"
+    ],
+    "difficulty": "intermediate",
+    "lastUpdated": "2024-09-27"
+  },
+  "navigation": [
+    {
+      "id": "hook",
+      "emoji": "🎯",
+      "title": "The Hook",
+      "sectionIndex": 0
+    },
+    {
+      "id": "concept",
+      "emoji": "💡",
+      "title": "Core Concepts",
+      "sectionIndex": 1
+    },
+    {
+      "id": "mechanics",
+      "emoji": "⚙️",
+      "title": "How Lexers Work",
+      "sectionIndex": 2
+    },
+    {
+      "id": "examples",
+      "emoji": "🌍",
+      "title": "Real Examples",
+      "sectionIndex": 3
+    },
+    {
+      "id": "practice",
+      "emoji": "🛠️",
+      "title": "DO THIS NOW (Build a Lexer)",
+      "sectionIndex": 4
+    },
+    {
+      "id": "debugging",
+      "emoji": "🐛",
+      "title": "Debugging & Troubleshooting",
+      "sectionIndex": 5
+    },
+    {
+      "id": "performance",
+      "emoji": "🚀",
+      "title": "Performance & Optimization",
+      "sectionIndex": 6
+    },
+    {
+      "id": "warnings",
+      "emoji": "⚠️",
+      "title": "AVOID THESE (Critical Pitfalls)",
+      "sectionIndex": 7
+    },
+    {
+      "id": "advanced",
+      "emoji": "🎓",
+      "title": "Advanced Topics",
+      "sectionIndex": 8
+    },
+    {
+      "id": "test",
+      "emoji": "🎯",
+      "title": "Test Yourself",
+      "sectionIndex": 9
+    },
+    {
+      "id": "growth",
+      "emoji": "📈",
+      "title": "LEVEL UP",
+      "sectionIndex": 10
+    }
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>What is this?</strong><br>A lexer (lexical analyzer) is a component that breaks down raw text into meaningful tokens - the fundamental building blocks of programming languages, configuration files, or any structured text format. Think of it as a <strong>word recognizer</strong> that converts a stream of characters into a stream of categorized symbols that a parser can understand.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Why care?</strong><br>Understanding lexers unlocks the ability to build interpreters, domain-specific languages, configuration parsers, and data processing tools from scratch. Core skill for compiler engineers ($120K-200K+ salary), language designers, IDE developers, and anyone building developer tools or automation systems.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Mental model:</strong><br>Like a <strong>librarian</strong> who quickly scans books and puts colored sticky notes on different types of content - nouns get blue tabs, verbs get red tabs, numbers get green tabs. Or a <strong>factory quality inspector</strong> who examines products on a conveyor belt, categorizing each item and rejecting malformed ones.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "concept",
+      "emoji": "💡",
+      "title": "Core Concepts",
+      "iconClass": "concept",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Lexical Analysis Fundamentals"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Tokenization:</strong> Converting character sequences into meaningful units (tokens) like keywords, identifiers, operators, and literals.",
+            "<strong>Pattern Recognition:</strong> Matching character sequences against predefined rules using finite state machines or lookup tables.",
+            "<strong>Position Tracking:</strong> Maintaining line and column information for error reporting and debugging capabilities.",
+            "<strong>State Management:</strong> Handling context-sensitive parsing (inside strings, comments, different language modes)."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Token Categories"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Keywords:</strong> Reserved words like <code>if</code>, <code>while</code>, <code>class</code> - language-specific tokens with fixed meaning.",
+            "<strong>Identifiers:</strong> User-defined names for variables, functions, types - alphanumeric sequences starting with letter/underscore.",
+            "<strong>Literals:</strong> Constant values like numbers (<code>42</code>, <code>3.14</code>), strings (<code>\"hello\"</code>), characters (<code>'a'</code>).",
+            "<strong>Operators:</strong> Symbols for operations like <code>+</code>, <code>-</code>, <code>==</code>, <code>&&</code> - can be single or multi-character.",
+            "<strong>Delimiters:</strong> Structural symbols like <code>()</code>, <code>{}</code>, <code>;</code>, <code>,</code> - define syntax boundaries."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW LEXERS WORK",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Core Mechanics"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "<strong>Character Consumption:</strong> Read input character by character, maintaining position tracking for error reporting.",
+            "<strong>Pattern Recognition:</strong> Match character sequences against predefined rules (keywords, operators, literals).",
+            "<strong>Token Generation:</strong> Create token objects with type, value, and position information.",
+            "<strong>State Management:</strong> Track lexer state (inside string, comment, etc.) for context-sensitive parsing.",
+            "<strong>Error Handling:</strong> Detect and report invalid character sequences with precise location information."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Key Components"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Input Buffer:</strong> Stores source text with efficient access patterns and lookahead capability.",
+            "<strong>Position Tracker:</strong> Maintains line/column information for error reporting and debugging.",
+            "<strong>Token Classifier:</strong> Maps character patterns to token types using finite state machines or lookup tables.",
+            "<strong>Symbol Table:</strong> Stores identifiers and their attributes (optional, often handled by parser).",
+            "<strong>Error Handler:</strong> Manages malformed input and recovery strategies."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Governing Principles"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Maximal Munch:</strong> Always consume the longest possible token (e.g., <code>123.45</code> as one float, not <code>123</code>, <code>.</code>, <code>45</code>).",
+            "<strong>Priority Ordering:</strong> Keywords take precedence over identifiers (<code>if</code> is IF_TOKEN, not IDENTIFIER).",
+            "<strong>Deterministic Scanning:</strong> Same input always produces same token sequence for predictable behavior.",
+            "<strong>Linear Time Complexity:</strong> $O(n)$ performance where $n$ is input length - essential for large codebases."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍",
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Basic Arithmetic Lexer (C)"
+        },
+        {
+          "type": "paragraph",
+          "content": "A simple lexer for mathematical expressions demonstrating core tokenization concepts:",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "typedef enum {\n    TOKEN_NUMBER, TOKEN_PLUS, TOKEN_MINUS, TOKEN_MULTIPLY,\n    TOKEN_DIVIDE, TOKEN_LPAREN, TOKEN_RPAREN, TOKEN_EOF, TOKEN_ERROR\n} TokenType;\n\ntypedef struct {\n    TokenType type;\n    char* value;\n    int line, column;\n} Token;\n\ntypedef struct {\n    char* input;\n    int position, line, column;\n    char current_char;\n} Lexer;\n\nToken lexer_next_token(Lexer* lexer) {\n    while (lexer->current_char != '\\0') {\n        if (isspace(lexer->current_char)) {\n            lexer_advance(lexer);\n            continue;\n        }\n        \n        if (isdigit(lexer->current_char)) {\n            return lexer_read_number(lexer);\n        }\n        \n        switch (lexer->current_char) {\n            case '+': return create_token(TOKEN_PLUS, \"+\", lexer);\n            case '-': return create_token(TOKEN_MINUS, \"-\", lexer);\n            case '*': return create_token(TOKEN_MULTIPLY, \"*\", lexer);\n            // ... other operators\n        }\n    }\n    return create_token(TOKEN_EOF, NULL, lexer);\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Professional JSON Lexer (C++)"
+        },
+        {
+          "type": "paragraph",
+          "content": "Production-quality lexer with proper error handling and Unicode support:",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "class JsonLexer {\npublic:\n    enum TokenType {\n        STRING, NUMBER, TRUE_VAL, FALSE_VAL, NULL_VAL,\n        LEFT_BRACE, RIGHT_BRACE, LEFT_BRACKET, RIGHT_BRACKET,\n        COMMA, COLON, END_OF_FILE, INVALID\n    };\n    \n    struct Token {\n        TokenType type;\n        std::string value;\n        size_t line, column;\n    };\n\nprivate:\n    std::string input_;\n    size_t position_, line_, column_;\n    char current_char_;\n    \n    Token read_string() {\n        size_t start_line = line_, start_column = column_;\n        std::string result;\n        \n        advance(); // Skip opening quote\n        \n        while (current_char_ != '\\0' && current_char_ != '\"') {\n            if (current_char_ == '\\\\') {\n                advance();\n                switch (current_char_) {\n                    case 'n': result += '\\n'; break;\n                    case 't': result += '\\t'; break;\n                    case '\\\\': result += '\\\\'; break;\n                    case '\"': result += '\"'; break;\n                    default: return Token{INVALID, \"Invalid escape\", start_line, start_column};\n                }\n            } else {\n                result += current_char_;\n            }\n            advance();\n        }\n        \n        if (current_char_ != '\"') {\n            return Token{INVALID, \"Unterminated string\", start_line, start_column};\n        }\n        \n        advance(); // Skip closing quote\n        return Token{STRING, result, start_line, start_column};\n    }\n};"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Advanced Multi-Language Lexer"
+        },
+        {
+          "type": "paragraph",
+          "content": "State machine-based lexer supporting multiple parsing contexts:",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "class AdvancedLexer {\n    enum State { NORMAL, IN_STRING, IN_COMMENT, IN_MULTILINE_COMMENT, IN_REGEX };\n    \n    struct LexerState {\n        State current_state;\n        std::stack<State> state_stack;\n        std::unordered_map<std::string, TokenType> keywords;\n        bool case_sensitive;\n    };\n    \n    // SIMD-accelerated whitespace skipping\n    void skip_whitespace_fast() {\n        while (position_ < input_.length()) {\n            // Use SIMD to check 16 characters at once\n            if (position_ + 16 <= input_.length()) {\n                __m128i chunk = _mm_loadu_si128(\n                    reinterpret_cast<const __m128i*>(&input_[position_])\n                );\n                // SIMD whitespace detection implementation\n            }\n            // Fallback to character-by-character checking\n        }\n    }\n};"
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "DO THIS NOW (Build a Lexer)",
+      "emoji": "🛠️",
+      "iconClass": "practice",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": "<strong>Build a Complete Lexer:</strong> Implement a lexer that can tokenize basic programming language constructs including identifiers, numbers, strings, and operators.",
+              "html": true
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "<strong>Header Setup:</strong> Define <code>TokenType</code> enum and <code>Token</code>/<code>Lexer</code> structures with proper memory management.",
+                "<strong>Core Functions:</strong> Implement <code>lexer_advance()</code>, <code>lexer_peek()</code>, and <code>lexer_skip_whitespace()</code> for navigation.",
+                "<strong>Token Readers:</strong> Create <code>lexer_read_number()</code>, <code>lexer_read_string()</code>, and <code>lexer_read_identifier()</code> functions.",
+                "<strong>Main Loop:</strong> Build <code>lexer_next_token()</code> that dispatches to appropriate token readers based on current character.",
+                "<strong>Test Program:</strong> Write a test that tokenizes <code>\"x = 42 + \\\"hello\\\"; y = 3.14;\"</code> and prints each token with position."
+              ]
+            },
+            {
+              "type": "codeblock",
+              "language": "c",
+              "code": "// Expected output for test:\n// Token: IDENTIFIER  Value: x              Line: 1 Column: 1\n// Token: ASSIGN       Value: =              Line: 1 Column: 3\n// Token: NUMBER       Value: 42             Line: 1 Column: 5\n// Token: PLUS         Value: +              Line: 1 Column: 8\n// Token: STRING       Value: hello          Line: 1 Column: 10\n// Token: SEMICOLON    Value: ;              Line: 1 Column: 17\n// Token: IDENTIFIER   Value: y              Line: 1 Column: 19\n// Token: ASSIGN       Value: =              Line: 1 Column: 21\n// Token: NUMBER       Value: 3.14           Line: 1 Column: 23\n// Token: SEMICOLON    Value: ;              Line: 1 Column: 27"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "debugging",
+      "title": "Debugging & Troubleshooting",
+      "emoji": "🐛",
+      "iconClass": "debugging",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Common Lexer Issues"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Position Tracking Bugs:</strong> Line/column numbers incorrect, especially after newlines. <strong>Fix:</strong> Increment line and reset column on <code>'\\n'</code>, increment column on other characters.",
+            "<strong>Memory Leaks:</strong> Token values not freed, lexer structure not cleaned up. <strong>Fix:</strong> Implement <code>token_destroy()</code> and <code>lexer_destroy()</code> functions, use valgrind for detection.",
+            "<strong>Buffer Overflows:</strong> Token values exceed allocated space, no bounds checking. <strong>Fix:</strong> Use dynamic allocation or check buffer limits before writing.",
+            "<strong>Infinite Loops:</strong> Lexer doesn't advance on unknown characters or error conditions. <strong>Fix:</strong> Always advance position in error cases, add loop counters for debugging."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "String Handling Problems"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Unterminated Strings:</strong> Missing closing quote causes lexer to read beyond input. <strong>Fix:</strong> Check for end-of-input in string reading loop, return ERROR token.",
+            "<strong>Escape Sequence Bugs:</strong> Invalid escapes crash or produce wrong output. <strong>Fix:</strong> Validate escape characters, handle unknown escapes gracefully.",
+            "<strong>Unicode Issues:</strong> Multi-byte characters break position tracking or cause crashes. <strong>Fix:</strong> Use proper UTF-8 handling libraries, test with international text."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Performance Problems"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Excessive Memory Allocation:</strong> Creating new strings for every token. <strong>Fix:</strong> Use string interning or token value pools for common tokens.",
+            "<strong>Inefficient Character Processing:</strong> Re-reading same characters multiple times. <strong>Fix:</strong> Implement proper lookahead, cache character classifications.",
+            "<strong>Poor Cache Locality:</strong> Jumping around in input buffer unpredictably. <strong>Fix:</strong> Process input linearly, minimize random access patterns."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "performance",
+      "title": "Performance & Optimization",
+      "emoji": "🚀",
+      "iconClass": "performance",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Speed Optimization Techniques"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Character Classification Tables:</strong> Pre-compute <code>isalpha</code>, <code>isdigit</code> lookups in 256-byte arrays. Gives 2-3x speedup over function calls.",
+            "<strong>SIMD Acceleration:</strong> Process 16+ characters simultaneously for whitespace skipping and pattern matching. Can achieve 5-10x speedup for large files.",
+            "<strong>Branch Prediction Optimization:</strong> Order <code>switch</code> cases by frequency, use lookup tables instead of nested <code>if</code> statements.",
+            "<strong>String Interning:</strong> Store common tokens (keywords, operators) once and reuse pointers. Reduces memory allocation overhead by 50-80%."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Memory Optimization"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Token Pooling:</strong> Pre-allocate token objects and reuse them instead of malloc/free per token. Reduces allocation overhead and fragmentation.",
+            "<strong>Compact Token Representation:</strong> Pack token type, position, and small values into single 64-bit word. Improves cache performance.",
+            "<strong>Streaming Processing:</strong> Process input in chunks instead of loading entire file. Enables constant memory usage for arbitrarily large files.",
+            "<strong>Copy-Free String Handling:</strong> Store token values as pointers into original input buffer with length, avoid string duplication."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Benchmark Targets"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Throughput:</strong> Modern lexers should process 100-500 MB/second of typical source code on standard hardware.",
+            "<strong>Memory Usage:</strong> Peak memory should be 2-5x input file size, with streaming lexers using constant memory.",
+            "<strong>Latency:</strong> First token should be available within microseconds for interactive applications like IDEs.",
+            "<strong>Scalability:</strong> Performance should remain linear with input size, no quadratic behaviors."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE (Critical Pitfalls)",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "list",
+              "items": [
+                "<strong>Failing to Advance on Errors</strong> → Always increment position when encountering invalid characters, or the lexer will loop infinitely on the same bad input.",
+                "<strong>Incorrect Maximal Munch</strong> → Always consume the longest possible token. <code>\"123.45e-6\"</code> should be one NUMBER token, not separate NUMBER, DOT, NUMBER tokens.",
+                "<strong>Memory Management Neglect</strong> → Every <code>malloc</code> for token values must have corresponding <code>free</code>. Use valgrind to catch leaks during development.",
+                "<strong>Position Tracking Errors</strong> → Line numbers are critical for error reporting. Forgetting to increment line on <code>'\\n'</code> makes debugging impossible for users.",
+                "<strong>Buffer Overflow Vulnerabilities</strong> → Always check bounds when writing to token value buffers. Use <code>strncpy</code> instead of <code>strcpy</code>, validate input lengths.",
+                "<strong>Unicode Ignorance</strong> → Modern code contains Unicode. ASCII-only lexers will crash or mangle international text. Plan for UTF-8 from the start."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "Advanced Topics",
+      "emoji": "🎓",
+      "iconClass": "advanced",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Finite State Machines"
+        },
+        {
+          "type": "paragraph",
+          "content": "Lexers are essentially finite state machines (FSMs). Each state represents a parsing context, and character inputs trigger state transitions. Understanding FSM theory enables building lexers for complex languages with context-sensitive tokens.",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "typedef enum {\n    STATE_NORMAL,\n    STATE_IN_STRING,\n    STATE_IN_ESCAPE,\n    STATE_IN_COMMENT,\n    STATE_IN_MULTILINE_COMMENT\n} LexerState;\n\ntypedef struct {\n    LexerState state;\n    LexerState (*transition_table)[256];\n    TokenType (*action_table)[256];\n} StateMachine;\n\n// Table-driven lexer using FSM\nToken fsm_next_token(Lexer* lexer, StateMachine* fsm) {\n    while (lexer->current_char != '\\0') {\n        LexerState next_state = fsm->transition_table[fsm->state][lexer->current_char];\n        TokenType action = fsm->action_table[fsm->state][lexer->current_char];\n        \n        if (action != TOKEN_NONE) {\n            return create_token(action, lexer);\n        }\n        \n        fsm->state = next_state;\n        lexer_advance(lexer);\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Regular Expression Integration"
+        },
+        {
+          "type": "paragraph",
+          "content": "Many modern lexers are generated from regular expression specifications. Tools like <strong>flex</strong> and <strong>re2c</strong> compile regex patterns into optimized C code, balancing maintainability with performance.",
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Incremental Lexing"
+        },
+        {
+          "type": "paragraph",
+          "content": "For interactive applications like IDEs, <strong>incremental lexing</strong> re-tokenizes only changed portions of the input. This requires careful state management and checkpoint mechanisms but enables real-time syntax highlighting for large files.",
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Error Recovery Strategies"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Panic Mode:</strong> Skip characters until reaching a synchronization point (e.g., semicolon, newline).",
+            "<strong>Error Tokens:</strong> Generate ERROR tokens for invalid sequences, allowing parser to continue processing.",
+            "<strong>Correction Suggestions:</strong> Use edit distance algorithms to suggest corrections for misspelled keywords.",
+            "<strong>Multiple Error Reporting:</strong> Collect multiple lexical errors in single pass instead of stopping at first error."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "<strong>Token Classification:</strong> Given input <code>\"if (x >= 42.5e-3) { return \\\"hello\\\"; }\"</code>, list all tokens with their types in order. Include position information.",
+            "<strong>Maximal Munch Rule:</strong> Explain why <code>\"++x\"</code> should be tokenized as <code>[INCREMENT, IDENTIFIER]</code> rather than <code>[PLUS, PLUS, IDENTIFIER]</code>. What happens if a lexer violates this rule?",
+            "<strong>Error Handling:</strong> How should a lexer handle the input <code>\"string s = \\\"unterminated string;\"</code>? Describe the error token generation and recovery strategy.",
+            "<strong>Performance Analysis:</strong> A lexer processes 1MB of source code in 50ms. Calculate the throughput in MB/second. Is this acceptable for a production compiler?",
+            "<strong>State Machine Design:</strong> Draw a finite state machine for tokenizing C-style comments (<code>/* ... */</code>) that can be nested. Include all states and transitions."
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Success Criteria:</strong> Correctly identify all 11 tokens in the test input, explain maximal munch with specific examples, design appropriate error recovery that doesn't halt lexing, and understand performance implications of lexer design choices.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>This week (Extensions):</strong> Extend your basic lexer to handle keywords (if, while, for), multi-character operators (==, <=, ++), and C-style comments (// and /* */). Add comprehensive error reporting with line/column information.",
+            "<strong>This month (Production Quality):</strong> Implement a lexer generator that takes regular expression specifications and produces optimized C code. Include Unicode support, incremental lexing capabilities, and SIMD optimizations.",
+            "<strong>Long term (Language Design):</strong> Design and implement a complete domain-specific language with custom syntax. Build the lexer, parser, and interpreter. Consider ergonomics, error messages, and IDE integration from the start."
+          ]
+        }
+      ]
+    }
+  ]
+}
