@@ -54,6 +54,24 @@
       "lastUpdated": "2024-09-27"
     },
     {
+      "id": "vectors-in-c--98--your-comprehensive-guide",
+      "title": "Vectors in C++98: Your Comprehensive Guide",
+      "path": "guides/vectors-in-c98-your-comprehensive-guide/",
+      "description": "A detailed guide covering the functionalities, use cases, mechanics, and best practices of `std::vector` in C++98, complete with code examples and common pitfalls.",
+      "author": "sel-mlil",
+      "tags": [
+        "c++",
+        "c++98",
+        "vector",
+        "stl",
+        "data-structures",
+        "beginner",
+        "intermediate"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2024-09-26"
+    },
+    {
       "id": "sockets---poll",
       "title": "Sockets & Poll",
       "path": "guides/sockets-poll/",
@@ -105,8 +123,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-27T06:40:46.575Z",
-    "totalGuides": 6,
+    "lastModified": "2025-09-27T12:46:26.043Z",
+    "totalGuides": 7,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }
