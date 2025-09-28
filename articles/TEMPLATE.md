@@ -18,7 +18,7 @@ Save completed articles as `your-article-title.json` in the `articles/` director
     "author": "Your Name or Handle",
     "tags": ["primary-topic", "secondary-concept", "programming-language", "difficulty-level"],
     "difficulty": "beginner|intermediate|advanced",
-    "lastUpdated": "2024-09-26"
+    "lastUpdated": "2025-09-26"
   },
   "navigation": [
     {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},

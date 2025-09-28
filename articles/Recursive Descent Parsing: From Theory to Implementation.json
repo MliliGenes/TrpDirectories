@@ -5,7 +5,7 @@
     "author": "sel-mlil",
     "tags": ["parsing", "compilers", "recursive-descent", "grammar", "intermediate"],
     "difficulty": "intermediate",
-    "lastUpdated": "2024-09-28"
+    "lastUpdated": "2025-09-28"
   },
   "navigation": [
     {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},

@@ -5,7 +5,7 @@
     "author": "sel-mlil",
     "tags": ["networking", "sockets", "poll", "server programming", "I/O multiplexing"],
     "difficulty": "advanced",
-    "lastUpdated": "2024-09-26"
+    "lastUpdated": "2025-09-26"
   },
   "navigation": [
     {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},
