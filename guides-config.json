@@ -54,6 +54,22 @@
       "lastUpdated": "2024-09-27"
     },
     {
+      "id": "recursive-descent-parsing--from-theory-to-implementation",
+      "title": "Recursive Descent Parsing: From Theory to Implementation",
+      "path": "guides/recursive-descent-parsing-from-theory-to-implementation/",
+      "description": "A comprehensive guide to understanding and implementing recursive descent parsers, covering theory, practical examples, and real-world applications for compiler design and language processing",
+      "author": "Claude AI Assistant",
+      "tags": [
+        "parsing",
+        "compilers",
+        "recursive-descent",
+        "grammar",
+        "intermediate"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2024-09-28"
+    },
+    {
       "id": "vectors-in-c--98--your-comprehensive-guide",
       "title": "Vectors in C++98: Your Comprehensive Guide",
       "path": "guides/vectors-in-c98-your-comprehensive-guide/",
@@ -123,8 +139,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-27T12:46:26.043Z",
-    "totalGuides": 7,
+    "lastModified": "2025-09-28T10:17:47.757Z",
+    "totalGuides": 8,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }

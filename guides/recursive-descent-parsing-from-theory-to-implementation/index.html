@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="../../imgs/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="../../style/main.css">
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/darcula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/default.min.css">
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    
+    <title>Recursive Descent Parsing: From Theory to Implementation - Learning Guide</title>
+</head>
+<body>
+        <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Recursive Descent Parsing: From Theory to Implementation</h1>
+                    <div class="author-info">By Claude AI Assistant</div>
+                </div>
+                <div class="header-nav">
+                    <a href="../../" class="back-to-index">
+                        Back to Index
+                    </a>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+                </div>
+            </div>
+        </div>
+    </header>
+        <nav>
+        <div class="container">
+            <div class="guide-nav-grid">
+                <a class="guide-nav-item" href="#hook" data-section="0">🎯 The Hook</a>
+                <a class="guide-nav-item" href="#concept" data-section="1">💡 Core Concepts</a>
+                <a class="guide-nav-item" href="#mechanics" data-section="2">⚙️ How It Works</a>
+                <a class="guide-nav-item" href="#examples" data-section="3">🌍 Real Examples</a>
+                <a class="guide-nav-item" href="#practice" data-section="4">🛠️ Hands-On Practice</a>
+                <a class="guide-nav-item" href="#debugging" data-section="5">🐛 Debugging & Troubleshooting</a>
+                <a class="guide-nav-item" href="#performance" data-section="6">🚀 Performance & Optimization</a>
+                <a class="guide-nav-item" href="#security" data-section="7">🔒 Security Considerations</a>
+                <a class="guide-nav-item" href="#patterns" data-section="8">🏗️ Design Patterns</a>
+                <a class="guide-nav-item" href="#tools" data-section="9">🔧 Tools & Utilities</a>
+                <a class="guide-nav-item" href="#bestpractices" data-section="10">✨ Best Practices</a>
+                <a class="guide-nav-item" href="#warnings" data-section="11">⚠️ Common Pitfalls</a>
+                <a class="guide-nav-item" href="#advanced" data-section="12">🎓 Advanced Topics</a>
+                <a class="guide-nav-item" href="#test" data-section="13">🎯 Test Yourself</a>
+                <a class="guide-nav-item" href="#growth" data-section="14">📈 Next Steps</a>
+            </div>
+        </div>
+    </nav>
+        <main class="container">
+        <section id="hook">
+            <div class="section-header">
+                <div class="section-icon hook">🎯</div>
+                <h2 class="section-title">THE HOOK</h2>
+            </div>
+            <div class="content">
+                <p><strong>What is this?</strong><br>Recursive descent parsing is a top-down parsing technique where each grammar rule becomes a function that calls other functions recursively. It's like having a conversation where each person knows exactly who to talk to next based on what they just heard.</p>
+                <p><strong>Why care?</strong><br>Every programming language you've ever used was built with a parser. Understanding recursive descent parsing gives you the power to create your own languages, build sophisticated data processors, and understand how compilers work under the hood.</p>
+                <p><strong>Mental model:</strong><br>Think of it like following a recipe where each step might say 'see recipe X' or 'see recipe Y'. You recursively follow those sub-recipes, then return to continue where you left off. The parser follows grammar rules the same way.</p>
+            </div>
+        </section>
+
+        <section id="concept">
+            <div class="section-header">
+                <div class="section-icon concept">💡</div>
+                <h2 class="section-title">CORE CONCEPTS</h2>
+            </div>
+            <div class="content">
+                <h3>Essential terminology</h3>
+                <ul>
+                    <li><strong>Grammar:</strong> Rules defining valid syntax (like BNF or EBNF)</li>
+                    <li><strong>Token:</strong> Atomic unit from lexical analysis (numbers, keywords, operators)</li>
+                    <li><strong>Production rule:</strong> A grammar rule like 'Expression → Term + Expression'</li>
+                    <li><strong>Terminal:</strong> Actual tokens that appear in source code</li>
+                    <li><strong>Non-terminal:</strong> Abstract symbols that expand to other rules</li>
+                </ul>
+                <h3>The recursive descent approach</h3>
+                <ul>
+                    <li><strong>Top-down:</strong> Starts from the root grammar rule and works down</li>
+                    <li><strong>Predictive:</strong> Looks ahead to decide which production to use</li>
+                    <li><strong>Recursive:</strong> Functions call themselves and each other</li>
+                    <li><strong>Hand-written:</strong> Code directly mirrors grammar structure</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="mechanics">
+            <div class="section-header">
+                <div class="section-icon mechanics">⚙️</div>
+                <h2 class="section-title">HOW IT WORKS</h2>
+            </div>
+            <div class="content">
+                <h3>The parsing process</h3>
+                <ol>
+                    <li><strong>Tokenization:</strong> Break input into tokens (lexical analysis)</li>
+                    <li><strong>Function per rule:</strong> Create one function for each grammar production</li>
+                    <li><strong>Lookahead:</strong> Peek at current token to decide which path to take</li>
+                    <li><strong>Consume tokens:</strong> Match expected tokens and advance</li>
+                    <li><strong>Recursive calls:</strong> Call other parsing functions as needed</li>
+                    <li><strong>Build AST:</strong> Construct abstract syntax tree nodes</li>
+                </ol>
+                <h3>Grammar requirements</h3>
+                <ul>
+                    <li><strong>LL(1) compatible:</strong> Left-to-right scan, leftmost derivation, 1 token lookahead</li>
+                    <li><strong>No left recursion:</strong> Rules like 'A → A + B' must be eliminated</li>
+                    <li><strong>Factored:</strong> Common prefixes extracted to avoid ambiguity</li>
+                    <li><strong>Deterministic:</strong> Each lookahead token clearly indicates which rule to use</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="examples">
+            <div class="section-header">
+                <div class="section-icon examples">🌍</div>
+                <h2 class="section-title">REAL EXAMPLES</h2>
+            </div>
+            <div class="content">
+                <h3>Simple arithmetic expression parser</h3>
+                <p>Grammar (left-recursion eliminated):</p>
+                <div class="code-block" data-language="text">
+                    <textarea id="code-aoe7befj0" class="codemirror-code">Expression → Term (('+' | '-') Term)*
+Term → Factor (('*' | '/') Factor)*
+Factor → NUMBER | '(' Expression ')'</textarea>
+                </div>
+                <p>C implementation:</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-z334ghm76" class="codemirror-code">#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+
+typedef struct {
+    char *input;
+    int pos;
+    char current_token;
+} Parser;
+
+// Forward declarations
+int expression(Parser *p);
+int term(Parser *p);
+int factor(Parser *p);
+
+void next_token(Parser *p) {
+    while (isspace(p->input[p->pos])) p->pos++;
+    p->current_token = p->input[p->pos++];
+}
+
+int expression(Parser *p) {
+    int result = term(p);
+    
+    while (p->current_token == '+' || p->current_token == '-') {
+        char op = p->current_token;
+        next_token(p);
+        int right = term(p);
+        result = (op == '+') ? result + right : result - right;
+    }
+    return result;
+}
+
+int term(Parser *p) {
+    int result = factor(p);
+    
+    while (p->current_token == '*' || p->current_token == '/') {
+        char op = p->current_token;
+        next_token(p);
+        int right = factor(p);
+        result = (op == '*') ? result * right : result / right;
+    }
+    return result;
+}
+
+int factor(Parser *p) {
+    if (isdigit(p->current_token)) {
+        int value = p->current_token - '0';
+        next_token(p);
+        return value;
+    }
+    
+    if (p->current_token == '(') {
+        next_token(p);
+        int result = expression(p);
+        if (p->current_token == ')') next_token(p);
+        return result;
+    }
+    
+    return 0; // Error case
+}
+
+int main() {
+    Parser parser = {"3+2*4", 0};
+    next_token(&parser);
+    int result = expression(&parser);
+    printf("Result: %d\n", result); // Output: 11
+    return 0;
+}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="practice">
+            <div class="section-header">
+                <div class="section-icon practice">🛠️</div>
+                <h2 class="section-title">DO THIS NOW</h2>
+            </div>
+            <div class="content">
+                <div class="action-box">
+                <p><strong>Build a simple calculator parser:</strong></p>
+                <ol>
+                    <li>Write the grammar for basic arithmetic (+ - * / parentheses)</li>
+                    <li>Eliminate left recursion if present</li>
+                    <li>Create one function per grammar rule</li>
+                    <li>Test with expressions like "3+2*4" and "(1+2)*3"</li>
+                    <li>Add error handling for invalid input</li>
+                </ol>
+                <p><strong>What to look for:</strong> Proper operator precedence (multiplication before addition).<br><strong>Quick win:</strong> Parse and evaluate "2+3*4" correctly as 14, not 20.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="debugging">
+            <div class="section-header">
+                <div class="section-icon debugging">🐛</div>
+                <h2 class="section-title">DEBUGGING & TROUBLESHOOTING</h2>
+            </div>
+            <div class="content">
+                <h3>Common debugging techniques</h3>
+                <ul>
+                    <li><strong>Trace execution:</strong> Print function entry/exit with current token</li>
+                    <li><strong>Visualize call stack:</strong> Track recursive function calls</li>
+                    <li><strong>Token stream debug:</strong> Print all tokens before parsing</li>
+                    <li><strong>AST visualization:</strong> Print tree structure after parsing</li>
+                </ul>
+                <h3>Error recovery strategies</h3>
+                <ul>
+                    <li><strong>Panic mode:</strong> Skip tokens until synchronization point</li>
+                    <li><strong>Error productions:</strong> Add grammar rules for common errors</li>
+                    <li><strong>Backtracking:</strong> Try alternative productions on failure</li>
+                    <li><strong>Error reporting:</strong> Provide meaningful error messages with position</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="performance">
+            <div class="section-header">
+                <div class="section-icon performance">🚀</div>
+                <h2 class="section-title">PERFORMANCE & OPTIMIZATION</h2>
+            </div>
+            <div class="content">
+                <h3>Performance considerations</h3>
+                <ul>
+                    <li><strong>Memoization:</strong> Cache parsing results for repeated subexpressions</li>
+                    <li><strong>Lazy evaluation:</strong> Parse only what's needed</li>
+                    <li><strong>Token buffering:</strong> Read tokens in chunks rather than one by one</li>
+                    <li><strong>Tail recursion:</strong> Optimize recursive calls where possible</li>
+                </ul>
+                <h3>Memory optimization</h3>
+                <ul>
+                    <li><strong>AST pooling:</strong> Reuse node objects to reduce allocation</li>
+                    <li><strong>Streaming:</strong> Process large inputs without loading entirely into memory</li>
+                    <li><strong>Iterative conversion:</strong> Replace recursion with iteration for deep nesting</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="security">
+            <div class="section-header">
+                <div class="section-icon security">🔒</div>
+                <h2 class="section-title">SECURITY CONSIDERATIONS</h2>
+            </div>
+            <div class="content">
+                <h3>Input validation</h3>
+                <ul>
+                    <li><strong>Buffer overflow protection:</strong> Validate input length before processing</li>
+                    <li><strong>Stack overflow prevention:</strong> Limit recursion depth</li>
+                    <li><strong>Malicious input detection:</strong> Check for patterns designed to exploit parser</li>
+                    <li><strong>Resource limits:</strong> Set timeouts and memory limits for parsing</li>
+                </ul>
+                <h3>Common attack vectors</h3>
+                <ul>
+                    <li><strong>Billion laughs attack:</strong> Exponential entity expansion</li>
+                    <li><strong>Stack exhaustion:</strong> Deeply nested structures causing stack overflow</li>
+                    <li><strong>ReDoS:</strong> Regular expression denial of service in tokenizer</li>
+                    <li><strong>Memory exhaustion:</strong> Inputs designed to consume excessive memory</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="patterns">
+            <div class="section-header">
+                <div class="section-icon patterns">🏗️</div>
+                <h2 class="section-title">DESIGN PATTERNS</h2>
+            </div>
+            <div class="content">
+                <h3>Parser combinator pattern</h3>
+                <ul>
+                    <li><strong>Sequence combinators:</strong> Chain parsers together</li>
+                    <li><strong>Choice combinators:</strong> Try alternatives in order</li>
+                    <li><strong>Repetition combinators:</strong> Parse zero or more occurrences</li>
+                    <li><strong>Transformation combinators:</strong> Apply functions to parsed results</li>
+                </ul>
+                <h3>Visitor pattern for AST processing</h3>
+                <ul>
+                    <li><strong>Node visitors:</strong> Separate traversal from processing logic</li>
+                    <li><strong>Type dispatch:</strong> Handle different node types appropriately</li>
+                    <li><strong>Context passing:</strong> Maintain state during tree traversal</li>
+                    <li><strong>Multiple passes:</strong> Different visitors for different analysis phases</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="section-header">
+                <div class="section-icon tools">🔧</div>
+                <h2 class="section-title">TOOLS & UTILITIES</h2>
+            </div>
+            <div class="content">
+                <h3>Parser generators</h3>
+                <ul>
+                    <li><strong>ANTLR:</strong> Generates recursive descent parsers from grammar files</li>
+                    <li><strong>PEG.js:</strong> JavaScript parser generator using parsing expression grammars</li>
+                    <li><strong>Yacc/Bison:</strong> Bottom-up parser generators (not recursive descent)</li>
+                    <li><strong>Lex/Flex:</strong> Lexical analyzer generators for tokenization</li>
+                </ul>
+                <h3>Development aids</h3>
+                <ul>
+                    <li><strong>Grammar analyzers:</strong> Check for LL(1) compatibility</li>
+                    <li><strong>Parse tree visualizers:</strong> Generate diagrams of parse trees</li>
+                    <li><strong>Profilers:</strong> Identify performance bottlenecks in parsing</li>
+                    <li><strong>Testing frameworks:</strong> Automated testing of parser correctness</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="bestpractices">
+            <div class="section-header">
+                <div class="section-icon bestpractices">✨</div>
+                <h2 class="section-title">BEST PRACTICES</h2>
+            </div>
+            <div class="content">
+                <h3>Grammar design</h3>
+                <ul>
+                    <li><strong>Start simple:</strong> Begin with minimal grammar and expand incrementally</li>
+                    <li><strong>Clear naming:</strong> Use descriptive names for non-terminals</li>
+                    <li><strong>Consistent style:</strong> Follow consistent conventions throughout grammar</li>
+                    <li><strong>Documentation:</strong> Comment grammar rules to explain purpose</li>
+                </ul>
+                <h3>Code organization</h3>
+                <ul>
+                    <li><strong>One file per concept:</strong> Separate lexer, parser, and AST definitions</li>
+                    <li><strong>Error handling:</strong> Consistent error reporting throughout parser</li>
+                    <li><strong>Testing:</strong> Unit tests for each parsing function</li>
+                    <li><strong>Version control:</strong> Track changes to grammar and parser together</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="warnings">
+            <div class="section-header">
+                <div class="section-icon warnings">⚠️</div>
+                <h2 class="section-title">COMMON PITFALLS</h2>
+            </div>
+            <div class="content">
+                <div class="warning-box">
+                <ul>
+                    <li><strong>Left recursion in grammar</strong> → Transform to right recursion or iteration</li>
+                    <li><strong>Ambiguous grammar</strong> → Factor out common prefixes and clarify precedence</li>
+                    <li><strong>Infinite recursion</strong> → Always consume at least one token in recursive calls</li>
+                    <li><strong>Poor error messages</strong> → Include context and expected tokens in error reports</li>
+                    <li><strong>Ignoring operator precedence</strong> → Use separate grammar levels for different precedences</li>
+                    <li><strong>Memory leaks in AST</strong> → Implement proper cleanup for dynamically allocated nodes</li>
+                </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="advanced">
+            <div class="section-header">
+                <div class="section-icon advanced">🎓</div>
+                <h2 class="section-title">ADVANCED TOPICS</h2>
+            </div>
+            <div class="content">
+                <h3>Advanced parsing techniques</h3>
+                <ul>
+                    <li><strong>Packrat parsing:</strong> Memoization for PEG parsers</li>
+                    <li><strong>Error recovery:</strong> Continue parsing after syntax errors</li>
+                    <li><strong>Incremental parsing:</strong> Parse only changed portions of input</li>
+                    <li><strong>Parallel parsing:</strong> Parse independent sections concurrently</li>
+                </ul>
+                <h3>Language-specific features</h3>
+                <ul>
+                    <li><strong>Context-sensitive parsing:</strong> Handle languages that aren't context-free</li>
+                    <li><strong>Macro expansion:</strong> Parse and expand macros during parsing</li>
+                    <li><strong>Module systems:</strong> Handle imports and namespace resolution</li>
+                    <li><strong>Type-directed parsing:</strong> Use type information to guide parsing decisions</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="test">
+            <div class="section-header">
+                <div class="section-icon test">🎯</div>
+                <h2 class="section-title">TEST YOURSELF</h2>
+            </div>
+            <div class="content">
+                <ol>
+                    <li>Can you eliminate left recursion from the grammar: S → S + T | T?</li>
+                    <li>What makes a grammar LL(1) compatible?</li>
+                    <li>How would you handle operator precedence in recursive descent?</li>
+                    <li>What's the difference between terminals and non-terminals?</li>
+                    <li>How do you prevent infinite recursion in parser functions?</li>
+                </ol>
+                <p><strong>Success criteria:</strong> Build a working calculator that handles precedence, associativity, and parentheses correctly.<br><strong>Review triggers:</strong> When you encounter parsing errors or need to modify grammar rules.</p>
+            </div>
+        </section>
+
+        <section id="growth">
+            <div class="section-header">
+                <div class="section-icon growth">📈</div>
+                <h2 class="section-title">NEXT STEPS</h2>
+            </div>
+            <div class="content">
+                <ul>
+                    <li><strong>This week:</strong> Implement a complete arithmetic expression parser with proper error handling</li>
+                    <li><strong>This month:</strong> Add support for variables, functions, and control structures to your parser</li>
+                    <li><strong>Long term:</strong> Study advanced parsing techniques like GLR parsing, build a compiler frontend, or contribute to open-source language projects</li>
+                </ul>
+                <h3>Related topics to explore</h3>
+                <ul>
+                    <li><strong>Lexical analysis:</strong> Tokenization and regular expressions</li>
+                    <li><strong>Abstract syntax trees:</strong> Tree manipulation and traversal algorithms</li>
+                    <li><strong>Semantic analysis:</strong> Type checking and symbol table management</li>
+                    <li><strong>Code generation:</strong> Translating ASTs to executable code</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+        <footer>
+        <div class="container">
+            <p>Learning journey completed! 🎉</p>
+            <div class="checkbox-item" style="justify-content: center; margin-top: 1rem;">
+                <div class="checkbox" onclick="toggleComplete(this)"></div>
+                <span>Mark this topic as mastered</span>
+            </div>
+        </div>
+    </footer>
+        <script>
+        // Theme toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button text
+            updateThemeButton(newTheme);
+        }
+
+        // Update theme button text based on current theme
+        function updateThemeButton(currentTheme) {
+            const button = document.querySelector('.theme-toggle');
+            if (currentTheme === 'dark') {
+                button.innerHTML = '☀️ Light Mode';
+            } else {
+                button.innerHTML = '🌙 Dark Mode';
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', loadTheme);
+
+        // Section completion
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
+                    .map(el => el.getAttribute('data-section'));
+                localStorage.setItem('completed-recursive-descent-parsing--from-theory-to-implementation', JSON.stringify(completedSections));
+            });
+        });
+
+        // Load saved progress
+        const savedProgress = localStorage.getItem('completed-recursive-descent-parsing--from-theory-to-implementation');
+        if (savedProgress) {
+            const completed = JSON.parse(savedProgress);
+            completed.forEach(sectionNum => {
+                const navItem = document.querySelector(`[data-section="${sectionNum}"]`);
+                if (navItem) navItem.classList.add('completed');
+            });
+        }
+
+        // Checkbox functionality
+        function toggleComplete(checkbox) {
+            checkbox.classList.toggle('checked');
+            if (checkbox.classList.contains('checked')) {
+                checkbox.innerHTML = '✓';
+                localStorage.setItem('mastered-recursive-descent-parsing--from-theory-to-implementation', 'true');
+            } else {
+                checkbox.innerHTML = '';
+                localStorage.setItem('mastered-recursive-descent-parsing--from-theory-to-implementation', 'false');
+            }
+        }
+
+        // Load mastery status
+        const masteryStatus = localStorage.getItem('mastered-recursive-descent-parsing--from-theory-to-implementation');
+        if (masteryStatus === 'true') {
+            const masteryCheckbox = document.querySelector('footer .checkbox');
+            if (masteryCheckbox) {
+                masteryCheckbox.classList.add('checked');
+                masteryCheckbox.innerHTML = '✓';
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Initialize CodeMirror for all code blocks
+        let initAttempts = 0;
+        const maxAttempts = 50; // Max 5 seconds of retries
+        
+        function initializeCodeMirror() {
+            initAttempts++;
+            
+            // Check if CodeMirror is loaded
+            if (typeof CodeMirror === 'undefined') {
+                if (initAttempts >= maxAttempts) {
+                    console.error('Failed to load CodeMirror after', maxAttempts, 'attempts. Using fallback styling.');
+                    // Fallback: Style textareas as basic code blocks
+                    document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                        textarea.style.fontFamily = 'Monaco, Menlo, "Ubuntu Mono", monospace';
+                        textarea.style.fontSize = '14px';
+                        textarea.style.lineHeight = '1.5';
+                        textarea.style.padding = '10px';
+                        textarea.style.border = '1px solid var(--border)';
+                        textarea.style.borderRadius = '4px';
+                        textarea.style.background = 'var(--code-bg)';
+                        textarea.style.color = 'var(--code-text)';
+                        textarea.style.resize = 'none';
+                        textarea.style.minHeight = '100px';
+                        textarea.readOnly = true;
+                    });
+                    return;
+                }
+                console.warn('CodeMirror not loaded, retrying in 100ms... (attempt', initAttempts, '/', maxAttempts, ')');
+                setTimeout(initializeCodeMirror, 100);
+                return;
+            }
+            
+            const codeTextareas = document.querySelectorAll('.codemirror-code');
+            console.log('Initializing CodeMirror for', codeTextareas.length, 'code blocks');
+            
+            codeTextareas.forEach(textarea => {
+                const codeBlock = textarea.closest('.code-block');
+                const language = codeBlock.dataset.language;
+                
+                // Map language to CodeMirror mode
+                let mode = 'text';
+                switch(language) {
+                    case 'c':
+                    case 'cpp':
+                    case 'c++':
+                        mode = 'text/x-csrc';
+                        break;
+                    case 'javascript':
+                    case 'js':
+                        mode = 'javascript';
+                        break;
+                    case 'bash':
+                    case 'shell':
+                    case 'sh':
+                        mode = 'shell';
+                        break;
+                    case 'css':
+                        mode = 'css';
+                        break;
+                    case 'html':
+                        mode = 'htmlmixed';
+                        break;
+                    case 'json':
+                        mode = 'application/json';
+                        break;
+                    default:
+                        mode = 'text';
+                }
+                
+                // Use custom theme that respects CSS variables
+                const cmTheme = 'default'; // We'll override with CSS
+                
+                try {
+                    const editor = CodeMirror.fromTextArea(textarea, {
+                        mode: mode,
+                        theme: cmTheme,
+                        lineNumbers: true,
+                        readOnly: 'nocursor',  // Disable cursor and selection
+                        lineWrapping: true,    // Enable line wrapping to avoid horizontal scroll
+                        scrollbarStyle: 'null', // Remove scrollbars
+                        viewportMargin: Infinity, // Show all content without scrolling
+                        matchBrackets: false,  // Disable bracket matching highlights
+                        styleActiveLine: false, // Disable active line highlighting
+                        indentUnit: 4,
+                        tabSize: 4
+                    });
+                    
+                    // Store editor reference for theme switching
+                    textarea.codeMirrorInstance = editor;
+                    
+                    // Auto-refresh editor size and ensure no scrollbars
+                    setTimeout(() => {
+                        editor.refresh();
+                        editor.setSize(null, 'auto'); // Auto-height based on content
+                    }, 100);
+                    
+                    console.log('CodeMirror initialized for language:', language, 'mode:', mode);
+                } catch (error) {
+                    console.error('Failed to initialize CodeMirror for textarea:', error);
+                }
+            });
+        }
+        
+        // CodeMirror themes are handled by CSS variables, no need to update programmatically
+        
+        // Initialize CodeMirror when DOM and scripts are fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait a bit more for all scripts to load
+                setTimeout(initializeCodeMirror, 200);
+            });
+        } else {
+            // Document already loaded, wait for scripts
+            setTimeout(initializeCodeMirror, 200);
+        }
+    </script>
+</body>
+</html>
