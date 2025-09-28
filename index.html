@@ -121,6 +121,18 @@
             updateThemeButton(savedTheme);
         }
 
+        // Sort directories by date (newest first)
+        function sortDirectoriesByDate(directories) {
+            return directories.sort((a, b) => {
+                // Convert date strings to Date objects for comparison
+                const dateA = new Date(a.lastUpdated || '1970-01-01');
+                const dateB = new Date(b.lastUpdated || '1970-01-01');
+                
+                // Sort in descending order (newest first)
+                return dateB - dateA;
+            });
+        }
+
         // Directory management
         async function loadDirectories() {
             const loadingElement = document.getElementById('loading');
@@ -139,9 +151,12 @@
                     filteredDirectories = [];
                     emptyElement.style.display = 'block';
                 } else {
+                    // Sort directories by date (newest first)
+                    const sortedDirectories = sortDirectoriesByDate(data.directories);
+                    
                     // Store directories for search functionality
-                    allDirectories = [...data.directories];
-                    filteredDirectories = [...data.directories];
+                    allDirectories = [...sortedDirectories];
+                    filteredDirectories = [...sortedDirectories];
                     
                     gridElement.style.display = 'grid';
                     
@@ -149,7 +164,7 @@
                     displayMetadata(data.metadata);
                     
                     // Display directories
-                    populateDirectoryGrid(data.directories);
+                    populateDirectoryGrid(sortedDirectories);
                 }
             } catch (error) {
                 console.error('Error loading directories:', error);
@@ -373,6 +388,9 @@
                 return titleMatch || tagsMatch || authorMatch;
             });
 
+            // Sort filtered results by date (newest first)
+            filteredDirectories = sortDirectoriesByDate(filteredDirectories);
+
             // Update search stats
             const totalGuides = allDirectories.length;
             const foundGuides = filteredDirectories.length;
@@ -413,7 +431,7 @@
             searchStats.style.display = 'none';
             clearBtn.style.display = 'none';
             
-            // Reset to show all directories
+            // Reset to show all directories (already sorted by date)
             filteredDirectories = [...allDirectories];
             populateDirectoryGrid(filteredDirectories);
             
