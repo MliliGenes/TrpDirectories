@@ -58,7 +58,7 @@
       "title": "Recursive Descent Parsing: From Theory to Implementation",
       "path": "guides/recursive-descent-parsing-from-theory-to-implementation/",
       "description": "A comprehensive guide to understanding and implementing recursive descent parsers, covering theory, practical examples, and real-world applications for compiler design and language processing",
-      "author": "Claude AI Assistant",
+      "author": "sel-mlil",
       "tags": [
         "parsing",
         "compilers",
@@ -139,7 +139,7 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-28T10:17:47.757Z",
+    "lastModified": "2025-09-28T10:19:19.552Z",
     "totalGuides": 8,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
