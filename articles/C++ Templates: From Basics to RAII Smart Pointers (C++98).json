@@ -2,7 +2,7 @@
   "meta": {
     "title": "C++ Templates: From Basics to RAII Smart Pointers (C++98)",
     "description": "A comprehensive guide to C++98 templates covering core concepts, mechanics, practical examples including building an RAII auto pointer, use cases, pros/cons, and common pitfalls.",
-    "author": "Enhanced Learning System",
+    "author": "sel-mlil",
     "tags": ["c++", "templates", "c++98", "raii", "smart-pointers", "generic-programming", "intermediate"],
     "difficulty": "intermediate",
     "lastUpdated": "2025-09-29"
