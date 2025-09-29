@@ -17,6 +17,24 @@
       "lastUpdated": "2025-09-27"
     },
     {
+      "id": "c---templates--from-basics-to-raii-smart-pointers--c--98-",
+      "title": "C++ Templates: From Basics to RAII Smart Pointers (C++98)",
+      "path": "guides/c-templates-from-basics-to-raii-smart-pointers-c98/",
+      "description": "A comprehensive guide to C++98 templates covering core concepts, mechanics, practical examples including building an RAII auto pointer, use cases, pros/cons, and common pitfalls.",
+      "author": "Enhanced Learning System",
+      "tags": [
+        "c++",
+        "templates",
+        "c++98",
+        "raii",
+        "smart-pointers",
+        "generic-programming",
+        "intermediate"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2025-09-29"
+    },
+    {
       "id": "c--98-stl-containers--vector-and-map-mastery-guide",
       "title": "C++98 STL Containers: Vector and Map Mastery Guide",
       "path": "guides/c98-stl-containers-vector-and-map-mastery-guide/",
@@ -139,8 +157,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-28T10:22:08.690Z",
-    "totalGuides": 8,
+    "lastModified": "2025-09-29T10:03:32.437Z",
+    "totalGuides": 9,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }

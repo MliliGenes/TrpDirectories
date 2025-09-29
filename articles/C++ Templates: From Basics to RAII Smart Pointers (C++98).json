@@ -1,0 +1,353 @@
+{
+  "meta": {
+    "title": "C++ Templates: From Basics to RAII Smart Pointers (C++98)",
+    "description": "A comprehensive guide to C++98 templates covering core concepts, mechanics, practical examples including building an RAII auto pointer, use cases, pros/cons, and common pitfalls.",
+    "author": "Enhanced Learning System",
+    "tags": ["c++", "templates", "c++98", "raii", "smart-pointers", "generic-programming", "intermediate"],
+    "difficulty": "intermediate",
+    "lastUpdated": "2025-09-29"
+  },
+  "navigation": [
+    {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},
+    {"id": "mechanics", "emoji": "⚙️", "title": "How It Works", "sectionIndex": 1},
+    {"id": "examples", "emoji": "🌍", "title": "Real Examples", "sectionIndex": 2},
+    {"id": "autoptr", "emoji": "🔧", "title": "RAII Auto Pointer", "sectionIndex": 3},
+    {"id": "usecases", "emoji": "💼", "title": "Use Cases", "sectionIndex": 4},
+    {"id": "proscons", "emoji": "⚖️", "title": "Pros & Cons", "sectionIndex": 5},
+    {"id": "warnings", "emoji": "⚠️", "title": "Common Pitfalls", "sectionIndex": 6},
+    {"id": "test", "emoji": "🎯", "title": "Test Yourself", "sectionIndex": 7},
+    {"id": "growth", "emoji": "📈", "title": "Level Up", "sectionIndex": 8}
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE CONCEPT",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>What is it?</strong><br>Templates are C++'s compile-time code generation mechanism. They're blueprints that let the compiler automatically generate type-specific code from generic definitions. Think \"code factory\" - you write one template, the compiler manufactures custom versions for each type you use.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Why care?</strong><br>• <strong>Type safety without code duplication:</strong> Write generic algorithms once, get full compiler checking for each type<br>• <strong>Zero runtime overhead:</strong> All decisions happen at compile-time<br>• <strong>Foundation of STL:</strong> vectors, maps, algorithms all use templates",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Mental model:</strong><br>A cookie cutter. The template is the cutter shape; each instantiation is a unique cookie (type-specific code) the compiler bakes.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW IT WORKS",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Core mechanics"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "You write template definition with placeholder types (<code>template&lt;typename T&gt;</code>)",
+            "Compiler sees usage like <code>MyClass&lt;int&gt;</code>",
+            "Compiler generates actual code by substituting <code>int</code> for <code>T</code>",
+            "Each unique instantiation creates separate code in binary"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Key components"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Template parameters:</strong> <code>typename T</code> or <code>class T</code> (identical in C++98)",
+            "<strong>Template instantiation:</strong> Compiler-generated concrete code",
+            "<strong>Specialization:</strong> Custom implementation for specific types",
+            "<strong>Two-phase compilation:</strong> Template syntax checked first, full checking during instantiation"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Governing principles"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Templates must be in headers (compiler needs full definition at instantiation point)",
+            "No virtual functions in template classes needed (already compile-time polymorphism)",
+            "Instantiation happens lazily - only used methods get compiled"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍",
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Function Templates"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "// Generic swap\ntemplate<typename T>\nvoid swap(T& a, T& b) {\n    T temp = a;\n    a = b;\n    b = temp;\n}\n\n// Usage\nint x = 5, y = 10;\nswap(x, y);  // Compiler generates swap<int>\n\nstd::string s1 = \"hello\", s2 = \"world\";\nswap(s1, s2);  // Compiler generates swap<std::string>"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Class Templates"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "template<typename T>\nclass Stack {\nprivate:\n    T* data;\n    size_t capacity;\n    size_t count;\n    \npublic:\n    Stack() : data(NULL), capacity(10), count(0) {\n        data = new T[capacity];\n    }\n    \n    ~Stack() {\n        delete[] data;\n    }\n    \n    void push(const T& value) {\n        if (count == capacity) {\n            resize();\n        }\n        data[count++] = value;\n    }\n    \n    T pop() {\n        if (count == 0) throw std::runtime_error(\"Empty stack\");\n        return data[--count];\n    }\n    \nprivate:\n    void resize() {\n        capacity *= 2;\n        T* newData = new T[capacity];\n        for (size_t i = 0; i < count; ++i) {\n            newData[i] = data[i];\n        }\n        delete[] data;\n        data = newData;\n    }\n};\n\n// Usage\nStack<int> intStack;\nStack<std::string> stringStack;"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Template Specialization"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "// Generic version\ntemplate<typename T>\nclass Printer {\npublic:\n    void print(const T& value) {\n        std::cout << value << std::endl;\n    }\n};\n\n// Specialized for bool\ntemplate<>\nclass Printer<bool> {\npublic:\n    void print(const bool& value) {\n        std::cout << (value ? \"true\" : \"false\") << std::endl;\n    }\n};"
+        }
+      ]
+    },
+    {
+      "id": "autoptr",
+      "title": "COMPLETE EXAMPLE: RAII AUTO POINTER",
+      "emoji": "🔧",
+      "iconClass": "practice",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "Building a smart pointer that automatically manages memory using RAII (Resource Acquisition Is Initialization):"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "#include <iostream>\n#include <stdexcept>\n\ntemplate<typename T>\nclass AutoPtr {\nprivate:\n    T* ptr;\n    \n    // Prevent copying (C++98 way - declare private, don't implement)\n    AutoPtr(const AutoPtr&);\n    AutoPtr& operator=(const AutoPtr&);\n    \npublic:\n    // Constructor\n    explicit AutoPtr(T* p = NULL) : ptr(p) {}\n    \n    // Destructor - RAII cleanup\n    ~AutoPtr() {\n        delete ptr;\n    }\n    \n    // Dereference operators\n    T& operator*() const {\n        if (!ptr) throw std::runtime_error(\"Null pointer dereference\");\n        return *ptr;\n    }\n    \n    T* operator->() const {\n        if (!ptr) throw std::runtime_error(\"Null pointer dereference\");\n        return ptr;\n    }\n    \n    // Get raw pointer\n    T* get() const {\n        return ptr;\n    }\n    \n    // Release ownership\n    T* release() {\n        T* temp = ptr;\n        ptr = NULL;\n        return temp;\n    }\n    \n    // Reset with new pointer\n    void reset(T* p = NULL) {\n        if (ptr != p) {\n            delete ptr;\n            ptr = p;\n        }\n    }\n    \n    // Check if null\n    bool isNull() const {\n        return ptr == NULL;\n    }\n};"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Usage Example"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "class Resource {\nprivate:\n    int id;\npublic:\n    Resource(int i) : id(i) {\n        std::cout << \"Resource \" << id << \" created\\n\";\n    }\n    \n    ~Resource() {\n        std::cout << \"Resource \" << id << \" destroyed\\n\";\n    }\n    \n    void use() {\n        std::cout << \"Using resource \" << id << \"\\n\";\n    }\n};\n\nint main() {\n    // Automatic cleanup when scope ends\n    {\n        AutoPtr<Resource> ptr1(new Resource(1));\n        ptr1->use();\n        (*ptr1).use();\n        \n        // Transfer ownership\n        AutoPtr<int> ptr2(new int(42));\n        int* raw = ptr2.release();  // ptr2 no longer owns\n        std::cout << \"Released value: \" << *raw << \"\\n\";\n        delete raw;  // Manual cleanup needed\n        \n        // Reset\n        AutoPtr<Resource> ptr3(new Resource(3));\n        ptr3.reset(new Resource(4));  // Resource 3 destroyed here\n        \n    } // Resource 4 destroyed automatically here\n    \n    return 0;\n}"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": "<strong>Expected Output:</strong>",
+              "html": true
+            },
+            {
+              "type": "codeblock",
+              "language": "text",
+              "code": "Resource 1 created\nUsing resource 1\nUsing resource 1\nReleased value: 42\nResource 3 created\nResource 4 created\nResource 3 destroyed\nResource 4 destroyed\nResource 1 destroyed"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "usecases",
+      "title": "USE CASES",
+      "emoji": "💼",
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "1. Generic Containers"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "template<typename T>\nclass Vector { /* ... */ };\nVector<int> numbers;\nVector<std::string> names;"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "2. Type-Safe Callbacks"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "template<typename Func>\nvoid repeat(int n, Func f) {\n    for (int i = 0; i < n; ++i) f();\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "3. Policy-Based Design"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "template<typename T, typename Allocator = std::allocator<T> >\nclass Container { /* ... */ };"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "4. Compile-Time Computation"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "template<int N>\nstruct Factorial {\n    enum { value = N * Factorial<N-1>::value };\n};\n\ntemplate<>\nstruct Factorial<0> {\n    enum { value = 1 };\n};\n// Factorial<5>::value == 120 at compile time"
+        }
+      ]
+    },
+    {
+      "id": "proscons",
+      "title": "PROS & CONS",
+      "emoji": "⚖️",
+      "iconClass": "connections",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Advantages"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Zero runtime cost:</strong> All abstraction resolved at compile-time",
+            "<strong>Type safety:</strong> Full compiler checking for each instantiation",
+            "<strong>Code reuse:</strong> Write once, use with any compatible type",
+            "<strong>Performance:</strong> Optimizer sees concrete types, can inline aggressively",
+            "<strong>No virtual function overhead:</strong> Static polymorphism"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Disadvantages"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Code bloat:</strong> Each instantiation generates separate code",
+            "<strong>Compile-time explosion:</strong> Large templates slow compilation dramatically",
+            "<strong>Cryptic error messages:</strong> Template instantiation errors are notoriously hard to read",
+            "<strong>Header dependency:</strong> All template code must be in headers, increases coupling",
+            "<strong>Debugging difficulty:</strong> Generic code harder to step through",
+            "<strong>Binary compatibility:</strong> Template changes require full recompilation"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "1. Missing typename keyword"
+            },
+            {
+              "type": "codeblock",
+              "language": "cpp",
+              "code": "// WRONG\ntemplate<typename T>\nvoid foo() {\n    T::iterator it;  // Compiler error: \"need 'typename'\"\n}\n\n// CORRECT\ntemplate<typename T>\nvoid foo() {\n    typename T::iterator it;  // Tells compiler it's a type\n}"
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "2. Forgetting explicit instantiation"
+            },
+            {
+              "type": "codeblock",
+              "language": "cpp",
+              "code": "// header.h\ntemplate<typename T> class MyClass { void foo(); };\n\n// source.cpp - WRONG\ntemplate<typename T>\nvoid MyClass<T>::foo() { /* ... */ }\n// Linker error if used in another file!\n\n// CORRECT: Put implementation in header too"
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "3. Template + virtual confusion"
+            },
+            {
+              "type": "codeblock",
+              "language": "cpp",
+              "code": "// WRONG THINKING\ntemplate<typename T>\nclass Base {\n    virtual void process(T value) = 0;  // Templates already provide polymorphism!\n};"
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "4. Circular dependencies"
+            },
+            {
+              "type": "codeblock",
+              "language": "cpp",
+              "code": "// Don't make templates depend on each other's instantiations\ntemplate<typename T> class A {\n    B<T> b;  // Fine\n};\n\ntemplate<typename T> class B {\n    A<B<T> > a;  // Infinite instantiation!\n};"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "What happens at compile-time vs runtime with templates?",
+            "Why can't you put template implementation in .cpp files?",
+            "Modify AutoPtr to support arrays (AutoPtr&lt;T[]&gt;)",
+            "Implement a template min() function that works with any comparable type",
+            "Create a template Pair&lt;T1, T2&gt; class with first/second members"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>This week:</strong> Implement a generic LinkedList template, study STL source code (vector, list implementations), practice template specialization with different types",
+            "<strong>This month:</strong> Learn template metaprogramming basics (compile-time computation), study Boost libraries' template techniques, implement policy-based design pattern",
+            "<strong>Long term:</strong> Master C++11/14/17 template improvements (variadic templates, SFINAE, concepts), study Modern C++ Design by Alexandrescu, contribute to template-heavy open source projects"
+          ]
+        }
+      ]
+    }
+  ]
+}
