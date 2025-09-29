@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="../../imgs/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="../../style/main.css">
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/darcula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/default.min.css">
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    
+    <title>CPU Architectures Complete Guide - Learning Guide</title>
+</head>
+<body>
+        <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>CPU Architectures Complete Guide</h1>
+                    <div class="author-info">By sel-mlil</div>
+                </div>
+                <div class="header-nav">
+                    <a href="../../" class="back-to-index">
+                        Back to Index
+                    </a>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+                </div>
+            </div>
+        </div>
+    </header>
+        <nav>
+        <div class="container">
+            <div class="guide-nav-grid">
+                <a class="guide-nav-item" href="#hook" data-section="0">🎯 The Hook</a>
+                <a class="guide-nav-item" href="#concept" data-section="1">💡 Core Concepts</a>
+                <a class="guide-nav-item" href="#mechanics" data-section="2">⚙️ How It Works</a>
+                <a class="guide-nav-item" href="#examples" data-section="3">🌍 Real Examples</a>
+                <a class="guide-nav-item" href="#practice" data-section="4">🛠️ Hands-On Practice</a>
+                <a class="guide-nav-item" href="#warnings" data-section="5">⚠️ Avoid These</a>
+                <a class="guide-nav-item" href="#connections" data-section="6">🔗 Connections</a>
+                <a class="guide-nav-item" href="#test" data-section="7">🎯 Test Yourself</a>
+                <a class="guide-nav-item" href="#growth" data-section="8">📈 Level Up</a>
+            </div>
+        </div>
+    </nav>
+        <main class="container">
+        <section id="hook">
+            <div class="section-header">
+                <div class="section-icon hook">🎯</div>
+                <h2 class="section-title">THE HOOK</h2>
+            </div>
+            <div class="content">
+                <p><strong>What is this?</strong><br>A comprehensive breakdown of CPU architectures—the fundamental blueprints that determine how processors execute instructions, manage data, and deliver performance in everything from smartphones to supercomputers.</p>
+                <p><strong>Why care?</strong><br>Understanding architectures like RISC, CISC, superscalar designs, and modern hybrid approaches helps developers optimize code, system architects choose the right processors, and engineers design better computing systems.</p>
+                <p><strong>Mental model:</strong><br>Think of CPU architecture like a city's infrastructure: roads (buses), intersections (execution units), traffic lights (control logic), and planning rules (ISA) that determine how efficiently people (instructions) and goods (data) move through the system.</p>
+                <p><strong>Real impact:</strong><br>ARM's RISC efficiency enables all-day battery life in smartphones. Intel's x86 CISC complexity powers high-performance computing. Apple Silicon's hybrid design delivers laptop performance at tablet power consumption.</p>
+            </div>
+        </section>
+
+        <section id="concept">
+            <div class="section-header">
+                <div class="section-icon concept">💡</div>
+                <h2 class="section-title">CORE CONCEPTS</h2>
+            </div>
+            <div class="content">
+                <h3>Fundamental Architecture Models</h3>
+                <p><strong>Von Neumann Architecture:</strong> The foundation of modern computers where instructions and data share the same memory space and bus system. Creates a 'Von Neumann bottleneck' where memory bandwidth limits performance, but simplifies design and enables self-modifying code.</p>
+                <p><strong>Harvard Architecture:</strong> Physically separates instruction and data memory with independent buses, allowing simultaneous access to both. Eliminates the Von Neumann bottleneck but requires more complex memory systems. Common in microcontrollers and DSPs.</p>
+                <p><strong>Modified Harvard:</strong> Combines both approaches—separate L1 caches for instructions and data but unified memory at higher levels. Provides Harvard benefits while maintaining Von Neumann flexibility. Used in virtually all modern processors.</p>
+                <h3>Instruction Set Architecture Types</h3>
+                <p><strong>CISC (Complex Instruction Set Computing):</strong> Features rich, complex instructions that can perform multiple operations. x86 is the prime example, using microcode to break complex instructions into simpler micro-operations. Reduces program size but increases decoder complexity.</p>
+                <p><strong>RISC (Reduced Instruction Set Computing):</strong> Uses simple, uniform instructions that typically execute in one clock cycle. ARM, MIPS, and RISC-V follow this philosophy, enabling efficient pipelining, lower power consumption, and higher frequencies.</p>
+                <p><strong>EPIC (Explicitly Parallel Instruction Computing):</strong> Relies on the compiler to identify and schedule parallel operations explicitly in the instruction stream. Intel's Itanium implemented this with predication and speculation but had limited commercial success.</p>
+                <h3>Execution Models</h3>
+                <p><strong>Superscalar:</strong> Can execute multiple instructions simultaneously by having multiple execution units (ALU, FPU, load/store). Modern processors use out-of-order execution, register renaming, and branch prediction to maximize instruction-level parallelism.</p>
+                <p><strong>VLIW (Very Long Instruction Word):</strong> Packs multiple operations into single wide instructions, relying on compile-time scheduling to identify parallelism. Used in DSPs and some graphics processors where predictable workloads enable static optimization.</p>
+                <p><strong>Vector/SIMD:</strong> Performs the same operation on multiple data elements simultaneously. Examples include x86 SSE/AVX (fixed-width), ARM NEON, and scalable vector extensions like ARM SVE and RISC-V RVV.</p>
+                <h3>Modern Multi-Processing</h3>
+                <p><strong>Multi-core:</strong> Multiple CPU cores on one chip sharing resources like caches and memory controllers. Requires thread-level parallelism to utilize effectively. Cache coherence protocols (MESI) maintain data consistency across cores.</p>
+                <p><strong>Hybrid Architectures:</strong> Combine different core types for efficiency. ARM big.LITTLE uses high-performance and efficiency cores. Intel's P/E cores (Performance/Efficiency) and Apple Silicon follow similar approaches for optimal performance per watt.</p>
+                <h3>Emerging Paradigms</h3>
+                <ul>
+                    <li><strong>Neuromorphic Computing:</strong> Brain-inspired architectures like Intel Loihi and IBM TrueNorth for low-power AI workloads with event-driven processing.</li>
+                    <li><strong>Quantum Computing:</strong> Uses quantum bits (qubits) for exponential parallelism in specific problems like cryptography and optimization.</li>
+                    <li><strong>Dataflow Architectures:</strong> Execute instructions when data becomes available, not in program order. Eliminates control flow overhead.</li>
+                    <li><strong>Near-Data Computing:</strong> Processing-in-memory (PIM) and compute-near-storage to reduce expensive data movement.</li>
+                    <li><strong>Chiplet Designs:</strong> Modular processors using multiple specialized dies connected by high-speed interconnects (AMD Zen, Intel Ponte Vecchio).</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="mechanics">
+            <div class="section-header">
+                <div class="section-icon mechanics">⚙️</div>
+                <h2 class="section-title">HOW IT WORKS</h2>
+            </div>
+            <div class="content">
+                <h3>Von Neumann Architecture Mechanics</h3>
+                <p><strong>Components:</strong> CPU (Control Unit + ALU + Registers), Memory (shared for instructions and data), Input/Output devices, and a single bus system connecting them. The Program Counter (PC) tracks the next instruction to execute.</p>
+                <p><strong>Fetch-Decode-Execute Cycle:</strong> 1) Fetch instruction from memory using PC, 2) Decode instruction in Control Unit to determine operation and operands, 3) Execute using ALU and registers, 4) Store results back to memory/registers, 5) Update PC for next instruction.</p>
+                <p><strong>Von Neumann Bottleneck:</strong> The single bus limits data transfer rate between CPU and memory. Modern solutions include multi-level caches, wider buses, multiple memory channels, and prefetching to hide latency.</p>
+                <h3>Harvard Architecture Mechanics</h3>
+                <p><strong>Dual Memory System:</strong> Separate instruction memory (typically ROM/Flash) and data memory (RAM) with independent buses. Allows simultaneous instruction fetch and data access, eliminating memory access conflicts.</p>
+                <p><strong>Benefits:</strong> Higher bandwidth utilization, more predictable timing for real-time systems, ability to optimize each memory type (instruction memory can be ROM). Used extensively in microcontrollers and DSPs.</p>
+                <p><strong>Modified Harvard Implementation:</strong> Most modern processors use separate L1 instruction and data caches but unified memory at higher levels. Provides Harvard benefits while maintaining programming flexibility.</p>
+                <h3>CISC Mechanics (x86 Example)</h3>
+                <p><strong>Microcode Engine:</strong> Complex x86 instructions are broken down into simpler micro-operations (μops) that execute on RISC-like internal cores. A microcode ROM stores these translation sequences, enabling backward compatibility while achieving modern performance.</p>
+                <p><strong>Variable Instruction Length:</strong> x86 instructions range from 1-15 bytes with complex encoding rules. Prefix bytes modify instruction behavior, ModR/M bytes specify addressing modes. This flexibility reduces code size but requires complex decoders.</p>
+                <p><strong>Rich Addressing Modes:</strong> x86 supports immediate, register, memory, indexed, based, scaled indexed addressing. This reduces instruction count for complex operations but increases decoder complexity and instruction latency.</p>
+                <h3>RISC Mechanics (ARM Example)</h3>
+                <p><strong>Load-Store Architecture:</strong> Only load/store instructions access memory; all other operations work on registers. This simplifies pipeline design, enables consistent instruction timing, and reduces memory traffic through register optimization.</p>
+                <p><strong>Fixed Instruction Size:</strong> ARM uses 32-bit instructions (16-bit in Thumb mode), enabling simple decoding and efficient pipelining. All instructions can be decoded in parallel, and branch targets are aligned, simplifying fetch logic.</p>
+                <p><strong>Conditional Execution:</strong> ARM instructions can include condition codes, eliminating many branch instructions. This reduces pipeline flushes and improves performance in conditional code sequences.</p>
+                <h3>Superscalar Execution Mechanics</h3>
+                <p><strong>Multiple Execution Units:</strong> Modern processors have separate units for integer arithmetic, floating-point, branch processing, and memory operations. This enables parallel instruction execution limited only by data dependencies.</p>
+                <p><strong>Out-of-Order Execution:</strong> Reorder Buffer (ROB) tracks instruction completion order while Reservation Stations hold instructions waiting for operands. Instructions execute when operands are ready, not in program order, but commit results in program order.</p>
+                <p><strong>Register Renaming:</strong> Physical registers exceed architectural registers, eliminating false dependencies (WAR, WAW hazards). This enables more instruction-level parallelism by removing artificial serialization.</p>
+                <h3>Advanced Pipeline Techniques</h3>
+                <p><strong>Branch Prediction:</strong> Two-level adaptive predictors use local and global history to predict branch outcomes. Tournament predictors combine multiple prediction schemes. Modern predictors achieve 95%+ accuracy on typical workloads.</p>
+                <p><strong>Speculative Execution:</strong> Execute predicted path while keeping checkpoints for rollback. If prediction fails, flush speculative work and restart from correct path. Critical for maintaining pipeline efficiency with control flow.</p>
+                <p><strong>Memory Disambiguation:</strong> Predict whether loads and stores access the same memory location, enabling out-of-order memory operations. Store-to-load forwarding allows dependent operations to execute without waiting for memory.</p>
+                <h3>Memory Hierarchy & Cache Mechanics</h3>
+                <p><strong>Cache Levels:</strong> L1 (1-2 cycles, 32-64KB), L2 (10-20 cycles, 256KB-2MB), L3 (20-50 cycles, 8-128MB), Main Memory (200+ cycles). Each level trades size for speed, exploiting locality of reference.</p>
+                <p><strong>Cache Coherence (MESI Protocol):</strong> Modified (dirty, single copy), Exclusive (clean, single copy), Shared (clean, multiple copies), Invalid. Ensures data consistency across multiple cores through bus snooping or directory protocols.</p>
+                <p><strong>Prefetching:</strong> Hardware prefetchers detect access patterns and bring data into cache before it's requested. Stream prefetchers detect sequential access, stride prefetchers detect regular patterns.</p>
+            </div>
+        </section>
+
+        <section id="examples">
+            <div class="section-header">
+                <div class="section-icon examples">🌍</div>
+                <h2 class="section-title">REAL EXAMPLES</h2>
+            </div>
+            <div class="content">
+                <h3>Intel x86 Architecture</h3>
+                <p><strong>Intel Core i7-13700K (Raptor Lake):</strong> 8P+8E cores, P-cores are 6-wide superscalar with 512-entry ROB. Base 3.4GHz, boost to 5.4GHz. 32KB L1I/D per core, 1.25MB L2 per P-core, 30MB shared L3. Supports AVX-512, DDR5-5600.</p>
+                <p><strong>Architecture Details:</strong> Golden Cove P-cores use 6-wide decode with μop cache for common instruction sequences. Gracemont E-cores are 4-wide, optimized for efficiency. Ring bus connects all cores to shared L3 and memory controllers.</p>
+                <p><strong>Performance:</strong> Single-thread: ~2100 Geekbench points. Multi-thread: ~29,000 points (16C/24T). Power: 125W base, 253W max turbo. Excellent for gaming and productivity but high power consumption.</p>
+                <h3>AMD Zen 4 Architecture</h3>
+                <p><strong>AMD Ryzen 9 7950X:</strong> 16 cores (2 CCDs), 4-wide decode, 256-entry ROB per core. Base 4.5GHz, boost to 5.7GHz. 32KB L1I/D, 1MB L2, 32MB L3 per CCD. Built on TSMC 5nm, supports DDR5-5200.</p>
+                <p><strong>Chiplet Design:</strong> Two 8-core Core Complex Dies (CCDs) connected via Infinity Fabric to I/O die. Each CCD has 32MB L3 cache. NUMA-aware scheduling improves performance by keeping data local.</p>
+                <p><strong>Performance:</strong> Exceptional multi-threaded performance (~38,000 Geekbench), competitive single-thread (~2100). Lower power than Intel at similar performance levels. Excellent for content creation and server workloads.</p>
+                <h3>Apple Silicon Architecture</h3>
+                <p><strong>Apple M2 Max:</strong> 12-core CPU (8P+4E), 8-wide superscalar P-cores with 630-entry ROB. 3.2GHz base, 3.5GHz boost. 192KB L1I, 128KB L1D, 16MB shared L2. 38-core GPU, 400GB/s unified memory bandwidth.</p>
+                <p><strong>Unified Memory Architecture:</strong> CPU and GPU share the same memory pool, eliminating copying overhead. Custom LPDDR5 provides massive bandwidth while maintaining efficiency. Neural Engine handles AI workloads.</p>
+                <p><strong>Efficiency Champion:</strong> Matches Intel/AMD performance at 60% less power. 15-30W typical power vs 45-125W for x86 competitors. Enables fanless operation in laptops with desktop-class performance.</p>
+                <h3>ARM Server Processors</h3>
+                <p><strong>AWS Graviton3:</strong> 64 ARM Neoverse V1 cores, 7nm process. 2.6GHz all-core, 55MB cache total. DDR5 support, 300GB/s memory bandwidth. Custom silicon optimized for cloud workloads with 20% better performance per dollar than x86.</p>
+                <p><strong>Ampere Altra Max:</strong> 128 ARM cores, single-threaded design (no SMT) for predictable performance. 3.0GHz, 8MB L3 per 32-core cluster. Designed for scale-out workloads in datacenters.</p>
+                <h3>Specialized Processors</h3>
+                <p><strong>NVIDIA Grace Hopper:</strong> 72 ARM Neoverse V2 cores + H100 GPU connected by NVLink-C2C. 1TB/s CPU-GPU bandwidth, 512GB HBM3 memory. Targets AI training and HPC workloads requiring tight CPU-GPU integration.</p>
+                <p><strong>Google Tensor (TPU):</strong> Custom AI accelerator with systolic array architecture. 4th-gen TPU delivers 275 TOPS (int8) for transformer models. Matrix multiplication units optimized for neural network workloads.</p>
+                <p><strong>Intel Xeon Phi (KNL):</strong> 72 Atom-derived cores with 512-bit vector units. Manycore architecture with on-package high-bandwidth memory. Discontinued due to complexity and GPU competition.</p>
+                <h3>GPU Architectures</h3>
+                <p><strong>NVIDIA Ada Lovelace (RTX 4090):</strong> 16,384 CUDA cores organized in 128 SMs. Third-gen RT cores for ray tracing, fourth-gen Tensor cores for AI. 2.5GHz boost, 1TB/s memory bandwidth, 450W power.</p>
+                <p><strong>AMD RDNA 3 (RX 7900 XTX):</strong> 6,144 stream processors in 96 compute units. Chiplet design with one Graphics Die and six Memory Cache Dies. 355W power, focuses on rasterization performance over RT/AI.</p>
+                <h3>Performance Comparison Summary</h3>
+                <p><strong>Single-thread Leaders:</strong> Intel i9-13900K (2100+ GB), Apple M2 Max (1950+ GB native ARM), AMD 7950X (2080+ GB). Intel leads in x86 workloads, Apple matches in native code at much lower power.</p>
+                <p><strong>Multi-thread Champions:</strong> AMD 7950X leads in heavily parallel workloads (38K+ GB), Intel 13900K excels in mixed workloads (29K+ GB), Apple M2 Ultra (24-core) delivers best performance per watt.</p>
+                <p><strong>Efficiency Winners:</strong> Apple Silicon leads with 2-3x better performance per watt. ARM server chips provide 20-40% better performance per dollar. RISC-V shows promise for embedded and specialized applications.</p>
+            </div>
+        </section>
+
+        <section id="practice">
+            <div class="section-header">
+                <div class="section-icon practice">🛠️</div>
+                <h2 class="section-title">HANDS-ON PRACTICE</h2>
+            </div>
+            <div class="content">
+                <div class="action-box">
+                <h4>Architecture Analysis Exercise</h4>
+                <ol>
+                    <li><strong>Processor Comparison:</strong> Research detailed specs of Intel i7-13700K vs Apple M2 Pro vs AMD Ryzen 7 7800X3D. Compare core counts, cache hierarchies, power consumption, and architectural features. Create a comparison table.</li>
+                    <li><strong>Pipeline Design:</strong> Draw the classic 5-stage RISC pipeline (IF-ID-EX-MEM-WB) and identify potential hazards: structural, data (RAW, WAR, WAW), and control hazards. Propose solutions for each.</li>
+                    <li><strong>Memory System Analysis:</strong> Calculate theoretical memory bandwidth for DDR5-5600 (dual channel) vs LPDDR5-6400 (quad channel). Consider cache hit rates and real-world bandwidth utilization.</li>
+                </ol>
+                <h4>Hands-On Investigation</h4>
+                <ol>
+                    <li><strong>System Profiling:</strong> Use tools to analyze your system: 'lscpu' (Linux), 'sysctl hw' (macOS), or CPU-Z (Windows). Identify ISA, microarchitecture, cache sizes, and supported instruction extensions (SSE, AVX, NEON).</li>
+                    <li><strong>Performance Benchmarking:</strong> Run Geekbench 6, Cinebench R23, or SPEC CPU on different devices. Correlate results with architectural features: core count, frequency, cache size, memory bandwidth.</li>
+                    <li><strong>Power Analysis:</strong> Monitor CPU power consumption during different workloads using tools like PowerTOP (Linux), Activity Monitor (macOS), or HWiNFO (Windows). Compare idle vs load power on different architectures.</li>
+                </ol>
+                <h4>Programming Experiments</h4>
+                <ol>
+                    <li><strong>Cache Performance:</strong> Write programs to demonstrate cache locality effects. Compare performance of row-major vs column-major matrix access. Measure L1/L2/L3 cache miss rates.</li>
+                    <li><strong>Vectorization:</strong> Implement SIMD operations using intrinsics (SSE/AVX for x86, NEON for ARM). Compare auto-vectorized vs hand-optimized code performance.</li>
+                    <li><strong>Branch Prediction:</strong> Create code with predictable vs unpredictable branch patterns. Measure performance differences and correlate with branch prediction accuracy.</li>
+                </ol>
+                <p><strong>Success Criteria:</strong> You can identify processor architectures from specifications, predict relative performance characteristics, and explain why certain architectures excel in specific workloads.<br><strong>Tools Needed:</strong> CPU identification software, benchmarking tools, performance profilers, and access to different devices (x86, ARM) for comparison.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="warnings">
+            <div class="section-header">
+                <div class="section-icon warnings">⚠️</div>
+                <h2 class="section-title">AVOID THESE PITFALLS</h2>
+            </div>
+            <div class="content">
+                <div class="warning-box">
+                <h4>Conceptual Misunderstandings</h4>
+                <ul>
+                    <li><strong>Confusing ISA with microarchitecture</strong> → ISA defines the programmer interface (x86-64, ARMv8, RISC-V); microarchitecture is the hardware implementation (Zen 4, Cortex-X3, SiFive P550).</li>
+                    <li><strong>Assuming RISC is always better than CISC</strong> → Modern x86 processors decode CISC instructions to RISC-like μops internally, getting benefits of both approaches.</li>
+                    <li><strong>Believing higher clock speed equals better performance</strong> → IPC (Instructions Per Clock), cache efficiency, memory bandwidth, and parallelism often matter more than raw frequency.</li>
+                    <li><strong>Thinking more cores always improve performance</strong> → Amdahl's Law: sequential portions limit parallel speedup. Single-threaded applications can't use multiple cores effectively.</li>
+                </ul>
+                <h4>Design and Performance Misconceptions</h4>
+                <ul>
+                    <li><strong>Ignoring thermal and power constraints</strong> → Modern processors throttle under thermal/power limits. Peak specifications don't equal sustained performance in real workloads.</li>
+                    <li><strong>Comparing architectures without considering workload context</strong> → x86 excels in legacy software compatibility, ARM in efficiency, GPUs in parallel computing. No architecture is universally superior.</li>
+                    <li><strong>Overlooking cache hierarchy importance</strong> → Modern performance depends heavily on cache hit rates. L3 cache size often impacts performance more than core count for many applications.</li>
+                    <li><strong>Mixing up pipeline concepts</strong> → Pipeline depth is the number of stages (fetch→decode→execute→etc), pipeline width is instructions processed simultaneously (superscalar width).</li>
+                </ul>
+                <h4>Practical Implementation Errors</h4>
+                <ul>
+                    <li><strong>Assuming perfect scaling with parallelism</strong> → Cache coherence overhead, synchronization costs, and memory bandwidth limits prevent linear scaling with core count.</li>
+                    <li><strong>Neglecting memory system bottlenecks</strong> → CPU performance is often limited by memory latency and bandwidth, not computational throughput. Memory-bound applications don't benefit from faster CPUs.</li>
+                    <li><strong>Overestimating branch prediction accuracy</strong> → Even 95% accuracy means 1 in 20 branches cause pipeline flushes. Unpredictable control flow severely impacts performance.</li>
+                    <li><strong>Ignoring instruction-level dependencies</strong> → Data hazards and resource conflicts limit achievable IPC regardless of issue width. Real-world IPC is typically 1-4, not the theoretical maximum.</li>
+                </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="connections">
+            <div class="section-header">
+                <div class="section-icon connections">🔗</div>
+                <h2 class="section-title">CONNECTIONS & LEARNING PATH</h2>
+            </div>
+            <div class="content">
+                <h3>Prerequisites & Foundations</h3>
+                <ul>
+                    <li><strong>Computer Organization:</strong> Understanding of ALU, registers, memory hierarchy, buses, and basic digital logic circuits.</li>
+                    <li><strong>Assembly Language:</strong> Familiarity with at least one assembly language (x86, ARM, MIPS, RISC-V) to understand ISA concepts and instruction execution.</li>
+                    <li><strong>Operating Systems:</strong> Process scheduling, virtual memory management, and system calls that interact with CPU architectural features.</li>
+                    <li><strong>Digital Logic:</strong> Boolean algebra, sequential circuits, finite state machines, and basic processor design principles.</li>
+                </ul>
+                <h3>Related Disciplines</h3>
+                <ul>
+                    <li><strong>Compiler Design:</strong> How compilers target different ISAs, optimization strategies, instruction scheduling, and register allocation.</li>
+                    <li><strong>Parallel Computing:</strong> Thread-level parallelism, cache coherence protocols, memory consistency models, and NUMA architectures.</li>
+                    <li><strong>Computer Graphics:</strong> GPU architectures, SIMT execution model, shader programming, and graphics pipelines.</li>
+                    <li><strong>Performance Engineering:</strong> Profiling tools, bottleneck analysis, optimization techniques, and performance modeling.</li>
+                    <li><strong>Computer Security:</strong> Side-channel attacks (Spectre/Meltdown), trusted execution environments (Intel SGX, ARM TrustZone), and secure boot.</li>
+                </ul>
+                <h3>Advanced Topics & Specializations</h3>
+                <ul>
+                    <li><strong>Microarchitecture Design:</strong> Advanced branch prediction algorithms, memory disambiguation techniques, and cache replacement policies.</li>
+                    <li><strong>System-on-Chip Design:</strong> Interconnect fabrics, power management, thermal design, and heterogeneous computing integration.</li>
+                    <li><strong>Emerging Technologies:</strong> Quantum computing principles, neuromorphic architectures, processing-in-memory (PIM), and optical computing.</li>
+                    <li><strong>Hardware Security:</strong> Hardware-based security features, secure enclaves, and protection against physical attacks.</li>
+                </ul>
+                <h3>Next Learning Steps</h3>
+                <ul>
+                    <li><strong>Deep Dive Topics:</strong> Study specific processor families (Intel Core, AMD Zen, ARM Cortex, Apple Silicon) and their evolution over generations.</li>
+                    <li><strong>Hands-On Design:</strong> Learn Verilog/VHDL for CPU design, implement simple RISC processors on FPGAs, and understand ASIC design flows.</li>
+                    <li><strong>Performance Analysis:</strong> Master profiling tools (Intel VTune, ARM Streamline, Linux perf), understand performance counter analysis, and bottleneck identification.</li>
+                    <li><strong>Specialized Computing:</strong> Explore domain-specific architectures: AI accelerators (TPUs, NPUs), cryptocurrency mining ASICs, and scientific computing processors.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="test">
+            <div class="section-header">
+                <div class="section-icon test">🎯</div>
+                <h2 class="section-title">TEST YOURSELF</h2>
+            </div>
+            <div class="content">
+                <h3>Fundamental Concepts (Beginner Level)</h3>
+                <ol>
+                    <li>Explain the Von Neumann bottleneck and describe three specific techniques modern processors use to mitigate it.</li>
+                    <li>Compare Harvard vs Modified Harvard architectures with specific examples of processors that use each approach.</li>
+                    <li>Why do RISC processors typically achieve better performance per watt than CISC processors? Provide at least three technical reasons.</li>
+                    <li>Describe the fetch-decode-execute cycle and identify where the bottlenecks typically occur in modern processors.</li>
+                </ol>
+                <h3>Architecture Analysis (Intermediate Level)</h3>
+                <ol>
+                    <li>How does x86 microcode enable CISC-to-RISC translation? What are the performance and complexity trade-offs of this approach?</li>
+                    <li>Explain out-of-order execution: What problems does it solve, what new problems does it create, and how do processors maintain program correctness?</li>
+                    <li>Compare ARM big.LITTLE vs Intel P/E cores: How do their approaches to heterogeneous computing differ in implementation and effectiveness?</li>
+                    <li>Why did Intel's Itanium (EPIC) architecture fail commercially despite potential technical advantages over both RISC and CISC?</li>
+                    <li>Analyze the cache hierarchy in a modern processor: How do L1, L2, and L3 caches differ in size, speed, and function?</li>
+                </ol>
+                <h3>Performance Engineering (Advanced Level)</h3>
+                <ol>
+                    <li>Calculate theoretical vs achievable memory bandwidth for DDR5-5600 considering cache hierarchy, prefetching, and typical access patterns.</li>
+                    <li>Design a 5-stage RISC pipeline and identify all possible hazards (structural, data, control). Propose specific solutions for each hazard type.</li>
+                    <li>Explain why Apple M2 achieves similar performance to Intel i7-13700K while consuming 60% less power. Analyze at least four architectural factors.</li>
+                    <li>Describe the MESI cache coherence protocol: How does it maintain data consistency across multiple cores and what are its performance implications?</li>
+                    <li>Analyze branch prediction: Compare local vs global prediction schemes and explain why modern processors use tournament predictors.</li>
+                </ol>
+                <h3>System Design (Expert Level)</h3>
+                <ol>
+                    <li>Design a heterogeneous processor with CPU, GPU, and AI accelerator components. How would you handle memory coherence and task scheduling?</li>
+                    <li>Evaluate the trade-offs between monolithic vs chiplet processor designs. Consider performance, cost, thermal management, and scalability.</li>
+                    <li>Analyze the memory wall problem: How do emerging technologies (3D memory, processing-in-memory, near-data computing) address this challenge?</li>
+                </ol>
+                <h3>Success Criteria & Review Triggers</h3>
+                <p><strong>Beginner Success:</strong> Can distinguish between major architecture types (RISC/CISC/Vector) and explain basic trade-offs in performance, power, and complexity.</p>
+                <p><strong>Intermediate Success:</strong> Understands pipeline concepts, cache hierarchy, and can analyze real processor specifications to predict relative performance characteristics.</p>
+                <p><strong>Advanced Success:</strong> Can design simple processors, predict performance bottlenecks from architectural features, and optimize code for specific architectures.</p>
+                <p><strong>Expert Success:</strong> Capable of evaluating architectural trade-offs for system design, understanding cutting-edge research, and contributing to processor design decisions.</p>
+                <p><strong>Review Triggers:</strong> If you confuse ISA vs microarchitecture, mix up pipeline depth vs width, believe higher frequency always means better performance, forget power/thermal constraints, or can't explain why different architectures excel in different workloads.</p>
+            </div>
+        </section>
+
+        <section id="growth">
+            <div class="section-header">
+                <div class="section-icon growth">📈</div>
+                <h2 class="section-title">LEVEL UP YOUR EXPERTISE</h2>
+            </div>
+            <div class="content">
+                <h3>This Week: Foundation Building</h3>
+                <ul>
+                    <li><strong>Device Analysis:</strong> Compare the processors in your devices (smartphone, laptop, desktop). Identify architectures, core counts, and performance characteristics.</li>
+                    <li><strong>Benchmark Exploration:</strong> Run Geekbench or similar benchmarks on different devices. Correlate results with architectural features you've learned about.</li>
+                    <li><strong>Assembly Investigation:</strong> Write simple programs in x86 and ARM assembly (or use online simulators) to understand ISA differences firsthand.</li>
+                    <li><strong>Cache Experiment:</strong> Write programs with different memory access patterns to observe cache performance effects.</li>
+                </ul>
+                <h3>This Month: Deep Technical Understanding</h3>
+                <ul>
+                    <li><strong>Advanced Pipeline Study:</strong> Research superscalar execution, out-of-order processing, and branch prediction in detail. Study specific implementations like Intel's μop cache or AMD's Infinity Fabric.</li>
+                    <li><strong>Processor Evolution:</strong> Trace the evolution of a processor family (Intel Core, AMD Zen, ARM Cortex) across generations to understand how architectural improvements accumulate.</li>
+                    <li><strong>Performance Analysis:</strong> Learn to use profiling tools (Intel VTune, Linux perf, ARM Streamline) to analyze real application performance and identify bottlenecks.</li>
+                    <li><strong>Specialized Architectures:</strong> Study GPU architectures (NVIDIA CUDA cores, AMD compute units) and AI accelerators (Google TPU, Intel Nervana) to understand domain-specific design.</li>
+                </ul>
+                <h3>This Quarter: Practical Application</h3>
+                <ul>
+                    <li><strong>Code Optimization:</strong> Optimize real applications for different architectures. Learn to use SIMD instructions, understand cache-friendly algorithms, and exploit instruction-level parallelism.</li>
+                    <li><strong>Hardware Design Basics:</strong> Learn Verilog or VHDL and implement simple RISC processors on FPGAs. Understand the hardware implementation of concepts you've studied.</li>
+                    <li><strong>System Architecture:</strong> Study complete system designs including memory controllers, interconnects (PCIe, CXL), and how processors integrate with other system components.</li>
+                    <li><strong>Industry Analysis:</strong> Follow processor announcements from Intel, AMD, ARM, Apple, and others. Analyze architectural innovations and their competitive implications.</li>
+                </ul>
+                <h3>Long Term: Expertise and Specialization</h3>
+                <ul>
+                    <li><strong>Research Engagement:</strong> Read processor design papers from ISCA, MICRO, and ASPLOS conferences. Understand cutting-edge research in computer architecture.</li>
+                    <li><strong>Specialization Choice:</strong> Focus on a specific area: high-performance computing, mobile/embedded processors, AI accelerators, or emerging technologies like quantum computing.</li>
+                    <li><strong>Design Contribution:</strong> Contribute to open-source processor designs (RISC-V implementations), participate in architecture discussions, or pursue advanced degrees in computer engineering.</li>
+                    <li><strong>Industry Connection:</strong> Engage with the processor design community through conferences, workshops, and professional organizations. Consider careers in CPU design, performance engineering, or system architecture.</li>
+                </ul>
+                <h3>Continuous Learning Resources</h3>
+                <ul>
+                    <li><strong>Essential Books:</strong> 'Computer Architecture: A Quantitative Approach' (Hennessy & Patterson), 'Modern Processor Design' (Shen & Lipasti), 'The RISC-V Reader' (Patterson & Waterman).</li>
+                    <li><strong>Online Courses:</strong> Carnegie Mellon's Computer Architecture course (18-447), Berkeley's CS152, MIT's 6.004 Computation Structures.</li>
+                    <li><strong>Practical Tools:</strong> Simulators (gem5, Sniper), FPGA development (Xilinx Vivado, Intel Quartus), profiling tools, and processor documentation from vendors.</li>
+                    <li><strong>Community:</strong> Follow computer architecture researchers on Twitter, join RISC-V community, participate in forums like Reddit r/ComputerEngineering and Stack Overflow hardware tags.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+        <footer>
+        <div class="container">
+            <p>Learning journey completed! 🎉</p>
+            <div class="checkbox-item" style="justify-content: center; margin-top: 1rem;">
+                <div class="checkbox" onclick="toggleComplete(this)"></div>
+                <span>Mark this topic as mastered</span>
+            </div>
+        </div>
+    </footer>
+        <script>
+        // Theme toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button text
+            updateThemeButton(newTheme);
+        }
+
+        // Update theme button text based on current theme
+        function updateThemeButton(currentTheme) {
+            const button = document.querySelector('.theme-toggle');
+            if (currentTheme === 'dark') {
+                button.innerHTML = '☀️ Light Mode';
+            } else {
+                button.innerHTML = '🌙 Dark Mode';
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', loadTheme);
+
+        // Section completion
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
+                    .map(el => el.getAttribute('data-section'));
+                localStorage.setItem('completed-cpu-architectures-complete-guide', JSON.stringify(completedSections));
+            });
+        });
+
+        // Load saved progress
+        const savedProgress = localStorage.getItem('completed-cpu-architectures-complete-guide');
+        if (savedProgress) {
+            const completed = JSON.parse(savedProgress);
+            completed.forEach(sectionNum => {
+                const navItem = document.querySelector(`[data-section="${sectionNum}"]`);
+                if (navItem) navItem.classList.add('completed');
+            });
+        }
+
+        // Checkbox functionality
+        function toggleComplete(checkbox) {
+            checkbox.classList.toggle('checked');
+            if (checkbox.classList.contains('checked')) {
+                checkbox.innerHTML = '✓';
+                localStorage.setItem('mastered-cpu-architectures-complete-guide', 'true');
+            } else {
+                checkbox.innerHTML = '';
+                localStorage.setItem('mastered-cpu-architectures-complete-guide', 'false');
+            }
+        }
+
+        // Load mastery status
+        const masteryStatus = localStorage.getItem('mastered-cpu-architectures-complete-guide');
+        if (masteryStatus === 'true') {
+            const masteryCheckbox = document.querySelector('footer .checkbox');
+            if (masteryCheckbox) {
+                masteryCheckbox.classList.add('checked');
+                masteryCheckbox.innerHTML = '✓';
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Initialize CodeMirror for all code blocks
+        let initAttempts = 0;
+        const maxAttempts = 50; // Max 5 seconds of retries
+        
+        function initializeCodeMirror() {
+            initAttempts++;
+            
+            // Check if CodeMirror is loaded
+            if (typeof CodeMirror === 'undefined') {
+                if (initAttempts >= maxAttempts) {
+                    console.error('Failed to load CodeMirror after', maxAttempts, 'attempts. Using fallback styling.');
+                    // Fallback: Style textareas as basic code blocks
+                    document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                        textarea.style.fontFamily = 'Monaco, Menlo, "Ubuntu Mono", monospace';
+                        textarea.style.fontSize = '14px';
+                        textarea.style.lineHeight = '1.5';
+                        textarea.style.padding = '10px';
+                        textarea.style.border = '1px solid var(--border)';
+                        textarea.style.borderRadius = '4px';
+                        textarea.style.background = 'var(--code-bg)';
+                        textarea.style.color = 'var(--code-text)';
+                        textarea.style.resize = 'none';
+                        textarea.style.minHeight = '100px';
+                        textarea.readOnly = true;
+                    });
+                    return;
+                }
+                console.warn('CodeMirror not loaded, retrying in 100ms... (attempt', initAttempts, '/', maxAttempts, ')');
+                setTimeout(initializeCodeMirror, 100);
+                return;
+            }
+            
+            const codeTextareas = document.querySelectorAll('.codemirror-code');
+            console.log('Initializing CodeMirror for', codeTextareas.length, 'code blocks');
+            
+            codeTextareas.forEach(textarea => {
+                const codeBlock = textarea.closest('.code-block');
+                const language = codeBlock.dataset.language;
+                
+                // Map language to CodeMirror mode
+                let mode = 'text';
+                switch(language) {
+                    case 'c':
+                    case 'cpp':
+                    case 'c++':
+                        mode = 'text/x-csrc';
+                        break;
+                    case 'javascript':
+                    case 'js':
+                        mode = 'javascript';
+                        break;
+                    case 'bash':
+                    case 'shell':
+                    case 'sh':
+                        mode = 'shell';
+                        break;
+                    case 'css':
+                        mode = 'css';
+                        break;
+                    case 'html':
+                        mode = 'htmlmixed';
+                        break;
+                    case 'json':
+                        mode = 'application/json';
+                        break;
+                    default:
+                        mode = 'text';
+                }
+                
+                // Use custom theme that respects CSS variables
+                const cmTheme = 'default'; // We'll override with CSS
+                
+                try {
+                    const editor = CodeMirror.fromTextArea(textarea, {
+                        mode: mode,
+                        theme: cmTheme,
+                        lineNumbers: true,
+                        readOnly: 'nocursor',  // Disable cursor and selection
+                        lineWrapping: true,    // Enable line wrapping to avoid horizontal scroll
+                        scrollbarStyle: 'null', // Remove scrollbars
+                        viewportMargin: Infinity, // Show all content without scrolling
+                        matchBrackets: false,  // Disable bracket matching highlights
+                        styleActiveLine: false, // Disable active line highlighting
+                        indentUnit: 4,
+                        tabSize: 4
+                    });
+                    
+                    // Store editor reference for theme switching
+                    textarea.codeMirrorInstance = editor;
+                    
+                    // Auto-refresh editor size and ensure no scrollbars
+                    setTimeout(() => {
+                        editor.refresh();
+                        editor.setSize(null, 'auto'); // Auto-height based on content
+                    }, 100);
+                    
+                    console.log('CodeMirror initialized for language:', language, 'mode:', mode);
+                } catch (error) {
+                    console.error('Failed to initialize CodeMirror for textarea:', error);
+                }
+            });
+        }
+        
+        // CodeMirror themes are handled by CSS variables, no need to update programmatically
+        
+        // Initialize CodeMirror when DOM and scripts are fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait a bit more for all scripts to load
+                setTimeout(initializeCodeMirror, 200);
+            });
+        } else {
+            // Document already loaded, wait for scripts
+            setTimeout(initializeCodeMirror, 200);
+        }
+    </script>
+</body>
+</html>

@@ -71,6 +71,27 @@
       "lastUpdated": "2025-09-27"
     },
     {
+      "id": "cpu-architectures-complete-guide",
+      "title": "CPU Architectures Complete Guide",
+      "path": "guides/cpu-architectures-complete-guide/",
+      "description": "Comprehensive guide to CPU architectures covering Von Neumann, Harvard, CISC, RISC, superscalar, vector processing, multi-core designs, and modern hybrid architectures with detailed analysis of real-world processors.",
+      "author": "sel-mlil",
+      "tags": [
+        "cpu",
+        "architecture",
+        "x86",
+        "arm",
+        "computer-science",
+        "risc",
+        "cisc",
+        "superscalar",
+        "processors",
+        "microarchitecture"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2025-09-29"
+    },
+    {
       "id": "lexical-analysis-mastery--building-high-performance-lexers-from-scratch",
       "title": "Lexical Analysis Mastery: Building High-Performance Lexers from Scratch",
       "path": "guides/lexical-analysis-mastery-building-high-performance-lexers-from-scratch/",
@@ -175,8 +196,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-29T10:51:08.206Z",
-    "totalGuides": 10,
+    "lastModified": "2025-09-29T12:07:59.645Z",
+    "totalGuides": 11,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }
