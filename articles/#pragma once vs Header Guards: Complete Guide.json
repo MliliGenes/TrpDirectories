@@ -1,0 +1,414 @@
+{
+  "meta": {
+    "title": "#pragma once vs Header Guards: Complete Guide",
+    "description": "Comprehensive guide to C++ header inclusion mechanisms, covering both traditional header guards and #pragma once, their mechanics, use cases, and why using both together provides optimal compatibility and performance.",
+    "author": "sel-mlil",
+    "tags": ["c++", "preprocessor", "header-guards", "pragma-once", "compilation", "best-practices", "intermediate"],
+    "difficulty": "intermediate",
+    "lastUpdated": "2025-09-29"
+  },
+  "navigation": [
+    {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},
+    {"id": "mechanics", "emoji": "⚙️", "title": "How It Works", "sectionIndex": 1},
+    {"id": "examples", "emoji": "🌍", "title": "Real Examples", "sectionIndex": 2},
+    {"id": "practice", "emoji": "🛠️", "title": "Do This Now", "sectionIndex": 3},
+    {"id": "warnings", "emoji": "⚠️", "title": "Avoid These", "sectionIndex": 4},
+    {"id": "connections", "emoji": "🔗", "title": "Connections", "sectionIndex": 5},
+    {"id": "test", "emoji": "🎯", "title": "Test Yourself", "sectionIndex": 6},
+    {"id": "growth", "emoji": "📈", "title": "Level Up", "sectionIndex": 7}
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>What is this?</strong><br>Both prevent <strong>multiple inclusion</strong> - stopping the same header from being processed twice during compilation, which causes \"redefinition\" errors.",
+          "html": true
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>#pragma once:</strong> Compiler directive that marks the file itself",
+            "<strong>Header guards:</strong> Preprocessor macro-based inclusion check",
+            "<strong>Why both?:</strong> Compatibility + optimization"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Why care?</strong>",
+          "html": true
+        },
+        {
+          "type": "list",
+          "items": [
+            "Missing either = compilation errors on any non-trivial project",
+            "#pragma once is faster (5-10% compile time improvement on large codebases)",
+            "Header guards are 100% portable, #pragma once is 99.9% portable"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Mental model:</strong><br>Header guards are a doorman checking IDs against a list. #pragma once is a \"no re-entry\" stamp on your hand - faster, but some venues don't recognize it.",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW IT WORKS",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Header Guards Mechanics"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "#ifndef UNIQUE_IDENTIFIER_H\n#define UNIQUE_IDENTIFIER_H\n\n// Header content\n\n#endif // UNIQUE_IDENTIFIER_H"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "First inclusion: <code>UNIQUE_IDENTIFIER_H</code> undefined → define it, process content",
+            "Second inclusion: <code>UNIQUE_IDENTIFIER_H</code> defined → skip to <code>#endif</code>",
+            "Preprocessor textually removes skipped content before compilation"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "#pragma once Mechanics"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "#pragma once\n\n// Header content"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "Compiler records file's <strong>physical location</strong> (inode on Unix, file handle on Windows)",
+            "Subsequent inclusions of same physical file → skipped entirely",
+            "No preprocessor token checking needed"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Key Difference"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Header guards:</strong> Content-based (checks macro symbol)",
+            "<strong>#pragma once:</strong> File-based (checks file identity)"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍",
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Standard Header Guard"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "// math_utils.h\n#ifndef MATH_UTILS_H\n#define MATH_UTILS_H\n\nclass Vector3 {\npublic:\n    float x, y, z;\n    Vector3(float x, float y, float z);\n    float magnitude() const;\n};\n\n#endif // MATH_UTILS_H"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "With #pragma once"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "// math_utils.h\n#pragma once\n\nclass Vector3 {\npublic:\n    float x, y, z;\n    Vector3(float x, float y, float z);\n    float magnitude() const;\n};"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Both Together (Recommended)"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "// math_utils.h\n#pragma once\n#ifndef MATH_UTILS_H\n#define MATH_UTILS_H\n\nclass Vector3 {\npublic:\n    float x, y, z;\n    Vector3(float x, float y, float z);\n    float magnitude() const;\n};\n\n#endif // MATH_UTILS_H"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Why both?</strong>",
+          "html": true
+        },
+        {
+          "type": "list",
+          "items": [
+            "#pragma once provides speed optimization on supported compilers (GCC, Clang, MSVC, ICC)",
+            "Header guards ensure portability to any C++ compiler",
+            "Negligible downsides, maximum compatibility"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "DO THIS NOW",
+      "emoji": "🛠️",
+      "iconClass": "practice",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Setup"
+        },
+        {
+          "type": "codeblock",
+          "language": "bash",
+          "code": "# Create test files\nmkdir include\ntouch include/vector.h include/matrix.h include/main.cpp"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "vector.h"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "#pragma once\n#ifndef VECTOR_H\n#define VECTOR_H\n\n#include <iostream>\n\nstruct Vector2 {\n    float x, y;\n    void print() const {\n        std::cout << \"(\" << x << \", \" << y << \")\\n\";\n    }\n};\n\n#endif"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "matrix.h"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "#pragma once\n#ifndef MATRIX_H\n#define MATRIX_H\n\n#include \"vector.h\"  // Includes Vector2\n\nstruct Matrix2x2 {\n    Vector2 row1, row2;\n};\n\n#endif"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "main.cpp"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "#include \"vector.h\"\n#include \"matrix.h\"  // Will include vector.h again\n#include \"vector.h\"  // Third inclusion\n\nint main() {\n    Vector2 v{1.0f, 2.0f};\n    v.print();\n    return 0;\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Compile"
+        },
+        {
+          "type": "codeblock",
+          "language": "bash",
+          "code": "g++ -I include main.cpp -o test\n./test\n# Output: (1, 2)"
+        },
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": "<strong>What to look for:</strong>",
+              "html": true
+            },
+            {
+              "type": "list",
+              "items": [
+                "No redefinition errors despite multiple inclusions",
+                "Single compilation (fast)"
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>Test without guards:</strong><br>Remove both mechanisms from vector.h, recompile → see redefinition errors.",
+              "html": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "1. Non-unique guard names"
+            },
+            {
+              "type": "codeblock",
+              "language": "cpp",
+              "code": "// BAD - generic name\n#ifndef UTILS_H  // Collides with other \"utils.h\" files\n#define UTILS_H"
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>Fix:</strong> Use project prefix: <code>PROJECT_MODULE_FILENAME_H</code>",
+              "html": true
+            },
+            {
+              "type": "codeblock",
+              "language": "cpp",
+              "code": "#ifndef MYPROJECT_MATH_UTILS_H\n#define MYPROJECT_MATH_UTILS_H"
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "2. Symlinks with #pragma once"
+            },
+            {
+              "type": "codeblock",
+              "language": "cpp",
+              "code": "// project/include/math.h (real file)\n// project/math.h (symlink to include/math.h)"
+            },
+            {
+              "type": "paragraph",
+              "content": "Including both paths may fail with #pragma once (different file paths, same content). Header guards prevent this."
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "3. Missing #endif"
+            },
+            {
+              "type": "codeblock",
+              "language": "cpp",
+              "code": "#ifndef HEADER_H\n#define HEADER_H\n// content\n// Forgot #endif - entire rest of file treated as part of guard!"
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "4. Typos in guard name"
+            },
+            {
+              "type": "codeblock",
+              "language": "cpp",
+              "code": "#ifndef MATH_UTILS_H\n#define MATH_UTLIS_H  // Typo! Guard never triggers"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "connections",
+      "title": "CONNECTIONS",
+      "emoji": "🔗",
+      "iconClass": "connections",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>Prerequisites:</strong>",
+          "html": true
+        },
+        {
+          "type": "list",
+          "items": [
+            "C preprocessor basics (#include, #define, #ifndef)",
+            "Compilation process (preprocessing → compilation → linking)"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Related concepts:</strong>",
+          "html": true
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Forward declarations:</strong> Reduce header dependencies",
+            "<strong>Precompiled headers:</strong> Cache commonly included headers",
+            "<strong>Modules (C++20):</strong> Modern replacement eliminating inclusion guards entirely"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Modern evolution"
+        },
+        {
+          "type": "paragraph",
+          "content": "C++20 modules make both obsolete:"
+        },
+        {
+          "type": "codeblock",
+          "language": "cpp",
+          "code": "// math.cppm (module file)\nexport module math;\nexport class Vector3 { /*...*/ };\n\n// main.cpp\nimport math;  // No inclusion guards needed"
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "What happens if two headers use the same guard macro name?",
+            "Why might #pragma once fail with symlinks?",
+            "Create a circular dependency scenario that guards prevent",
+            "When would you use only header guards (no #pragma once)?",
+            "Write a script to generate consistent guard names from filenames"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Success criteria:</strong>",
+          "html": true
+        },
+        {
+          "type": "list",
+          "items": [
+            "All your headers have both mechanisms",
+            "Zero multiple definition errors in your projects",
+            "Understand when each mechanism triggers"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>This week:</strong> Add both to all existing headers, create naming convention (e.g., PROJ_PATH_FILE_H), set up editor snippets for auto-insertion",
+            "<strong>This month:</strong> Study C++20 modules as long-term replacement, profile compile times with/without #pragma once, implement precompiled headers for common includes",
+            "<strong>Long term:</strong> Migrate projects to C++20 modules, contribute to build system optimization, understand compiler include path resolution deeply"
+          ]
+        }
+      ]
+    }
+  ]
+}

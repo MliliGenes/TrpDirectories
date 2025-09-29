@@ -1,6 +1,24 @@
 {
   "guides": [
     {
+      "id": "-pragma-once-vs-header-guards--complete-guide",
+      "title": "#pragma once vs Header Guards: Complete Guide",
+      "path": "guides/pragma-once-vs-header-guards-complete-guide/",
+      "description": "Comprehensive guide to C++ header inclusion mechanisms, covering both traditional header guards and #pragma once, their mechanics, use cases, and why using both together provides optimal compatibility and performance.",
+      "author": "sel-mlil",
+      "tags": [
+        "c++",
+        "preprocessor",
+        "header-guards",
+        "pragma-once",
+        "compilation",
+        "best-practices",
+        "intermediate"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2025-09-29"
+    },
+    {
       "id": "c---enums-vs-enum-classes--a-complete-guide",
       "title": "C++ Enums vs Enum Classes: A Complete Guide",
       "path": "guides/c-enums-vs-enum-classes-a-complete-guide/",
@@ -157,8 +175,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-29T10:25:09.525Z",
-    "totalGuides": 9,
+    "lastModified": "2025-09-29T10:51:08.206Z",
+    "totalGuides": 10,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }

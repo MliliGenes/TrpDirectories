@@ -106,7 +106,7 @@
             <div class="content">
                 <h3>Function Templates</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-loxwaj5ah" class="codemirror-code">// Generic swap
+                    <textarea id="code-4blrd5o5b" class="codemirror-code">// Generic swap
 template<typename T>
 void swap(T& a, T& b) {
     T temp = a;
@@ -123,7 +123,7 @@ swap(s1, s2);  // Compiler generates swap<std::string></textarea>
                 </div>
                 <h3>Class Templates</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-0lrtf5ckq" class="codemirror-code">template<typename T>
+                    <textarea id="code-tteo6s0ov" class="codemirror-code">template<typename T>
 class Stack {
 private:
     T* data;
@@ -169,7 +169,7 @@ Stack<std::string> stringStack;</textarea>
                 </div>
                 <h3>Template Specialization</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-ygphgmc2o" class="codemirror-code">// Generic version
+                    <textarea id="code-n321nyu75" class="codemirror-code">// Generic version
 template<typename T>
 class Printer {
 public:
@@ -198,7 +198,7 @@ public:
             <div class="content">
                 <p>Building a smart pointer that automatically manages memory using RAII (Resource Acquisition Is Initialization):</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-kcphwafmp" class="codemirror-code">#include <iostream>
+                    <textarea id="code-01tmyb1u6" class="codemirror-code">#include <iostream>
 #include <stdexcept>
 
 template<typename T>
@@ -258,7 +258,7 @@ public:
                 </div>
                 <h3>Usage Example</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-libz9fpqr" class="codemirror-code">class Resource {
+                    <textarea id="code-76zghf4ly" class="codemirror-code">class Resource {
 private:
     int id;
 public:
@@ -300,7 +300,7 @@ int main() {
                 <div class="action-box">
                 <p><strong>Expected Output:</strong></p>
                 <div class="code-block" data-language="text">
-                    <textarea id="code-nu736dm4c" class="codemirror-code">Resource 1 created
+                    <textarea id="code-gvfykjnqu" class="codemirror-code">Resource 1 created
 Using resource 1
 Using resource 1
 Released value: 42
@@ -322,26 +322,26 @@ Resource 1 destroyed</textarea>
             <div class="content">
                 <h3>1. Generic Containers</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-mhyav867v" class="codemirror-code">template<typename T>
+                    <textarea id="code-gudcl7t1b" class="codemirror-code">template<typename T>
 class Vector { /* ... */ };
 Vector<int> numbers;
 Vector<std::string> names;</textarea>
                 </div>
                 <h3>2. Type-Safe Callbacks</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-9dji32y5n" class="codemirror-code">template<typename Func>
+                    <textarea id="code-c70pe7wyv" class="codemirror-code">template<typename Func>
 void repeat(int n, Func f) {
     for (int i = 0; i < n; ++i) f();
 }</textarea>
                 </div>
                 <h3>3. Policy-Based Design</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-wpwu12h0a" class="codemirror-code">template<typename T, typename Allocator = std::allocator<T> >
+                    <textarea id="code-3uau04zoo" class="codemirror-code">template<typename T, typename Allocator = std::allocator<T> >
 class Container { /* ... */ };</textarea>
                 </div>
                 <h3>4. Compile-Time Computation</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-lxil3i7ta" class="codemirror-code">template<int N>
+                    <textarea id="code-h8vp79py3" class="codemirror-code">template<int N>
 struct Factorial {
     enum { value = N * Factorial<N-1>::value };
 };
@@ -390,7 +390,7 @@ struct Factorial<0> {
                 <div class="warning-box">
                 <h3>1. Missing typename keyword</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-d9r36gmvl" class="codemirror-code">// WRONG
+                    <textarea id="code-xenb94zto" class="codemirror-code">// WRONG
 template<typename T>
 void foo() {
     T::iterator it;  // Compiler error: "need 'typename'"
@@ -404,7 +404,7 @@ void foo() {
                 </div>
                 <h3>2. Forgetting explicit instantiation</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-ulxgxz95v" class="codemirror-code">// header.h
+                    <textarea id="code-vridlejtv" class="codemirror-code">// header.h
 template<typename T> class MyClass { void foo(); };
 
 // source.cpp - WRONG
@@ -416,7 +416,7 @@ void MyClass<T>::foo() { /* ... */ }
                 </div>
                 <h3>3. Template + virtual confusion</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-hl9mnsr16" class="codemirror-code">// WRONG THINKING
+                    <textarea id="code-k07m1zldo" class="codemirror-code">// WRONG THINKING
 template<typename T>
 class Base {
     virtual void process(T value) = 0;  // Templates already provide polymorphism!
@@ -424,7 +424,7 @@ class Base {
                 </div>
                 <h3>4. Circular dependencies</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-ouqz3gj42" class="codemirror-code">// Don't make templates depend on each other's instantiations
+                    <textarea id="code-5qq00zrx1" class="codemirror-code">// Don't make templates depend on each other's instantiations
 template<typename T> class A {
     B<T> b;  // Fine
 };
