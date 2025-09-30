@@ -19,9 +19,9 @@
       "lastUpdated": "2025-09-29"
     },
     {
-      "id": "c---enums-vs-enum-classes--a-complete-guide",
-      "title": "C++ Enums vs Enum Classes: A Complete Guide",
-      "path": "guides/c-enums-vs-enum-classes-a-complete-guide/",
+      "id": "cpp-enums-vs-enum-classes--a-complete-guide",
+      "title": "CPP Enums vs Enum Classes: A Complete Guide",
+      "path": "guides/cpp-enums-vs-enum-classes-a-complete-guide/",
       "description": "A comprehensive guide to understanding the differences between C++98 enums and modern enum classes, including their mechanics, use cases, pitfalls, and best practices for building clean structures such as a JSON parser.",
       "author": "sel-mlil",
       "tags": [
@@ -35,9 +35,9 @@
       "lastUpdated": "2025-09-27"
     },
     {
-      "id": "c---templates--from-basics-to-raii-smart-pointers--c--98-",
-      "title": "C++ Templates: From Basics to RAII Smart Pointers (C++98)",
-      "path": "guides/c-templates-from-basics-to-raii-smart-pointers-c98/",
+      "id": "cpp-templates--from-basics-to-raii-smart-pointers--c--98-",
+      "title": "CPP Templates: From Basics to RAII Smart Pointers (C++98)",
+      "path": "guides/cpp-templates-from-basics-to-raii-smart-pointers-c98/",
       "description": "A comprehensive guide to C++98 templates covering core concepts, mechanics, practical examples including building an RAII auto pointer, use cases, pros/cons, and common pitfalls.",
       "author": "sel-mlil",
       "tags": [
@@ -53,9 +53,9 @@
       "lastUpdated": "2025-09-29"
     },
     {
-      "id": "c--98-stl-containers--vector-and-map-mastery-guide",
-      "title": "C++98 STL Containers: Vector and Map Mastery Guide",
-      "path": "guides/c98-stl-containers-vector-and-map-mastery-guide/",
+      "id": "cpp-stl-containers--vector-and-map-mastery-guide",
+      "title": "CPP STL Containers: Vector and Map Mastery Guide",
+      "path": "guides/cpp-stl-containers-vector-and-map-mastery-guide/",
       "description": "An exhaustive, deep-dive guide covering the STL, focusing on std::vector and std::map from basic concepts to advanced use cases, performance characteristics, and best practices essential for C++98 professional mastery.",
       "author": "sel-mlil",
       "tags": [
@@ -196,7 +196,7 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-29T12:07:59.645Z",
+    "lastModified": "2025-09-30T12:52:08.180Z",
     "totalGuides": 11,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"

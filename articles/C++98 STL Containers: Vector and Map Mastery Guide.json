@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "C++98 STL Containers: Vector and Map Mastery Guide",
+    "title": "CPP STL Containers: Vector and Map Mastery Guide",
     "description": "An exhaustive, deep-dive guide covering the STL, focusing on std::vector and std::map from basic concepts to advanced use cases, performance characteristics, and best practices essential for C++98 professional mastery.",
     "author": "sel-mlil",
     "tags": [

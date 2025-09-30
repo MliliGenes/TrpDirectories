@@ -22,14 +22,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
     
-    <title>C++98 STL Containers: Vector and Map Mastery Guide - Learning Guide</title>
+    <title>CPP STL Containers: Vector and Map Mastery Guide - Learning Guide</title>
 </head>
 <body>
         <header>
         <div class="container">
             <div class="header-content">
                 <div class="header-title">
-                    <h1>C++98 STL Containers: Vector and Map Mastery Guide</h1>
+                    <h1>CPP STL Containers: Vector and Map Mastery Guide</h1>
                     <div class="author-info">By sel-mlil</div>
                 </div>
                 <div class="header-nav">
@@ -121,7 +121,7 @@
                 <h3>Vector: Pre-allocating and C-API Interoperability</h3>
                 <p>Avoid costly reallocations by estimating size upfront (<code>reserve</code>) and safely passing data to legacy C functions that expect a raw pointer to an array (<code>&vec[0]</code>).</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-30djlsesr" class="codemirror-code">#include <vector>
+                    <textarea id="code-e0t17duh7" class="codemirror-code">#include <vector>
 #include <iostream>
 
 void C_API_Process(int* data, int count);
@@ -146,7 +146,7 @@ int main() {
                 <h3>Map: Implementing a Custom Index with Overloaded Operators</h3>
                 <p>Using a custom class as a map key requires defining <code>operator&lt;</code> for the map to correctly sort and locate keys within the Red-Black Tree.</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-wca0xp53a" class="codemirror-code">#include <map>
+                    <textarea id="code-65fxzaazu" class="codemirror-code">#include <map>
 #include <string>
 
 class KeyCoordinate {
@@ -264,7 +264,7 @@ int main() {
                 <h3>Map: Custom Comparison</h3>
                 <p>Instead of overloading <code>operator&lt;</code> for a custom key type, you can pass a custom <strong>Comparator</strong> (a function object or struct with an overloaded <code>operator()</code>) as the third template argument to <code>std::map</code>. This allows you to define complex sorting rules without touching the key class definition.</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-dd59uc3df" class="codemirror-code">struct ReverseIntCompare {
+                    <textarea id="code-liv8lxwpi" class="codemirror-code">struct ReverseIntCompare {
     bool operator()(const int& a, const int& b) const {
         return a > b; // Sorts keys in descending order
     }
@@ -354,12 +354,12 @@ std::map<int, std::string, ReverseIntCompare> descending_map;</textarea>
                 this.classList.toggle('completed');
                 const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
                     .map(el => el.getAttribute('data-section'));
-                localStorage.setItem('completed-c--98-stl-containers--vector-and-map-mastery-guide', JSON.stringify(completedSections));
+                localStorage.setItem('completed-cpp-stl-containers--vector-and-map-mastery-guide', JSON.stringify(completedSections));
             });
         });
 
         // Load saved progress
-        const savedProgress = localStorage.getItem('completed-c--98-stl-containers--vector-and-map-mastery-guide');
+        const savedProgress = localStorage.getItem('completed-cpp-stl-containers--vector-and-map-mastery-guide');
         if (savedProgress) {
             const completed = JSON.parse(savedProgress);
             completed.forEach(sectionNum => {
@@ -373,15 +373,15 @@ std::map<int, std::string, ReverseIntCompare> descending_map;</textarea>
             checkbox.classList.toggle('checked');
             if (checkbox.classList.contains('checked')) {
                 checkbox.innerHTML = '✓';
-                localStorage.setItem('mastered-c--98-stl-containers--vector-and-map-mastery-guide', 'true');
+                localStorage.setItem('mastered-cpp-stl-containers--vector-and-map-mastery-guide', 'true');
             } else {
                 checkbox.innerHTML = '';
-                localStorage.setItem('mastered-c--98-stl-containers--vector-and-map-mastery-guide', 'false');
+                localStorage.setItem('mastered-cpp-stl-containers--vector-and-map-mastery-guide', 'false');
             }
         }
 
         // Load mastery status
-        const masteryStatus = localStorage.getItem('mastered-c--98-stl-containers--vector-and-map-mastery-guide');
+        const masteryStatus = localStorage.getItem('mastered-cpp-stl-containers--vector-and-map-mastery-guide');
         if (masteryStatus === 'true') {
             const masteryCheckbox = document.querySelector('footer .checkbox');
             if (masteryCheckbox) {

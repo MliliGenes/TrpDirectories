@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "C++ Enums vs Enum Classes: A Complete Guide",
+    "title": "CPP Enums vs Enum Classes: A Complete Guide",
     "description": "A comprehensive guide to understanding the differences between C++98 enums and modern enum classes, including their mechanics, use cases, pitfalls, and best practices for building clean structures such as a JSON parser.",
     "author": "sel-mlil",
     "tags": ["c++", "enums", "enum class", "json parser", "intermediate"],

@@ -22,14 +22,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
     
-    <title>C++ Enums vs Enum Classes: A Complete Guide - Learning Guide</title>
+    <title>CPP Enums vs Enum Classes: A Complete Guide - Learning Guide</title>
 </head>
 <body>
         <header>
         <div class="container">
             <div class="header-content">
                 <div class="header-title">
-                    <h1>C++ Enums vs Enum Classes: A Complete Guide</h1>
+                    <h1>CPP Enums vs Enum Classes: A Complete Guide</h1>
                     <div class="author-info">By sel-mlil</div>
                 </div>
                 <div class="header-nav">
@@ -96,7 +96,7 @@
             <div class="content">
                 <h3>C++98 JSON parser tokens</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-y31vdv3vj" class="codemirror-code">enum TokenType {
+                    <textarea id="code-b6eyky4cy" class="codemirror-code">enum TokenType {
     TOKEN_STRING,
     TOKEN_NUMBER,
     TOKEN_LBRACE,
@@ -108,7 +108,7 @@
                 </div>
                 <h3>C++11+ safer design</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-o2tfolmfp" class="codemirror-code">enum class TokenType {
+                    <textarea id="code-nf0s0infk" class="codemirror-code">enum class TokenType {
     String,
     Number,
     LBrace,
@@ -250,12 +250,12 @@
                 this.classList.toggle('completed');
                 const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
                     .map(el => el.getAttribute('data-section'));
-                localStorage.setItem('completed-c---enums-vs-enum-classes--a-complete-guide', JSON.stringify(completedSections));
+                localStorage.setItem('completed-cpp-enums-vs-enum-classes--a-complete-guide', JSON.stringify(completedSections));
             });
         });
 
         // Load saved progress
-        const savedProgress = localStorage.getItem('completed-c---enums-vs-enum-classes--a-complete-guide');
+        const savedProgress = localStorage.getItem('completed-cpp-enums-vs-enum-classes--a-complete-guide');
         if (savedProgress) {
             const completed = JSON.parse(savedProgress);
             completed.forEach(sectionNum => {
@@ -269,15 +269,15 @@
             checkbox.classList.toggle('checked');
             if (checkbox.classList.contains('checked')) {
                 checkbox.innerHTML = '✓';
-                localStorage.setItem('mastered-c---enums-vs-enum-classes--a-complete-guide', 'true');
+                localStorage.setItem('mastered-cpp-enums-vs-enum-classes--a-complete-guide', 'true');
             } else {
                 checkbox.innerHTML = '';
-                localStorage.setItem('mastered-c---enums-vs-enum-classes--a-complete-guide', 'false');
+                localStorage.setItem('mastered-cpp-enums-vs-enum-classes--a-complete-guide', 'false');
             }
         }
 
         // Load mastery status
-        const masteryStatus = localStorage.getItem('mastered-c---enums-vs-enum-classes--a-complete-guide');
+        const masteryStatus = localStorage.getItem('mastered-cpp-enums-vs-enum-classes--a-complete-guide');
         if (masteryStatus === 'true') {
             const masteryCheckbox = document.querySelector('footer .checkbox');
             if (masteryCheckbox) {
