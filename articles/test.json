@@ -2,7 +2,7 @@
   "meta": {
     "title": "Virtual Hosting - Complete Mastery Guide",
     "description": "Comprehensive guide to virtual hosting covering Apache, Nginx, and Kubernetes implementations. Learn how to host multiple websites on a single server, configure SSL, optimize performance, and avoid common pitfalls. Includes hands-on exercises from beginner to advanced levels.",
-    "author": "DevOps Learning System",
+    "author": "sel-mlil",
     "tags": ["virtual-hosting", "nginx", "apache", "web-servers", "devops", "ssl", "intermediate"],
     "difficulty": "intermediate",
     "lastUpdated": "2025-09-30"
