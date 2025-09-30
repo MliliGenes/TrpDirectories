@@ -86,7 +86,7 @@
             <div class="content">
                 <h3>Header Guards Mechanics</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-rq9nz8kgr" class="codemirror-code">#ifndef UNIQUE_IDENTIFIER_H
+                    <textarea id="code-ha3dlju3k" class="codemirror-code">#ifndef UNIQUE_IDENTIFIER_H
 #define UNIQUE_IDENTIFIER_H
 
 // Header content
@@ -100,7 +100,7 @@
                 </ol>
                 <h3>#pragma once Mechanics</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-xcpga88mt" class="codemirror-code">#pragma once
+                    <textarea id="code-lt2ann7ik" class="codemirror-code">#pragma once
 
 // Header content</textarea>
                 </div>
@@ -125,7 +125,7 @@
             <div class="content">
                 <h3>Standard Header Guard</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-1euaxys4i" class="codemirror-code">// math_utils.h
+                    <textarea id="code-lbkvop2bl" class="codemirror-code">// math_utils.h
 #ifndef MATH_UTILS_H
 #define MATH_UTILS_H
 
@@ -140,7 +140,7 @@ public:
                 </div>
                 <h3>With #pragma once</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-zw27276ug" class="codemirror-code">// math_utils.h
+                    <textarea id="code-8l4h3eej6" class="codemirror-code">// math_utils.h
 #pragma once
 
 class Vector3 {
@@ -152,7 +152,7 @@ public:
                 </div>
                 <h3>Both Together (Recommended)</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-vxcbfyoi5" class="codemirror-code">// math_utils.h
+                    <textarea id="code-7ln9x3doz" class="codemirror-code">// math_utils.h
 #pragma once
 #ifndef MATH_UTILS_H
 #define MATH_UTILS_H
@@ -183,13 +183,13 @@ public:
             <div class="content">
                 <h3>Setup</h3>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-6l06h5u9m" class="codemirror-code"># Create test files
+                    <textarea id="code-itzbqi1tw" class="codemirror-code"># Create test files
 mkdir include
 touch include/vector.h include/matrix.h include/main.cpp</textarea>
                 </div>
                 <h3>vector.h</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-h3qj6ixu3" class="codemirror-code">#pragma once
+                    <textarea id="code-1aor6v28k" class="codemirror-code">#pragma once
 #ifndef VECTOR_H
 #define VECTOR_H
 
@@ -206,7 +206,7 @@ struct Vector2 {
                 </div>
                 <h3>matrix.h</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-ucbrzi2fl" class="codemirror-code">#pragma once
+                    <textarea id="code-fwz8jd0g7" class="codemirror-code">#pragma once
 #ifndef MATRIX_H
 #define MATRIX_H
 
@@ -220,7 +220,7 @@ struct Matrix2x2 {
                 </div>
                 <h3>main.cpp</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-yb9d32ng2" class="codemirror-code">#include "vector.h"
+                    <textarea id="code-zzife4xzh" class="codemirror-code">#include "vector.h"
 #include "matrix.h"  // Will include vector.h again
 #include "vector.h"  // Third inclusion
 
@@ -232,7 +232,7 @@ int main() {
                 </div>
                 <h3>Compile</h3>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-brv124c1u" class="codemirror-code">g++ -I include main.cpp -o test
+                    <textarea id="code-l7f2xh4x8" class="codemirror-code">g++ -I include main.cpp -o test
 ./test
 # Output: (1, 2)</textarea>
                 </div>
@@ -256,31 +256,31 @@ int main() {
                 <div class="warning-box">
                 <h3>1. Non-unique guard names</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-na0zyxzu4" class="codemirror-code">// BAD - generic name
+                    <textarea id="code-paezjw0fg" class="codemirror-code">// BAD - generic name
 #ifndef UTILS_H  // Collides with other "utils.h" files
 #define UTILS_H</textarea>
                 </div>
                 <p><strong>Fix:</strong> Use project prefix: <code>PROJECT_MODULE_FILENAME_H</code></p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-rpmppe8b3" class="codemirror-code">#ifndef MYPROJECT_MATH_UTILS_H
+                    <textarea id="code-ncc8g6bzh" class="codemirror-code">#ifndef MYPROJECT_MATH_UTILS_H
 #define MYPROJECT_MATH_UTILS_H</textarea>
                 </div>
                 <h3>2. Symlinks with #pragma once</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-5ce2vmsva" class="codemirror-code">// project/include/math.h (real file)
+                    <textarea id="code-cqgisvu9m" class="codemirror-code">// project/include/math.h (real file)
 // project/math.h (symlink to include/math.h)</textarea>
                 </div>
                 <p>Including both paths may fail with #pragma once (different file paths, same content). Header guards prevent this.</p>
                 <h3>3. Missing #endif</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-lx5lfba7n" class="codemirror-code">#ifndef HEADER_H
+                    <textarea id="code-9hi8jbn8h" class="codemirror-code">#ifndef HEADER_H
 #define HEADER_H
 // content
 // Forgot #endif - entire rest of file treated as part of guard!</textarea>
                 </div>
                 <h3>4. Typos in guard name</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-taso40kkw" class="codemirror-code">#ifndef MATH_UTILS_H
+                    <textarea id="code-gdnizykcf" class="codemirror-code">#ifndef MATH_UTILS_H
 #define MATH_UTLIS_H  // Typo! Guard never triggers</textarea>
                 </div>
                 </div>
@@ -307,7 +307,7 @@ int main() {
                 <h3>Modern evolution</h3>
                 <p>C++20 modules make both obsolete:</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-bq9qgpexs" class="codemirror-code">// math.cppm (module file)
+                    <textarea id="code-rrbzjjg2p" class="codemirror-code">// math.cppm (module file)
 export module math;
 export class Vector3 { /*...*/ };
 

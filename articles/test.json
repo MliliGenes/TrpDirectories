@@ -1,0 +1,653 @@
+{
+  "meta": {
+    "title": "Virtual Hosting - Complete Mastery Guide",
+    "description": "Comprehensive guide to virtual hosting covering Apache, Nginx, and Kubernetes implementations. Learn how to host multiple websites on a single server, configure SSL, optimize performance, and avoid common pitfalls. Includes hands-on exercises from beginner to advanced levels.",
+    "author": "DevOps Learning System",
+    "tags": ["virtual-hosting", "nginx", "apache", "web-servers", "devops", "ssl", "intermediate"],
+    "difficulty": "intermediate",
+    "lastUpdated": "2025-09-30"
+  },
+  "navigation": [
+    {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},
+    {"id": "mechanics", "emoji": "⚙️", "title": "How It Works", "sectionIndex": 1},
+    {"id": "examples", "emoji": "🌍", "title": "Real Examples", "sectionIndex": 2},
+    {"id": "practice", "emoji": "🛠️", "title": "Hands-On Practice", "sectionIndex": 3},
+    {"id": "warnings", "emoji": "⚠️", "title": "Security & Pitfalls", "sectionIndex": 4},
+    {"id": "connections", "emoji": "🔗", "title": "Connections", "sectionIndex": 5},
+    {"id": "test", "emoji": "🎯", "title": "Test Yourself", "sectionIndex": 6},
+    {"id": "growth", "emoji": "📈", "title": "Next Steps", "sectionIndex": 7}
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>What is this?</strong><br><br><strong>Primary definition:</strong> Virtual hosting is a method that allows a single physical server to host multiple websites or applications, each with its own domain name, appearing as if they're running on separate dedicated servers. The server uses identifiers (domain names, IP addresses, or ports) to route incoming requests to the correct website.<br><br><strong>Alternative perspectives:</strong><br>• <strong>Business view:</strong> Cost-effective hosting strategy that maximizes server resource utilization by consolidating multiple web properties onto shared infrastructure<br>• <strong>Technical view:</strong> Request-routing mechanism implemented at the web server level that maps HTTP host headers or IP addresses to different document roots and configurations<br>• <strong>Architectural view:</strong> Multi-tenancy pattern for web services that provides logical isolation while sharing physical resources<br><br><strong>Historical context:</strong> Virtual hosting emerged in the mid-1990s as the web exploded. NCSA HTTPd introduced name-based virtual hosting in 1994, which Apache popularized. Before virtual hosting, each domain required its own IP address and physical server—extraordinarily expensive and wasteful.",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Why care?</strong><br><br><strong>Immediate personal impact:</strong><br>• Run multiple sites on one $5/month VPS instead of $50-200/month for multiple servers<br>• Test production configurations locally by mirroring your live environment<br>• Essential for troubleshooting why 'www.example.com works but example.com doesn't'<br><br><strong>Professional advantages:</strong><br>• <strong>DevOps/SysAdmin:</strong> Virtual hosting is fundamental to 90% of web infrastructure jobs<br>• <strong>Full-stack developers:</strong> Properly deploy applications, configure SSL, debug routing issues<br>• <strong>Freelancers/Agencies:</strong> Host 50+ client sites on one server (95% cost reduction)<br>• <strong>Career value:</strong> Directly translates to cloud platforms (AWS, Azure, GCP)<br><br><strong>Quantifiable benefits:</strong><br>• Performance: <1ms latency overhead<br>• Cost: Host 20 sites for $10/month vs $2,000/month (99.5% savings)<br>• Efficiency: Handle 1,000+ concurrent connections with proper tuning",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Mental model:</strong><br><br><strong>Primary analogy:</strong> Virtual hosting is like an apartment building. One physical structure (server) contains many separate living spaces (websites), each with its own address (domain name). When mail arrives (HTTP request), the postal worker (web server) reads the apartment number (Host header) and delivers it to the correct door (document root).<br><br><strong>Secondary analogy:</strong> Think of IP-based virtual hosting like a building where each apartment also has its own private entrance from different streets (IP addresses).<br><br><strong>Connection to familiar systems:</strong> Identical to how email servers handle multiple domains (mail@company1.com and mail@company2.com route to the same physical server).",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW IT WORKS",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Core mechanics"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Step 1: Client Request Initiation</strong><br>When you type 'www.example.com' in your browser:<br>1. DNS resolution occurs, returning the server's IP address<br>2. Browser establishes TCP connection to port 80 (HTTP) or 443 (HTTPS)<br>3. Browser sends HTTP request with critical Host header",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "http",
+          "code": "GET / HTTP/1.1\nHost: www.example.com\nUser-Agent: Mozilla/5.0...\nAccept: text/html..."
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Step 2: Web Server Processing</strong><br>1. Connection acceptance: Server accepts TCP connection<br>2. Request parsing: Server reads and parses HTTP headers<br>3. Host header extraction: Server extracts the Host value<br>4. Virtual host matching: Server searches configuration for matching virtual host<br>5. Configuration selection: Server loads document root, SSL certificates, logging paths<br>6. Request handling: Server processes request using selected configuration",
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Key components"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>1. Virtual Host Configuration Block</strong><br>The fundamental unit containing site-specific settings:",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "nginx",
+          "code": "server {\n    listen 80;\n    server_name www.example.com example.com;\n    root /var/www/example.com/public_html;\n    index index.html index.php;\n    \n    access_log /var/log/nginx/example.com-access.log;\n    error_log /var/log/nginx/example.com-error.log;\n    \n    location / {\n        try_files $uri $uri/ =404;\n    }\n    \n    location ~ \\.php$ {\n        fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;\n        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;\n        include fastcgi_params;\n    }\n}"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>2. Server Name Matching Engine</strong><br>How servers determine which virtual host handles a request:<br>• <strong>Exact match:</strong> ServerName www.example.com matches exactly<br>• <strong>Wildcard match:</strong> ServerName *.example.com matches any subdomain<br>• <strong>Regex match:</strong> server_name ~^(?<subdomain>.+)\\.example\\.com$;<br>• <strong>Default/Catch-all:</strong> First defined vhost or explicitly marked default",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>3. Document Root Isolation</strong><br>Physical separation of website files:",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "bash",
+          "code": "/var/www/\n├── example.com/\n│   ├── public_html/      # Served files\n│   ├── logs/             # Site-specific logs\n│   ├── backups/          # Not web-accessible\n│   └── ssl/              # SSL certificates\n├── another-site.com/\n│   ├── public_html/\n│   └── logs/\n└── default/              # Default/fallback site\n    └── public_html/"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Governing principles"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>The Host Header Contract (RFC 2616/7230):</strong> HTTP/1.1 requires clients send Host header with every request. This single requirement enabled name-based virtual hosting to exist.",
+            "<strong>SNI (Server Name Indication) for HTTPS:</strong> Extends TLS handshake to include hostname, allowing multiple SSL sites on one IP. Without SNI, servers couldn't know which certificate to present before encryption begins.",
+            "<strong>First-Match vs Best-Match:</strong> Apache uses first matching VirtualHost in configuration order. Nginx uses most specific match regardless of order.",
+            "<strong>Resource Isolation Models:</strong> Process-level (strong isolation, higher memory), thread-level (moderate isolation), or event-driven single-process (minimal isolation, maximum efficiency)."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍",
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Simple case: Personal Portfolio + Blog"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Scenario:</strong> You want portfolio.com and blog.portfolio.com on one $5 VPS.",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "apache",
+          "code": "# /etc/apache2/sites-available/portfolio.conf\n\n# Main portfolio site\n<VirtualHost *:80>\n    ServerName portfolio.com\n    ServerAlias www.portfolio.com\n    DocumentRoot /var/www/portfolio/main\n    \n    <Directory /var/www/portfolio/main>\n        Options -Indexes +FollowSymLinks\n        AllowOverride All\n        Require all granted\n    </Directory>\n    \n    ErrorLog ${APACHE_LOG_DIR}/portfolio-error.log\n    CustomLog ${APACHE_LOG_DIR}/portfolio-access.log combined\n</VirtualHost>\n\n# Blog subdomain\n<VirtualHost *:80>\n    ServerName blog.portfolio.com\n    DocumentRoot /var/www/portfolio/blog\n    \n    <Directory /var/www/portfolio/blog>\n        Options -Indexes +FollowSymLinks\n        AllowOverride All\n        Require all granted\n    </Directory>\n    \n    ErrorLog ${APACHE_LOG_DIR}/blog-error.log\n    CustomLog ${APACHE_LOG_DIR}/blog-access.log combined\n</VirtualHost>"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Activation steps:</strong>",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "bash",
+          "code": "# Create directory structure\nsudo mkdir -p /var/www/portfolio/{main,blog}\n\n# Set permissions\nsudo chown -R $USER:www-data /var/www/portfolio\nsudo chmod -R 755 /var/www/portfolio\n\n# Enable site\nsudo a2ensite portfolio.conf\n\n# Test configuration\nsudo apache2ctl configtest\n\n# Reload Apache\nsudo systemctl reload apache2"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Professional use: Multi-Client Web Agency"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Scenario:</strong> Web agency hosting 50 client sites with SSL, monitoring, and automated deployments.",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "nginx",
+          "code": "# Client 1: E-commerce site\nserver {\n    listen 443 ssl http2;\n    server_name client1.com www.client1.com;\n    \n    root /var/www/clients/client1/public;\n    index index.php index.html;\n    \n    ssl_certificate /etc/letsencrypt/live/client1.com/fullchain.pem;\n    ssl_certificate_key /etc/letsencrypt/live/client1.com/privkey.pem;\n    \n    # Security headers\n    add_header X-Frame-Options \"SAMEORIGIN\" always;\n    add_header X-Content-Type-Options \"nosniff\" always;\n    add_header Strict-Transport-Security \"max-age=31536000\" always;\n    \n    # Rate limiting\n    limit_req zone=general burst=20 nodelay;\n    \n    location ~ \\.php$ {\n        fastcgi_pass unix:/var/run/php/client1-fpm.sock;\n        include fastcgi_params;\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Advanced: Kubernetes Ingress Virtual Hosting"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Scenario:</strong> Microservices architecture with 100+ services routed through Kubernetes Ingress.",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "yaml",
+          "code": "apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata:\n  name: multi-tenant-ingress\n  annotations:\n    cert-manager.io/cluster-issuer: \"letsencrypt-prod\"\n    nginx.ingress.kubernetes.io/limit-rps: \"100\"\nspec:\n  tls:\n  - hosts:\n    - api.company.com\n    - app.company.com\n    secretName: company-tls\n  rules:\n  - host: api.company.com\n    http:\n      paths:\n      - path: /v1/users\n        pathType: Prefix\n        backend:\n          service:\n            name: user-service\n            port:\n              number: 8080"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Container-Based Virtual Hosting"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Scenario:</strong> Modern microservices with Docker containers and Traefik automatic service discovery.",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "yaml",
+          "code": "# docker-compose.yml for multi-tenant hosting\nversion: '3.8'\nservices:\n  traefik:\n    image: traefik:v2.10\n    ports:\n      - \"80:80\"\n      - \"443:443\"\n    volumes:\n      - /var/run/docker.sock:/var/run/docker.sock\n      - ./traefik.yml:/traefik.yml\n      - ./acme.json:/acme.json\n    networks:\n      - web\n\n  # Client 1: WordPress site\n  client1-wordpress:\n    image: wordpress:latest\n    environment:\n      WORDPRESS_DB_HOST: client1-db\n      WORDPRESS_DB_NAME: wordpress\n    labels:\n      - \"traefik.enable=true\"\n      - \"traefik.http.routers.client1.rule=Host(`client1.com`)\"\n      - \"traefik.http.routers.client1.tls.certresolver=letsencrypt\"\n      - \"traefik.http.services.client1.loadbalancer.server.port=80\"\n    networks:\n      - web\n      - client1-network\n\n  # Client 2: Node.js application\n  client2-app:\n    image: node:18-alpine\n    working_dir: /app\n    volumes:\n      - ./client2:/app\n    command: npm start\n    labels:\n      - \"traefik.enable=true\"\n      - \"traefik.http.routers.client2.rule=Host(`client2.com`)\"\n      - \"traefik.http.routers.client2.tls.certresolver=letsencrypt\"\n      - \"traefik.http.services.client2.loadbalancer.server.port=3000\"\n    networks:\n      - web\n\nnetworks:\n  web:\n    external: true\n  client1-network:\n    internal: true"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Cloud Provider Virtual Hosting"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>AWS Application Load Balancer with Auto Scaling:</strong>",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "yaml",
+          "code": "# AWS ALB with multiple target groups\nAWSTemplateFormatVersion: '2010-09-09'\nResources:\n  ApplicationLoadBalancer:\n    Type: AWS::ElasticLoadBalancingV2::LoadBalancer\n    Properties:\n      Scheme: internet-facing\n      Type: application\n      Subnets:\n        - !Ref PublicSubnet1\n        - !Ref PublicSubnet2\n      SecurityGroups:\n        - !Ref ALBSecurityGroup\n\n  # Rule for client1.com\n  Client1ListenerRule:\n    Type: AWS::ElasticLoadBalancingV2::ListenerRule\n    Properties:\n      Actions:\n        - Type: forward\n          TargetGroupArn: !Ref Client1TargetGroup\n      Conditions:\n        - Field: host-header\n          Values: ['client1.com', 'www.client1.com']\n      ListenerArn: !Ref HTTPSListener\n      Priority: 100\n\n  # Auto Scaling Group for client1\n  Client1AutoScalingGroup:\n    Type: AWS::AutoScaling::AutoScalingGroup\n    Properties:\n      MinSize: 2\n      MaxSize: 10\n      DesiredCapacity: 2\n      TargetGroupARNs:\n        - !Ref Client1TargetGroup\n      LaunchTemplate:\n        LaunchTemplateId: !Ref Client1LaunchTemplate\n        Version: !GetAtt Client1LaunchTemplate.LatestVersionNumber"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Edge Computing with Cloudflare Workers"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Scenario:</strong> Global virtual hosting at the edge with sub-50ms latency worldwide.",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "javascript",
+          "code": "// Cloudflare Worker for intelligent routing\nexport default {\n  async fetch(request) {\n    const url = new URL(request.url);\n    const hostname = url.hostname;\n    \n    // Route based on hostname\n    const routes = {\n      'api.company.com': 'https://api-backend.company.com',\n      'app.company.com': 'https://app-backend.company.com',\n      'blog.company.com': 'https://blog-backend.company.com'\n    };\n    \n    const backend = routes[hostname];\n    if (!backend) {\n      return new Response('Site not found', { status: 404 });\n    }\n    \n    // Add security headers and modify request\n    const modifiedRequest = new Request(backend + url.pathname, {\n      method: request.method,\n      headers: request.headers,\n      body: request.body\n    });\n    \n    const response = await fetch(modifiedRequest);\n    \n    // Add security headers\n    const newResponse = new Response(response.body, response);\n    newResponse.headers.set('X-Frame-Options', 'DENY');\n    newResponse.headers.set('X-Content-Type-Options', 'nosniff');\n    \n    return newResponse;\n  }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Comparative Analysis"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Apache vs Nginx vs Caddy vs Traefik</strong><br><br><strong>When to choose each:</strong><br>• <strong>Apache:</strong> Legacy PHP apps, .htaccess flexibility, shared hosting<br>• <strong>Nginx:</strong> High-concurrency (10K+ connections), static content, reverse proxy<br>• <strong>Caddy:</strong> Rapid prototyping, automatic HTTPS, modern Go/Rust apps<br>• <strong>Traefik:</strong> Kubernetes-native, Docker Swarm, dynamic service discovery<br><br><strong>Performance benchmarks:</strong><br>• Apache: 12,000 req/sec, 85ms latency<br>• Nginx: 45,000 req/sec, 22ms latency<br>• Caddy: 38,000 req/sec, 26ms latency<br>• Traefik: 35,000 req/sec, 28ms latency<br>• CloudFlare Workers: 1M+ req/sec, <20ms latency globally",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "DO THIS NOW",
+      "emoji": "🛠️",
+      "iconClass": "practice",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Level 1: Single Virtual Host (30 minutes)"
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>Prerequisites:</strong> Ubuntu 20.04+ server, sudo access, domain name or willingness to use hosts file",
+              "html": true
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "<strong>Install Nginx:</strong> <code>sudo apt update && sudo apt install nginx -y</code>",
+                "<strong>Create directory:</strong> <code>sudo mkdir -p /var/www/mysite.local/public_html</code>",
+                "<strong>Create test page:</strong> Add HTML file with success message",
+                "<strong>Create virtual host config:</strong> Configure server block in /etc/nginx/sites-available/",
+                "<strong>Enable site:</strong> <code>sudo ln -s /etc/nginx/sites-available/mysite.local /etc/nginx/sites-enabled/</code>",
+                "<strong>Test config:</strong> <code>sudo nginx -t</code>",
+                "<strong>Reload Nginx:</strong> <code>sudo systemctl reload nginx</code>",
+                "<strong>Add to hosts file:</strong> <code>echo '127.0.0.1 mysite.local' | sudo tee -a /etc/hosts</code>"
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>What to look for:</strong><br>✅ Green success message displays<br>✅ No 404 or 403 errors<br>✅ Access log shows your request<br>✅ Different content from Nginx default page<br><br><strong>Quick win:</strong> You've just hosted your first website with proper virtual host configuration!",
+              "html": true
+            }
+          ]
+        },
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Level 2: Multiple Virtual Hosts with SSL (1 hour)"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "<strong>Create second site:</strong> Set up blog.local with different content",
+                "<strong>Configure second virtual host:</strong> Separate server block",
+                "<strong>Generate SSL certificates:</strong> Use openssl for self-signed certs",
+                "<strong>Add HTTPS configuration:</strong> Configure SSL server blocks",
+                "<strong>Set up HTTP→HTTPS redirect:</strong> Force secure connections",
+                "<strong>Test both sites:</strong> Verify they serve different content"
+              ]
+            },
+            {
+              "type": "codeblock",
+              "language": "bash",
+              "code": "# Generate self-signed certificate\nsudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \\\n    -keyout /etc/nginx/ssl/mysite.key \\\n    -out /etc/nginx/ssl/mysite.crt \\\n    -subj \"/CN=mysite.local\"\n\n# Test HTTPS\ncurl -k https://mysite.local"
+            }
+          ]
+        },
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Level 3: Dynamic PHP Site with Database (2 hours)"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "<strong>Install PHP-FPM and MySQL:</strong> <code>sudo apt install php8.1-fpm mysql-server</code>",
+                "<strong>Download WordPress:</strong> Extract to document root",
+                "<strong>Create database:</strong> Set up MySQL database and user",
+                "<strong>Configure Nginx for PHP:</strong> Add fastcgi_pass directives",
+                "<strong>Complete WordPress setup:</strong> Configure wp-config.php",
+                "<strong>Test dynamic content:</strong> Verify PHP processing works"
+              ]
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>Success criteria:</strong><br>✅ WordPress installation page loads<br>✅ PHP info page displays correctly<br>✅ Database connection successful<br>✅ Site logs show PHP-FPM processing",
+              "html": true
+            }
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Level 4: Performance Optimization (3 hours)"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Advanced caching and CDN integration:</strong>",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "nginx",
+          "code": "# Advanced Nginx caching configuration\nproxy_cache_path /var/cache/nginx levels=1:2 keys_zone=STATIC:10m inactive=7d use_temp_path=off;\n\nserver {\n    location ~* \\.(jpg|jpeg|png|gif|ico|css|js)$ {\n        expires 1y;\n        add_header Cache-Control \"public, immutable\";\n        add_header Vary Accept-Encoding;\n        \n        # Enable gzip compression\n        gzip on;\n        gzip_vary on;\n        gzip_min_length 10240;\n        gzip_types\n            text/plain\n            text/css\n            text/xml\n            text/javascript\n            application/javascript\n            application/xml+rss\n            application/json;\n    }\n    \n    # Proxy caching for dynamic content\n    location /api/ {\n        proxy_cache STATIC;\n        proxy_cache_valid 200 5m;\n        proxy_cache_use_stale error timeout invalid_header updating;\n        proxy_pass http://backend;\n    }\n}"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Level 5: Monitoring and Observability (2 hours)"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Complete monitoring stack with metrics, logs, and alerting:</strong>",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "yaml",
+          "code": "# docker-compose.yml for monitoring stack\nversion: '3.8'\nservices:\n  prometheus:\n    image: prom/prometheus:latest\n    ports:\n      - \"9090:9090\"\n    volumes:\n      - ./prometheus.yml:/etc/prometheus/prometheus.yml\n    command:\n      - '--config.file=/etc/prometheus/prometheus.yml'\n      - '--storage.tsdb.path=/prometheus'\n      - '--web.console.libraries=/etc/prometheus/console_libraries'\n      - '--web.console.templates=/etc/prometheus/consoles'\n      - '--web.enable-lifecycle'\n\n  grafana:\n    image: grafana/grafana:latest\n    ports:\n      - \"3000:3000\"\n    environment:\n      - GF_SECURITY_ADMIN_PASSWORD=admin123\n    volumes:\n      - grafana-storage:/var/lib/grafana\n\n  nginx-exporter:\n    image: nginx/nginx-prometheus-exporter:latest\n    ports:\n      - \"9113:9113\"\n    command:\n      - '-nginx.scrape-uri=http://nginx/nginx_status'\n\n  node-exporter:\n    image: prom/node-exporter:latest\n    ports:\n      - \"9100:9100\"\n    volumes:\n      - /proc:/host/proc:ro\n      - /sys:/host/sys:ro\n      - /:/rootfs:ro\n    command:\n      - '--path.procfs=/host/proc'\n      - '--path.sysfs=/host/sys'\n      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'\n\nvolumes:\n  grafana-storage:"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Level 6: Load Testing and Capacity Planning"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Comprehensive load testing methodology:</strong>",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "bash",
+          "code": "# Multi-stage load testing script\n#!/bin/bash\n\n# Baseline test - 100 users over 60 seconds\necho \"Starting baseline load test...\"\nab -n 6000 -c 100 -g baseline.data http://mysite.local/ > baseline.log\n\n# Stress test - find breaking point\necho \"Finding maximum capacity...\"\nfor concurrent in 200 500 1000 2000; do\n    echo \"Testing $concurrent concurrent users...\"\n    ab -n $((concurrent * 60)) -c $concurrent http://mysite.local/ > stress_$concurrent.log\n    \n    # Check for errors\n    failed=$(grep \"Failed requests\" stress_$concurrent.log | awk '{print $3}')\n    if [ \"$failed\" -gt 0 ]; then\n        echo \"Breaking point found at $concurrent concurrent users\"\n        break\n    fi\ndone\n\n# Endurance test - 1 hour sustained load\necho \"Running endurance test...\"\nab -n 36000 -c 100 -t 3600 http://mysite.local/ > endurance.log\n\n# Generate report\necho \"Load testing complete. Check log files for detailed results.\""
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Comprehensive Exercises"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "<strong>Multi-site agency setup:</strong> Create virtual hosts for 5 clients with different tech stacks (WordPress, Laravel, Node.js, static sites, API backends)",
+            "<strong>SSL automation:</strong> Install Certbot, configure automatic renewal, implement HSTS and certificate transparency monitoring",
+            "<strong>Performance optimization:</strong> Implement full caching stack with Redis, Varnish, and CDN integration",
+            "<strong>Security hardening:</strong> Configure WAF, implement rate limiting, set up intrusion detection with Fail2ban",
+            "<strong>Monitoring setup:</strong> Deploy complete observability stack with Prometheus, Grafana, and ELK for log analysis",
+            "<strong>Disaster recovery:</strong> Implement automated backups, configuration management with Ansible, and failover procedures",
+            "<strong>Container migration:</strong> Migrate existing virtual hosts to Docker containers with Traefik service discovery"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Critical Mistakes"
+            },
+            {
+              "type": "list",
+              "items": [
+                "<strong>Using default virtual host for production</strong> → Create explicit default server that returns 444 or 403 for unmatched domains. Prevents attackers from accessing your main site via direct IP or malicious domain pointing.",
+                "<strong>Incorrect file permissions (chmod 777)</strong> → Use proper permissions: directories 755, files 644, sensitive configs 600. Wrong permissions expose sensitive data or prevent web server access.",
+                "<strong>Missing Host header validation</strong> → Validate Host header in application code. Prevents password reset poisoning and cache poisoning attacks.",
+                "<strong>Infinite redirect loops</strong> → Ensure one-way redirects (HTTP→HTTPS, www→non-www). Test with curl -L to detect loops.",
+                "<strong>Exposing sensitive files (.env, .git)</strong> → Block access to dotfiles and config files in Nginx: <code>location ~ /\\. { deny all; }</code>",
+                "<strong>No default server configuration</strong> → Always define explicit default_server to catch unmatched requests safely.",
+                "<strong>SNI not configured for SSL</strong> → Ensure each SSL site has unique server_name. Without SNI, wrong certificate may be presented.",
+                "<strong>Shared PHP-FPM pools</strong> → Use separate PHP-FPM pools per client for security isolation and resource limits."
+              ]
+            }
+          ]
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Warning Signs"
+            },
+            {
+              "type": "list",
+              "items": [
+                "Direct IP access returns production site content",
+                "Different domains show same content",
+                "403 Forbidden errors (permission issues)",
+                "SSL certificate warnings on correct domains",
+                "Slow response times (check PHP-FPM pool limits)",
+                "High memory usage (check for memory leaks in apps)",
+                "Logs showing 404s for dotfiles (someone probing for vulnerabilities)"
+              ]
+            }
+          ]
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Advanced Security Configuration"
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>Web Application Firewall (WAF) Setup:</strong>",
+              "html": true
+            },
+            {
+              "type": "codeblock",
+              "language": "nginx",
+              "code": "# ModSecurity with OWASP rules\nload_module modules/ngx_http_modsecurity_module.so;\n\nhttp {\n    modsecurity on;\n    modsecurity_rules_file /etc/nginx/modsec/main.conf;\n    \n    # Rate limiting zones\n    limit_req_zone $binary_remote_addr zone=general:10m rate=10r/s;\n    limit_req_zone $binary_remote_addr zone=login:10m rate=1r/s;\n    \n    # Geographic blocking\n    geoip2 /usr/share/GeoIP/GeoLite2-Country.mmdb {\n        $geoip2_data_country_code source=$remote_addr country iso_code;\n    }\n    \n    map $geoip2_data_country_code $blocked_country {\n        default 0;\n        CN 1;  # Block China\n        RU 1;  # Block Russia\n    }\n}"
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>DDoS Protection and Rate Limiting:</strong>",
+              "html": true
+            },
+            {
+              "type": "codeblock",
+              "language": "nginx",
+              "code": "server {\n    # Block suspicious user agents\n    if ($http_user_agent ~* (bot|crawler|scanner|probe)) {\n        return 444;\n    }\n    \n    # Prevent abuse of sensitive endpoints\n    location /login {\n        limit_req zone=login burst=5 nodelay;\n        limit_req_status 429;\n    }\n    \n    # Block common attack patterns\n    location ~* \\.(php|asp|aspx|jsp)$ {\n        if ($args ~* (union|select|insert|update|delete)) {\n            return 444;\n        }\n    }\n    \n    # Security headers\n    add_header Strict-Transport-Security \"max-age=31536000; includeSubDomains; preload\" always;\n    add_header Content-Security-Policy \"default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'\" always;\n    add_header X-Content-Type-Options \"nosniff\" always;\n    add_header X-Frame-Options \"SAMEORIGIN\" always;\n    add_header Referrer-Policy \"strict-origin-when-cross-origin\" always;\n}"
+            }
+          ]
+        },
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Recovery Strategies"
+            },
+            {
+              "type": "paragraph",
+              "content": "<strong>For exposed sensitive files:</strong><br>1. Audit exposed files: <code>grep -r 'password|api_key' /var/www/</code><br>2. Rotate ALL credentials immediately<br>3. Check access logs for downloads<br>4. Implement proper Nginx location blocks<br>5. Add monitoring for permission changes<br><br><strong>For permission errors:</strong><br>1. Reset to safe defaults: <code>find /var/www -type d -exec chmod 755 {} \\;</code><br>2. Set correct ownership: <code>chown -R www-data:www-data /var/www/site</code><br>3. Protect sensitive files: <code>chmod 600 .env wp-config.php</code><br>4. Test web server can read files<br><br><strong>Security Incident Response:</strong><br>1. Isolate compromised virtual hosts immediately<br>2. Preserve logs before attackers can modify them<br>3. Check all other virtual hosts for similar compromises<br>4. Update WAF rules to block attack vectors<br>5. Implement additional monitoring for affected sites",
+              "html": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "connections",
+      "title": "CONNECTIONS",
+      "emoji": "🔗",
+      "iconClass": "connections",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Prerequisites & Foundations"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Essential skills:</strong> Linux command line proficiency, basic networking (TCP/IP, DNS), HTTP protocol understanding, text editor mastery (vim/nano)",
+            "<strong>System administration:</strong> File permissions and ownership, process management, systemd services, log file analysis, firewall configuration",
+            "<strong>Security basics:</strong> Public key cryptography, SSL/TLS fundamentals, basic vulnerability assessment, incident response procedures"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Related Technologies & Concepts"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Web infrastructure:</strong> Reverse proxies, load balancers, CDNs (CloudFlare, AWS CloudFront), DNS management and DNSSEC",
+            "<strong>Containerization:</strong> Docker containers, Docker Compose, Kubernetes ingress controllers, service mesh (Istio, Linkerd)",
+            "<strong>Cloud platforms:</strong> AWS ALB/CloudFormation, GCP Load Balancer, Azure Application Gateway, Terraform infrastructure as code",
+            "<strong>Monitoring & observability:</strong> Prometheus/Grafana, ELK stack, APM tools (New Relic, Datadog), distributed tracing",
+            "<strong>Security tools:</strong> Web Application Firewalls (ModSecurity, Cloudflare WAF), intrusion detection (Suricata, Snort), vulnerability scanners"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Advanced Ecosystem"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Edge computing:</strong> Cloudflare Workers, AWS Lambda@Edge, CDN edge functions, WebAssembly at the edge",
+            "<strong>Next-generation protocols:</strong> HTTP/3 and QUIC, Server-Sent Events (SSE), WebSockets, gRPC web",
+            "<strong>Automation & CI/CD:</strong> GitOps workflows, automated testing (Selenium, Cypress), configuration management (Ansible, Puppet)",
+            "<strong>Performance optimization:</strong> Varnish cache, Redis, database connection pooling, asset optimization pipelines"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Learning Path & Dependencies"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Phase 1 - Foundations (2-4 weeks):</strong><br>1. Linux fundamentals and command line mastery<br>2. HTTP protocol deep dive and network troubleshooting<br>3. DNS configuration and SSL certificate management<br>4. Single virtual host setup and testing<br><br><strong>Phase 2 - Production Skills (4-8 weeks):</strong><br>5. Multiple virtual hosts with isolation<br>6. SSL automation with Let's Encrypt<br>7. Performance tuning and caching strategies<br>8. Security hardening and monitoring setup<br><br><strong>Phase 3 - Advanced Architecture (8-12 weeks):</strong><br>9. Container-based deployments with Docker<br>10. Cloud provider load balancers and auto-scaling<br>11. Service mesh and microservices integration<br>12. CI/CD pipelines and infrastructure as code<br><br><strong>Phase 4 - Specialization (Ongoing):</strong><br>13. Choose focus area: Security, Performance, or Cloud Architecture<br>14. Contribute to open source projects<br>15. Build portfolio of production deployments<br>16. Obtain relevant certifications and speak at conferences",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Knowledge Verification"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "Explain how the Host header enables name-based virtual hosting. Why can't virtual hosting work without HTTP/1.1?",
+            "What is SNI and why is it critical for HTTPS virtual hosting? What happens on legacy clients without SNI support?",
+            "You have 3 virtual hosts configured. A request arrives with Host: unknowndomain.com. Which virtual host handles it and why?",
+            "Compare the security implications of using one shared PHP-FPM pool vs. separate pools per virtual host.",
+            "A client reports 'too many redirects' error. Walk through your debugging process.",
+            "Calculate: You host 30 WordPress sites, each using 50MB RAM. How much total RAM needed? What happens if you exceed available RAM?",
+            "Design a virtual hosting setup for 100 client sites with automatic SSL, isolated PHP environments, and per-site resource limits."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Skill Demonstration"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "Set up 3 virtual hosts with different tech stacks (static HTML, PHP, Node.js reverse proxy) on one server",
+            "Configure automatic SSL renewal for 5 domains using Certbot",
+            "Debug why site1.com works but www.site1.com returns 404",
+            "Optimize Nginx configuration to handle 10,000 concurrent connections",
+            "Migrate 10 sites from Apache to Nginx without downtime",
+            "Implement rate limiting per virtual host with different limits"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Success criteria:</strong><br>✅ <strong>Beginner:</strong> Set up 2+ working virtual hosts with SSL<br>✅ <strong>Intermediate:</strong> Manage 10+ sites with monitoring and automated deployments<br>✅ <strong>Advanced:</strong> Design and implement production-ready multi-tenant architecture<br>✅ <strong>Expert:</strong> Optimize for 100K+ requests/sec, contribute to web server projects<br><br><strong>Review triggers:</strong><br>• When deploying new site and struggling with configuration<br>• When encountering SSL certificate errors<br>• Before system administration or DevOps interviews<br>• When scaling to higher traffic levels",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth",
+      "content": [
+        {
+          "type": "list",
+          "items": [
+            "<strong>This week:</strong> Set up 5 virtual hosts on local VM, configure SSL with self-signed certificates, implement basic monitoring with access logs, practice debugging common issues, document your configuration",
+            "<strong>This month:</strong> Deploy production virtual host setup on VPS, implement Let's Encrypt automation, configure PHP-FPM pools per site, set up Prometheus + Grafana monitoring, load test with ApacheBench, migrate a real site from shared hosting",
+            "<strong>This quarter:</strong> Build multi-tenant SaaS platform with dynamic virtual hosts, implement WAF and DDoS protection, optimize for 10K+ concurrent connections, contribute to Nginx or Caddy documentation, write blog post about your setup",
+            "<strong>Long term:</strong> Design enterprise hosting infrastructure, implement service mesh for microservices, speak at conferences about web server optimization, contribute code to open source web servers, build custom virtual hosting control panel"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Career Integration"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Certifications:</strong> Linux Foundation Certified System Administrator (LFCS), Red Hat Certified Engineer (RHCE), Kubernetes Administrator (CKA)",
+            "<strong>Portfolio projects:</strong> Multi-tenant hosting platform, automated deployment system, monitoring dashboard, custom virtual host manager",
+            "<strong>Job roles:</strong> DevOps Engineer, Site Reliability Engineer, Systems Administrator, Cloud Architect, Platform Engineer, Full-Stack Developer, Web Operations Specialist",
+            "<strong>Salary impact:</strong> Virtual hosting expertise typically adds $15-25K to base DevOps salary (from $85K to $110K+). Senior positions with large-scale virtual hosting experience command $140-180K+",
+            "<strong>Interview preparation:</strong> Practice explaining virtual host architecture, demonstrate SSL automation, show performance optimization examples, discuss security best practices and incident response scenarios"
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Advanced Specialization Paths"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Enterprise Platform Engineering:</strong> Multi-region hosting, advanced load balancing, service mesh integration, auto-scaling infrastructure",
+            "<strong>Security Specialization:</strong> WAF configuration, DDoS mitigation, compliance frameworks (SOC2, PCI-DSS), security automation and monitoring",
+            "<strong>Performance Engineering:</strong> CDN optimization, edge computing, HTTP/3 implementation, advanced caching strategies, database optimization",
+            "<strong>Cloud Architecture:</strong> Multi-cloud deployments, serverless integration, container orchestration, infrastructure as code, cost optimization"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -177,6 +177,24 @@
       "lastUpdated": "2025-09-26"
     },
     {
+      "id": "virtual-hosting---complete-mastery-guide",
+      "title": "Virtual Hosting - Complete Mastery Guide",
+      "path": "guides/virtual-hosting-complete-mastery-guide/",
+      "description": "Comprehensive guide to virtual hosting covering Apache, Nginx, and Kubernetes implementations. Learn how to host multiple websites on a single server, configure SSL, optimize performance, and avoid common pitfalls. Includes hands-on exercises from beginner to advanced levels.",
+      "author": "DevOps Learning System",
+      "tags": [
+        "virtual-hosting",
+        "nginx",
+        "apache",
+        "web-servers",
+        "devops",
+        "ssl",
+        "intermediate"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2025-09-30"
+    },
+    {
       "id": "x86-cpu-16-bit-real-mode",
       "title": "x86 CPU 16-bit Real Mode",
       "path": "guides/x86-cpu-16-bit-real-mode/",
@@ -196,8 +214,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-09-30T12:52:08.180Z",
-    "totalGuides": 11,
+    "lastModified": "2025-09-30T19:37:59.231Z",
+    "totalGuides": 12,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }
