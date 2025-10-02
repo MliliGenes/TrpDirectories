@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="../../imgs/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="../../style/main.css">
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/darcula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/default.min.css">
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    
+    <title>RAII: Resource Acquisition Is Initialization - Learning Guide</title>
+</head>
+<body>
+        <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>RAII: Resource Acquisition Is Initialization</h1>
+                    <div class="author-info">By sel-mlil</div>
+                </div>
+                <div class="header-nav">
+                    <a href="../../" class="back-to-index">
+                        Back to Index
+                    </a>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+                </div>
+            </div>
+        </div>
+    </header>
+        <nav>
+        <div class="container">
+            <div class="guide-nav-grid">
+                <a class="guide-nav-item" href="#hook" data-section="0">🎯 The Hook</a>
+                <a class="guide-nav-item" href="#concept" data-section="1">💡 Core Concepts</a>
+                <a class="guide-nav-item" href="#mechanics" data-section="2">⚙️ How It Works</a>
+                <a class="guide-nav-item" href="#examples" data-section="3">🌍 Real Examples</a>
+                <a class="guide-nav-item" href="#practice" data-section="4">🛠️ Hands-On Practice</a>
+                <a class="guide-nav-item" href="#debugging" data-section="5">🐛 Debugging & Troubleshooting</a>
+                <a class="guide-nav-item" href="#performance" data-section="6">🚀 Performance & Optimization</a>
+                <a class="guide-nav-item" href="#security" data-section="7">🔒 Security Considerations</a>
+                <a class="guide-nav-item" href="#patterns" data-section="8">🏗️ Design Patterns</a>
+                <a class="guide-nav-item" href="#tools" data-section="9">🔧 Tools & Utilities</a>
+                <a class="guide-nav-item" href="#bestpractices" data-section="10">✨ Best Practices</a>
+                <a class="guide-nav-item" href="#warnings" data-section="11">⚠️ Common Pitfalls</a>
+                <a class="guide-nav-item" href="#advanced" data-section="12">🎓 Advanced Topics</a>
+                <a class="guide-nav-item" href="#test" data-section="13">🎯 Test Yourself</a>
+                <a class="guide-nav-item" href="#growth" data-section="14">📈 Next Steps</a>
+            </div>
+        </div>
+    </nav>
+        <main class="container">
+        <section id="hook">
+            <div class="section-header">
+                <div class="section-icon hook">🎯</div>
+                <h2 class="section-title">THE HOOK</h2>
+            </div>
+            <div class="content">
+                <p><strong>What is RAII?</strong><br>RAII (Resource Acquisition Is Initialization) is a programming idiom where resource lifetime is bound to object lifetime. When you create an object, it acquires a resource. When the object is destroyed, it automatically releases that resource. Think of resources as anything that needs cleanup: memory, file handles, network connections, locks, database connections, or GPU memory.</p>
+                <p><strong>Why care?</strong><br>Manual resource management is error-prone. Forget to close a file? Memory leak. Exception thrown before cleanup? Resource leak. Early return from a function? Leak again. RAII eliminates entire categories of bugs by making cleanup automatic and deterministic. It's the reason C++ developers can write complex systems without garbage collection while maintaining memory safety. Languages like Rust have adopted and extended this concept as a core principle.</p>
+                <p><strong>Mental model:</strong><br>Imagine a hotel room key card. When you check in (object construction), you receive the key (resource acquisition). When you check out (object destruction), you automatically return the key (resource release). You can't forget to return it because checkout requires it. RAII works the same way: the language's rules about object lifetime guarantee your cleanup code runs, no manual tracking needed.</p>
+            </div>
+        </section>
+
+        <section id="concept">
+            <div class="section-header">
+                <div class="section-icon concept">💡</div>
+                <h2 class="section-title">CORE CONCEPTS</h2>
+            </div>
+            <div class="content">
+                <h3>The fundamental principle</h3>
+                <p>RAII leverages the automatic lifecycle management that object-oriented languages provide. Every object has a predictable lifetime: it's constructed when declared and destroyed when it goes out of scope. By tying resource management to this automatic process, RAII ensures resources are acquired during construction and released during destruction, making leaks nearly impossible.</p>
+                <h3>Key properties of RAII</h3>
+                <p>First, acquisition happens in the constructor. If resource acquisition fails, an exception is thrown and no object is created, preventing partially-constructed objects. Second, release happens in the destructor, which is guaranteed to run when the object goes out of scope, even during exceptions. Third, ownership is clear: the RAII object owns the resource for its entire lifetime. Fourth, it's deterministic: you know exactly when cleanup occurs, unlike garbage collection.</p>
+                <h3>Why it matters for modern software</h3>
+                <p>Modern applications manage thousands of resources simultaneously: file descriptors, network sockets, database connections, locks, GPU memory, and more. Manual tracking is impossible at scale. RAII provides automatic, exception-safe, deterministic resource management without runtime overhead. It's the foundation of modern C++ and inspired Rust's ownership system, which extends RAII principles to prevent data races at compile time.</p>
+            </div>
+        </section>
+
+        <section id="mechanics">
+            <div class="section-header">
+                <div class="section-icon mechanics">⚙️</div>
+                <h2 class="section-title">HOW IT WORKS</h2>
+            </div>
+            <div class="content">
+                <h3>The constructor-destructor contract</h3>
+                <p>When you declare a variable, the compiler inserts a constructor call at that point. When the variable goes out of scope (end of block, function return, or exception), the compiler inserts a destructor call. This happens automatically. You cannot prevent it, which is exactly what makes RAII reliable. The destructor runs even if an exception is thrown, unlike manual cleanup code that might be bypassed.</p>
+                <h3>Stack unwinding and exception safety</h3>
+                <p>When an exception is thrown, the program performs stack unwinding: it calls destructors for all stack-allocated objects in reverse order of construction as it unwinds to the catch block. This means RAII objects automatically clean up during exceptions. Manual cleanup with try-finally or explicit checks can be skipped if exceptions occur in unexpected places, but RAII cleanup is guaranteed by the language itself.</p>
+                <h3>Scope-based lifetime management</h3>
+                <p>Resources are tied to lexical scope. When a variable's scope ends (closing brace, function return, exception), its destructor runs immediately. This is deterministic: you can look at the code and know exactly when resources are released. Compare this to garbage collection where cleanup happens at unpredictable times based on memory pressure and GC heuristics.</p>
+                <h3>Move semantics and ownership transfer</h3>
+                <p>Modern RAII classes support move semantics, allowing ownership transfer without copying. When an RAII object is moved, ownership transfers to the new object and the old object becomes empty (usually a null handle). This enables returning RAII objects from functions efficiently while maintaining single ownership. The destructor of the moved-from object does nothing, while the new owner's destructor performs the actual cleanup.</p>
+            </div>
+        </section>
+
+        <section id="examples">
+            <div class="section-header">
+                <div class="section-icon examples">🌍</div>
+                <h2 class="section-title">REAL EXAMPLES</h2>
+            </div>
+            <div class="content">
+                <h3>Basic file handling without RAII</h3>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-i4fh4oui3" class="codemirror-code">// Manual resource management - error prone
+void processFile(const char* filename) {
+    FILE* file = fopen(filename, "r");
+    if (!file) return; // Must remember to check
+    
+    // Process file...
+    if (error_condition) {
+        fclose(file); // Must remember to close here
+        return;
+    }
+    
+    // More processing...
+    if (another_error) {
+        fclose(file); // And here
+        return;
+    }
+    
+    fclose(file); // And here - easy to forget one path!
+}</textarea>
+                </div>
+                <h3>Same code with RAII</h3>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-lacnuc9sv" class="codemirror-code">// RAII wrapper for file handles
+class File {
+    FILE* handle;
+public:
+    // Constructor acquires resource
+    File(const char* filename, const char* mode) {
+        handle = fopen(filename, mode);
+        if (!handle) {
+            throw std::runtime_error("Failed to open file");
+        }
+    }
+    
+    // Destructor releases resource - called automatically
+    ~File() {
+        if (handle) {
+            fclose(handle);
+        }
+    }
+    
+    // Disable copying to maintain single ownership
+    File(const File&) = delete;
+    File& operator=(const File&) = delete;
+    
+    FILE* get() { return handle; }
+};
+
+void processFile(const char* filename) {
+    File file(filename, "r");
+    // Use file...
+    // No manual cleanup needed - destructor runs automatically
+    // Works correctly even if exceptions are thrown
+}</textarea>
+                </div>
+                <h3>Smart pointers - the most common RAII pattern</h3>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-c6ihu77ih" class="codemirror-code">#include <memory>
+
+// Automatic memory management with unique_ptr
+void createAndUseObject() {
+    // Memory allocated here
+    std::unique_ptr<Widget> widget = std::make_unique<Widget>();
+    
+    widget->doSomething();
+    
+    if (condition) {
+        return; // Memory automatically freed here
+    }
+    
+    widget->doSomethingElse();
+    
+    // Memory automatically freed when function ends
+    // No delete needed, no leaks possible
+}
+
+// Shared ownership with shared_ptr
+std::shared_ptr<Database> getDatabase() {
+    static std::shared_ptr<Database> db = 
+        std::make_shared<Database>("connection_string");
+    return db; // Reference counted - deleted when last owner dies
+}</textarea>
+                </div>
+                <h3>Mutex locks with RAII</h3>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-2mpum7ugp" class="codemirror-code">#include <mutex>
+
+std::mutex dataMutex;
+int sharedData = 0;
+
+void updateData(int value) {
+    // Lock acquired in constructor
+    std::lock_guard<std::mutex> lock(dataMutex);
+    
+    sharedData += value;
+    
+    if (sharedData > 1000) {
+        return; // Lock automatically released here
+    }
+    
+    // Do more work...
+    
+    // Lock automatically released at end of scope
+    // Even if exception is thrown, lock is released
+}</textarea>
+                </div>
+                <h3>Database connection pool</h3>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-e3o3p7kmd" class="codemirror-code">class DatabaseConnection {
+    Connection* conn;
+    ConnectionPool* pool;
+public:
+    // Acquire connection from pool
+    DatabaseConnection(ConnectionPool* p) : pool(p) {
+        conn = pool->acquire();
+    }
+    
+    // Return connection to pool
+    ~DatabaseConnection() {
+        if (conn) {
+            pool->release(conn);
+        }
+    }
+    
+    void execute(const std::string& query) {
+        conn->execute(query);
+    }
+};
+
+void performDatabaseWork() {
+    // Connection acquired from pool
+    DatabaseConnection db(&globalPool);
+    
+    db.execute("SELECT * FROM users");
+    // Even if exception thrown, connection returned to pool
+    db.execute("UPDATE users SET status = 'active'");
+    
+    // Connection automatically returned to pool here
+}</textarea>
+                </div>
+                <h3>Custom RAII for system resources</h3>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-3qpmzwk33" class="codemirror-code">// RAII for Windows handles
+class WindowsHandle {
+    HANDLE handle;
+public:
+    explicit WindowsHandle(HANDLE h) : handle(h) {}
+    
+    ~WindowsHandle() {
+        if (handle != INVALID_HANDLE_VALUE) {
+            CloseHandle(handle);
+        }
+    }
+    
+    // Move semantics for ownership transfer
+    WindowsHandle(WindowsHandle&& other) noexcept 
+        : handle(other.handle) {
+        other.handle = INVALID_HANDLE_VALUE;
+    }
+    
+    HANDLE get() const { return handle; }
+};
+
+// RAII for temporary directory change
+class DirectoryGuard {
+    std::string originalDir;
+public:
+    DirectoryGuard(const std::string& newDir) {
+        char buffer[MAX_PATH];
+        GetCurrentDirectory(MAX_PATH, buffer);
+        originalDir = buffer;
+        SetCurrentDirectory(newDir.c_str());
+    }
+    
+    ~DirectoryGuard() {
+        SetCurrentDirectory(originalDir.c_str());
+    }
+};
+
+void processFilesInDirectory(const std::string& dir) {
+    DirectoryGuard guard(dir); // Change directory
+    // Process files in new directory...
+    // Original directory automatically restored
+}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="practice">
+            <div class="section-header">
+                <div class="section-icon practice">🛠️</div>
+                <h2 class="section-title">DO THIS NOW</h2>
+            </div>
+            <div class="content">
+                <div class="action-box">
+                <p><strong>Exercise 1: Build a timer guard</strong></p>
+                <p>Create an RAII class that measures execution time of a code block. The constructor should record the start time, and the destructor should calculate elapsed time and print it. This teaches you how RAII can do more than just cleanup - it can perform any scope-based action.</p>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-pl8t6235v" class="codemirror-code">class TimerGuard {
+    std::chrono::time_point<std::chrono::high_resolution_clock> start;
+    std::string name;
+public:
+    TimerGuard(const std::string& n) : name(n) {
+        start = std::chrono::high_resolution_clock::now();
+    }
+    
+    ~TimerGuard() {
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        std::cout << name << " took " << duration.count() << "ms\n";
+    }
+};
+
+// Usage:
+void expensiveFunction() {
+    TimerGuard timer("expensiveFunction");
+    // Your code here...
+    // Time automatically printed when function ends
+}</textarea>
+                </div>
+                <p><strong>What to look for:</strong> Notice how the timing happens automatically regardless of how the function exits (return, exception, or fall-through). Try adding multiple return paths to see that timing always works.<br><br><strong>Quick win:</strong> You now have automatic profiling for any code block. Drop in a TimerGuard and get instant performance measurements.</p>
+                </div>
+                <div class="action-box">
+                <p><strong>Exercise 2: Create a scope guard</strong></p>
+                <p>Build a general-purpose RAII class that executes any cleanup function you provide. This is the Swiss Army knife of RAII - it lets you wrap any cleanup logic without creating a dedicated class.</p>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-ffcyxrt4o" class="codemirror-code">#include <functional>
+
+class ScopeGuard {
+    std::function<void()> cleanup;
+    bool active;
+public:
+    explicit ScopeGuard(std::function<void()> f) 
+        : cleanup(f), active(true) {}
+    
+    ~ScopeGuard() {
+        if (active) cleanup();
+    }
+    
+    // Allow canceling the cleanup if needed
+    void dismiss() { active = false; }
+    
+    // Prevent copying
+    ScopeGuard(const ScopeGuard&) = delete;
+    ScopeGuard& operator=(const ScopeGuard&) = delete;
+};
+
+// Usage:
+void transactionalOperation() {
+    Resource* r = acquireResource();
+    ScopeGuard guard([r]{ releaseResource(r); });
+    
+    performOperation(r);
+    
+    // If we get here successfully, dismiss the guard
+    guard.dismiss();
+    // Otherwise, resource is automatically released
+}</textarea>
+                </div>
+                <p><strong>What to look for:</strong> Experiment with the dismiss() method. It lets you cancel cleanup if the operation succeeds, which is useful for transaction-like operations.<br><br><strong>Quick win:</strong> You can now add RAII-style cleanup to any legacy code or third-party library without wrapping it in a custom class.</p>
+                </div>
+                <div class="action-box">
+                <p><strong>Exercise 3: Fix a leaky function</strong></p>
+                <p>Take this intentionally broken code and fix it using RAII principles. This exercise reveals how many subtle leak opportunities exist in manual resource management.</p>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-lgspvcz35" class="codemirror-code">// Broken version - multiple leak opportunities
+void processData(const char* filename) {
+    int* buffer = new int[1000];
+    FILE* file = fopen(filename, "r");
+    
+    if (!file) {
+        // LEAK: forgot to delete buffer!
+        return;
+    }
+    
+    // Read data that might throw exception
+    readData(file, buffer); // LEAK: exception skips cleanup!
+    
+    // Process...
+    if (errorCondition) {
+        fclose(file);
+        // LEAK: forgot to delete buffer!
+        return;
+    }
+    
+    delete[] buffer;
+    fclose(file);
+}
+
+// Fixed version - use RAII
+void processData(const char* filename) {
+    std::unique_ptr<int[]> buffer = std::make_unique<int[]>(1000);
+    File file(filename, "r");
+    
+    readData(file.get(), buffer.get());
+    
+    if (errorCondition) {
+        return; // Everything cleaned up automatically
+    }
+    
+    // Everything cleaned up automatically here too
+}</textarea>
+                </div>
+                <p><strong>What to look for:</strong> Count how many places the manual version could leak. Now notice how the RAII version cannot leak regardless of execution path.<br><br><strong>Quick win:</strong> You've eliminated an entire category of bugs. This pattern scales to managing dozens of resources simultaneously.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="debugging">
+            <div class="section-header">
+                <div class="section-icon debugging">🐛</div>
+                <h2 class="section-title">DEBUGGING & TROUBLESHOOTING</h2>
+            </div>
+            <div class="content">
+                <h3>Destructor not called - common causes</h3>
+                <p>If your destructor isn't running, first check if the object is heap-allocated. A pointer to an object doesn't have automatic lifetime - only the pointer itself does. Use smart pointers to get RAII for heap objects. Second, check if the object is static or global. These are destroyed only at program exit, which might not happen if you call exit() or the program crashes. Third, verify you're not accidentally copying the object and relying on the copy's destructor, when the original still holds the resource.</p>
+                <h3>Double-free and use-after-free bugs</h3>
+                <p>If you get crashes in destructors, you likely have an ownership problem. Multiple RAII objects think they own the same resource. Solution: disable copying (delete copy constructor and assignment operator), implement move semantics for ownership transfer, or use shared_ptr for genuinely shared ownership. Also ensure your destructor checks if the resource is valid before releasing it (null pointer check for memory, invalid handle check for system resources).</p>
+                <h3>Debugging destructor execution order</h3>
+                <p>Add logging to your constructors and destructors to see when they run. Destructors execute in reverse order of construction within a scope. If you have interdependent resources, this matters. For example, if object A uses object B, declare B before A so A is destroyed first. Use debugger breakpoints in destructors to verify they execute when expected, especially during exception handling.</p>
+                <h3>Memory leaks despite RAII</h3>
+                <p>If you still have leaks with RAII, check these: are you storing raw pointers somewhere that outlive the RAII object? Are you creating circular references with shared_ptr (use weak_ptr to break cycles)? Are you disabling the destructor in some code path? Use tools like Valgrind, AddressSanitizer, or Visual Studio's memory profiler to find exactly where the leak occurs.</p>
+                <h3>Exception thrown during destruction</h3>
+                <p>Destructors should never throw exceptions. If destruction during stack unwinding throws, the program calls std::terminate() and crashes. Mark destructors as noexcept and catch any internal exceptions. If cleanup can fail, provide a separate close() or release() method that can throw, and have the destructor call it with exception suppression as a last resort.</p>
+            </div>
+        </section>
+
+        <section id="performance">
+            <div class="section-header">
+                <div class="section-icon performance">🚀</div>
+                <h2 class="section-title">PERFORMANCE & OPTIMIZATION</h2>
+            </div>
+            <div class="content">
+                <h3>Zero-cost abstraction</h3>
+                <p>RAII is a zero-cost abstraction in C++. The compiler typically inlines constructors and destructors, making RAII objects as fast as manual resource management. In optimized builds, there's often literally zero difference in the generated assembly between RAII and manual cleanup. You get safety without sacrificing performance, which is why RAII is used in performance-critical systems like game engines and operating systems.</p>
+                <h3>Move semantics for performance</h3>
+                <p>Implementing move constructors and move assignment operators allows RAII objects to be returned from functions and stored in containers efficiently. Moving transfers ownership by swapping a handle (usually just a pointer), which is much faster than copying the entire resource. The STL containers use move semantics automatically, making vectors of unique_ptr just as fast as vectors of raw pointers but vastly safer.</p>
+                <h3>Avoiding unnecessary construction</h3>
+                <p>Sometimes you want optional resources that may not be acquired. Use std::optional<YourRAIIClass> to defer construction until needed. Or provide a default constructor that doesn't acquire the resource, with a separate init() method. The trade-off is you must remember to check if the resource is valid before use, similar to checking a pointer for null.</p>
+                <h3>Bulk operations and resource pooling</h3>
+                <p>If you're creating and destroying many RAII objects rapidly, consider object pooling. Instead of releasing resources in the destructor, return them to a pool. This is especially valuable for expensive resources like database connections or large memory buffers. The RAII wrapper still provides scope-based lifetime, but reuses the underlying resource.</p>
+            </div>
+        </section>
+
+        <section id="security">
+            <div class="section-header">
+                <div class="section-icon security">🔒</div>
+                <h2 class="section-title">SECURITY CONSIDERATIONS</h2>
+            </div>
+            <div class="content">
+                <h3>Preventing resource exhaustion attacks</h3>
+                <p>RAII ensures resources are released even if exceptions occur, which prevents attackers from exhausting system resources by triggering error conditions. Without RAII, an attacker who can cause exceptions might leak file handles, memory, or network connections until the system becomes unusable. RAII makes this attack vector much harder to exploit because cleanup happens automatically regardless of execution path.</p>
+                <h3>Secure cleanup of sensitive data</h3>
+                <p>When handling passwords, encryption keys, or other sensitive data, use RAII to ensure secure cleanup. The destructor should overwrite the memory with zeros before releasing it, preventing the data from remaining in memory or being written to swap space. This guarantees cleanup happens even if an exception is thrown, unlike manual memset calls that might be skipped.</p>
+                <h3>Lock management and deadlock prevention</h3>
+                <p>Using lock_guard and unique_lock prevents forgetting to release locks, which could deadlock your application. These RAII wrappers ensure locks are released even during exceptions. For complex locking scenarios, use std::scoped_lock which acquires multiple locks atomically, preventing ABBA deadlocks while still providing automatic release through RAII.</p>
+                <h3>Privilege management</h3>
+                <p>Use RAII to manage elevated privileges. Create an RAII class that acquires elevated privileges in the constructor and drops them in the destructor. This ensures privileges are held for the minimum necessary time and are automatically dropped even if exceptions occur, following the principle of least privilege. This pattern is crucial for security-sensitive operations.</p>
+            </div>
+        </section>
+
+        <section id="patterns">
+            <div class="section-header">
+                <div class="section-icon patterns">🏗️</div>
+                <h2 class="section-title">DESIGN PATTERNS</h2>
+            </div>
+            <div class="content">
+                <h3>The Scope Guard pattern</h3>
+                <p>A scope guard executes arbitrary code when destroyed. This is more flexible than specific RAII wrappers because you can use it for any cleanup without creating a new class. It's perfect for wrapping legacy APIs or one-off cleanup needs. Many codebases define a macro like SCOPE_EXIT that creates an anonymous scope guard, making cleanup code look like regular code but with guaranteed execution.</p>
+                <h3>The Handle-Body idiom (Pimpl)</h3>
+                <p>Combine RAII with the Pimpl idiom for better encapsulation. The public class holds a unique_ptr to an implementation class. This provides RAII-managed memory while hiding implementation details and reducing compile dependencies. The unique_ptr ensures the implementation is automatically deleted when the handle is destroyed, and move semantics work naturally.</p>
+                <h3>The Transaction pattern</h3>
+                <p>Use RAII for transaction semantics. The constructor begins a transaction, and the destructor rolls back unless you explicitly commit. This ensures transactions are never left in an intermediate state. Database libraries, file system operations, and memory allocators can all use this pattern. The key is the explicit commit() call - success requires intent, failure is automatic.</p>
+                <h3>The Resource Pool pattern</h3>
+                <p>RAII wrappers can manage pooled resources elegantly. The constructor acquires from the pool, the destructor returns to the pool. Users get scope-based lifetime and exception safety while the pool provides performance through reuse. This pattern is essential for database connections, thread pools, and memory pools. The RAII wrapper makes the pool transparent to users.</p>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="section-header">
+                <div class="section-icon tools">🔧</div>
+                <h2 class="section-title">TOOLS & UTILITIES</h2>
+            </div>
+            <div class="content">
+                <h3>Standard library RAII components</h3>
+                <p>C++ provides essential RAII tools out of the box. Smart pointers (unique_ptr, shared_ptr, weak_ptr) manage memory. Lock guards (lock_guard, unique_lock, shared_lock, scoped_lock) manage mutexes. File streams (ifstream, ofstream) manage file handles. Thread objects manage thread lifetime. String and vector manage their internal buffers. These aren't just conveniences - they're the foundation of modern C++ safety.</p>
+                <h3>Memory leak detectors</h3>
+                <p>Valgrind (Linux/Mac) and Dr. Memory (cross-platform) detect leaks even in RAII-based code, catching cases where you accidentally disable RAII or have circular references. AddressSanitizer and LeakSanitizer (built into GCC/Clang) provide fast leak detection with minimal overhead. Visual Studio has built-in CRT leak detection. These tools verify your RAII is working correctly and catch edge cases.</p>
+                <h3>Static analysis tools</h3>
+                <p>Clang-Tidy can warn about RAII violations like missing destructors, resource leaks, and incorrect ownership transfer. The C++ Core Guidelines checker enforces RAII best practices. PVS-Studio detects resource management errors. These tools catch bugs at compile time that would otherwise appear as runtime leaks, and they enforce RAII patterns across your codebase.</p>
+                <h3>Profiling and monitoring</h3>
+                <p>Use profilers like perf, VTune, or Tracy to verify RAII has zero overhead in release builds. Memory profilers like Massif show resource allocation patterns. These tools confirm that RAII abstractions compile away to optimal code. They also help identify cases where you might want resource pooling instead of constant allocation/deallocation.</p>
+            </div>
+        </section>
+
+        <section id="bestpractices">
+            <div class="section-header">
+                <div class="section-icon bestpractices">✨</div>
+                <h2 class="section-title">BEST PRACTICES</h2>
+            </div>
+            <div class="content">
+                <h3>Always disable copying for resource-owning classes</h3>
+                <p>Delete the copy constructor and copy assignment operator for any RAII class that owns a resource. Copying would duplicate ownership, leading to double-free bugs. Instead, implement move semantics for ownership transfer. Use = delete to make copying a compile error rather than a runtime crash. This is the single most important RAII best practice.</p>
+                <h3>Make destructors noexcept</h3>
+                <p>Destructors are implicitly noexcept in C++11 and later. Never throw exceptions from destructors. If cleanup can fail, provide a separate close() or release() method that can throw, and call it before the destructor runs. The destructor should catch and suppress any exceptions from cleanup operations, possibly logging them. A throwing destructor during stack unwinding terminates the program.</p>
+                <h3>Acquire resources in constructors only</h3>
+                <p>Don't use init() methods if you can avoid them - acquire resources in the constructor. This guarantees an object is always in a valid state. If construction can fail, throw an exception rather than creating a partially-constructed object. The exception prevents the object from existing, so the destructor won't run. This is safer than having objects in an uninitialized state that you must check before use.</p>
+                <h3>Use smart pointers as default</h3>
+                <p>Make unique_ptr your default for dynamic allocation. Use shared_ptr when you genuinely need shared ownership. Use raw pointers only for non-owning references that can never outlive the owner. Never call new or delete directly in modern C++ - use make_unique and make_shared instead. This single rule eliminates most memory leaks and use-after-free bugs.</p>
+                <h3>Prefer stack allocation over heap</h3>
+                <p>Stack-allocated RAII objects are simpler and faster than heap-allocated ones. They don't need smart pointers, their lifetime is obvious, and they have better cache locality. Use heap allocation only when needed: for polymorphism, when size is too large for the stack, or when lifetime must extend beyond the current scope. The stack gives you RAII automatically through language rules.</p>
+                <h3>Document ownership clearly</h3>
+                <p>Make ownership explicit in function signatures. Use unique_ptr for ownership transfer, shared_ptr for shared ownership, and raw pointers or references for borrowed access. Don't mix ownership models within a class. Clear ownership documentation prevents bugs and makes code self-explanatory. The type system should express your intent about who owns what.</p>
+            </div>
+        </section>
+
+        <section id="warnings">
+            <div class="section-header">
+                <div class="section-icon warnings">⚠️</div>
+                <h2 class="section-title">AVOID THESE</h2>
+            </div>
+            <div class="content">
+                <div class="warning-box">
+                <h3>Critical mistakes to avoid</h3>
+                <ul>
+                    <li>Storing RAII objects in raw pointers → The pointer has automatic lifetime, but the object it points to doesn't. Use smart pointers instead. Example: MyRAII* ptr = new MyRAII(); leaks because the pointer goes out of scope but the object doesn't destruct.</li>
+                    <li>Forgetting to mark destructors as virtual in base classes → If you delete a derived object through a base pointer without virtual destructor, only the base destructor runs, leaking derived resources. Always make destructors virtual in polymorphic base classes.</li>
+                    <li>Returning references to stack-allocated RAII objects → The object destructs when the function returns, leaving a dangling reference. Return by value (move semantics make this efficient) or return smart pointers for heap objects.</li>
+                    <li>Implementing copy semantics that share resources → If two objects share a resource, both destructors try to free it (double-free). Either disable copying entirely or implement proper deep copying or reference counting.</li>
+                    <li>Calling virtual functions in constructors or destructors → Virtual dispatch doesn't work during construction/destruction. The base class version is called, which might not set up resources correctly. Do resource acquisition in the final derived constructor only.</li>
+                    <li>Mixing RAII with manual resource management → Don't combine new/delete with RAII. If you acquire a resource in a constructor, always release it in the destructor. Mixing paradigms leads to confusion about who owns what.</li>
+                    <li>Catching exceptions in destructors and rethrowing → This terminates the program if the destructor runs during stack unwinding. Catch and suppress exceptions in destructors, never rethrow. Log errors instead.</li>
+                    <li>Creating circular references with shared_ptr → Two objects with shared_ptrs to each other never destruct because reference counts never reach zero. Use weak_ptr to break cycles.</li>
+                    <li>Forgetting move semantics on return → If you return an RAII object by value without move support, it might be copied (and copying is probably disabled). Implement move constructor and move assignment operator.</li>
+                    <li>Acquiring multiple resources without exception safety → If constructor acquires resource A successfully, then fails to acquire resource B, resource A leaks. Acquire resources in separate RAII objects or use existing RAII wrappers for each resource.</li>
+                </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="advanced">
+            <div class="section-header">
+                <div class="section-icon advanced">🎓</div>
+                <h2 class="section-title">ADVANCED TOPICS</h2>
+            </div>
+            <div class="content">
+                <h3>RAII and move-only types</h3>
+                <p>Move-only types (like unique_ptr, thread, and unique_lock) rely entirely on move semantics for ownership transfer. They cannot be copied, only moved. This makes ownership explicit and prevents accidental sharing. Implementing move-only RAII classes requires defining move constructor and move assignment while explicitly deleting copy operations. The moved-from object must be left in a valid but empty state that the destructor can handle safely.</p>
+                <h3>Exception safety guarantees</h3>
+                <p>RAII enables strong exception safety: operations either complete successfully or have no effect. When combined with copy-and-swap idiom, RAII provides atomic operations. Basic guarantee (no leaks) comes free with RAII. Strong guarantee (no state changes on failure) requires careful design. No-throw guarantee (operation cannot fail) is necessary for destructors and swap operations. RAII is the foundation that makes exception safety practical.</p>
+                <h3>Custom deleters and allocators</h3>
+                <p>Smart pointers accept custom deleters for resources that need special cleanup. unique_ptr<FILE, decltype(&fclose)> file(fopen(name, "r"), &fclose) wraps FILE* with automatic fclose. Custom allocators let you control memory allocation strategy while maintaining RAII safety. This is essential for memory pools, aligned allocation, or memory-mapped files. The deleter approach generalizes RAII beyond simple delete.</p>
+                <h3>RAII in Rust and other languages</h3>
+                <p>Rust extends RAII with compile-time ownership tracking and borrow checking, preventing data races at compile time rather than runtime. Rust's Drop trait is equivalent to C++ destructors. Python's context managers (with statements) provide RAII-like semantics. C#'s using statement and IDisposable interface implement RAII. Go's defer statement provides cleanup but lacks deterministic timing. Understanding RAII helps you recognize similar patterns across languages.</p>
+                <h3>Optimizing RAII for embedded systems</h3>
+                <p>In embedded systems with limited resources, RAII is even more critical because resource leaks can crash the device. Use stack allocation aggressively to avoid heap fragmentation. Implement custom lightweight smart pointers without reference counting overhead. Consider compile-time resource tracking where possible. RAII's zero-cost abstraction property makes it ideal for embedded work - you get safety without runtime overhead.</p>
+                <h3>RAII and coroutines</h3>
+                <p>C++20 coroutines complicate RAII because coroutine state can outlive the function scope. Stack-allocated RAII objects in coroutines must be carefully managed. The coroutine frame keeps them alive across suspensions, but destruction order might surprise you. Use unique_ptr for resources in coroutines to make lifetime explicit. Understand that co_await suspends the function but RAII objects stay alive until the coroutine completes or is destroyed.</p>
+            </div>
+        </section>
+
+        <section id="test">
+            <div class="section-header">
+                <div class="section-icon test">🎯</div>
+                <h2 class="section-title">TEST YOURSELF</h2>
+            </div>
+            <div class="content">
+                <h3>Comprehension check</h3>
+                <ol>
+                    <li>Why does RAII guarantee cleanup even during exceptions, while manual cleanup code might not?</li>
+                    <li>What's the difference between unique_ptr and shared_ptr in terms of ownership semantics?</li>
+                    <li>Why should copy constructors be deleted for resource-owning RAII classes?</li>
+                    <li>How does move semantics enable efficient return of RAII objects from functions?</li>
+                    <li>What happens if a destructor throws an exception during stack unwinding?</li>
+                    <li>Explain why RAII is called a 'zero-cost abstraction' in C++.</li>
+                    <li>How would you use RAII to implement a transaction that automatically rolls back on error?</li>
+                    <li>What's the relationship between RAII and the 'single responsibility principle'?</li>
+                    <li>Why is stack allocation preferred over heap allocation for RAII objects?</li>
+                    <li>How do you break circular references between shared_ptr objects?</li>
+                </ol>
+                <h3>Practical exercises</h3>
+                <ol>
+                    <li>Implement an RAII wrapper for a socket that closes the connection in the destructor</li>
+                    <li>Create a thread-safe counter using lock_guard to protect shared state</li>
+                    <li>Build a transaction class that can commit or rollback database changes</li>
+                    <li>Write a custom deleter for unique_ptr that logs when resources are freed</li>
+                    <li>Implement a scope guard that cancels its cleanup if dismiss() is called</li>
+                    <li>Create an RAII class for temporarily changing and restoring global state</li>
+                    <li>Build a resource pool with RAII wrappers that return resources automatically</li>
+                    <li>Implement move semantics for a file handle wrapper</li>
+                    <li>Create an RAII class that measures and logs execution time of code blocks</li>
+                    <li>Write a custom smart pointer that uses intrusive reference counting</li>
+                </ol>
+                <p><strong>Success criteria:</strong> You've mastered RAII when you instinctively reach for it instead of manual cleanup, when you can explain why exception safety matters, when you understand ownership semantics deeply enough to choose the right smart pointer, and when you can implement custom RAII wrappers for any resource type.<br><br><strong>Review triggers:</strong> Revisit this guide when you encounter resource leaks in your code, when working with new types of resources (GPU memory, network connections, etc.), when designing APIs that transfer ownership, or when teaching others about memory safety.</p>
+            </div>
+        </section>
+
+        <section id="growth">
+            <div class="section-header">
+                <div class="section-icon growth">📈</div>
+                <h2 class="section-title">LEVEL UP</h2>
+            </div>
+            <div class="content">
+                <h3>This week: Build RAII muscle memory</h3>
+                <ul>
+                    <li>Audit your recent code for manual resource management and replace it with RAII</li>
+                    <li>Implement scope guards for all cleanup operations in one module</li>
+                    <li>Replace all raw pointers with smart pointers in a small project</li>
+                    <li>Practice explaining RAII to a colleague - teaching solidifies understanding</li>
+                    <li>Create a library of common RAII wrappers for your domain (file formats, network protocols, etc.)</li>
+                </ul>
+                <h3>This month: Master exception safety</h3>
+                <ul>
+                    <li>Learn the strong exception safety guarantee and implement it in a class using RAII and copy-and-swap</li>
+                    <li>Study how the STL uses RAII - read the implementations of vector, unique_ptr, and lock_guard</li>
+                    <li>Implement a transaction system for your application using RAII principles</li>
+                    <li>Profile your RAII code to verify zero-cost abstraction in optimized builds</li>
+                    <li>Read about Rust's ownership system to see how RAII principles extend to compile-time safety</li>
+                    <li>Practice designing APIs that express ownership clearly through types</li>
+                </ul>
+                <h3>Long term: Become an RAII expert</h3>
+                <ul>
+                    <li>Read Herb Sutter's 'Exceptional C++' series to deeply understand exception safety and RAII</li>
+                    <li>Study the C++ Core Guidelines sections on resource management</li>
+                    <li>Implement custom allocators and deleters for specialized memory management</li>
+                    <li>Contribute to open-source projects that use advanced RAII techniques</li>
+                    <li>Learn about move semantics and perfect forwarding at the assembly level</li>
+                    <li>Explore how RAII principles apply in other languages - Rust's Drop, Python's context managers, C#'s IDisposable</li>
+                    <li>Design a resource management framework for a complex system (game engine, server, embedded system)</li>
+                    <li>Write articles or give talks teaching RAII to others - teaching is the ultimate test of mastery</li>
+                </ul>
+                <h3>Related concepts to explore</h3>
+                <ul>
+                    <li>Move semantics and rvalue references - essential for efficient RAII</li>
+                    <li>Perfect forwarding - for implementing generic RAII wrappers</li>
+                    <li>Copy-and-swap idiom - for exception-safe assignment with RAII</li>
+                    <li>Pimpl idiom - combining RAII with implementation hiding</li>
+                    <li>Type erasure - for RAII wrappers that hide resource types</li>
+                    <li>Ownership and borrowing in Rust - RAII enforced at compile time</li>
+                    <li>Memory models and atomic operations - for thread-safe RAII</li>
+                    <li>Custom allocators - for specialized RAII memory management</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+        <footer>
+        <div class="container">
+            <p>Learning journey completed! 🎉</p>
+            <div class="checkbox-item" style="justify-content: center; margin-top: 1rem;">
+                <div class="checkbox" onclick="toggleComplete(this)"></div>
+                <span>Mark this topic as mastered</span>
+            </div>
+        </div>
+    </footer>
+        <script>
+        // Theme toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button text
+            updateThemeButton(newTheme);
+        }
+
+        // Update theme button text based on current theme
+        function updateThemeButton(currentTheme) {
+            const button = document.querySelector('.theme-toggle');
+            if (currentTheme === 'dark') {
+                button.innerHTML = '☀️ Light Mode';
+            } else {
+                button.innerHTML = '🌙 Dark Mode';
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', loadTheme);
+
+        // Section completion
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
+                    .map(el => el.getAttribute('data-section'));
+                localStorage.setItem('completed-raii--resource-acquisition-is-initialization', JSON.stringify(completedSections));
+            });
+        });
+
+        // Load saved progress
+        const savedProgress = localStorage.getItem('completed-raii--resource-acquisition-is-initialization');
+        if (savedProgress) {
+            const completed = JSON.parse(savedProgress);
+            completed.forEach(sectionNum => {
+                const navItem = document.querySelector(`[data-section="${sectionNum}"]`);
+                if (navItem) navItem.classList.add('completed');
+            });
+        }
+
+        // Checkbox functionality
+        function toggleComplete(checkbox) {
+            checkbox.classList.toggle('checked');
+            if (checkbox.classList.contains('checked')) {
+                checkbox.innerHTML = '✓';
+                localStorage.setItem('mastered-raii--resource-acquisition-is-initialization', 'true');
+            } else {
+                checkbox.innerHTML = '';
+                localStorage.setItem('mastered-raii--resource-acquisition-is-initialization', 'false');
+            }
+        }
+
+        // Load mastery status
+        const masteryStatus = localStorage.getItem('mastered-raii--resource-acquisition-is-initialization');
+        if (masteryStatus === 'true') {
+            const masteryCheckbox = document.querySelector('footer .checkbox');
+            if (masteryCheckbox) {
+                masteryCheckbox.classList.add('checked');
+                masteryCheckbox.innerHTML = '✓';
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Initialize CodeMirror for all code blocks
+        let initAttempts = 0;
+        const maxAttempts = 50; // Max 5 seconds of retries
+        
+        function initializeCodeMirror() {
+            initAttempts++;
+            
+            // Check if CodeMirror is loaded
+            if (typeof CodeMirror === 'undefined') {
+                if (initAttempts >= maxAttempts) {
+                    console.error('Failed to load CodeMirror after', maxAttempts, 'attempts. Using fallback styling.');
+                    // Fallback: Style textareas as basic code blocks
+                    document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                        textarea.style.fontFamily = 'Monaco, Menlo, "Ubuntu Mono", monospace';
+                        textarea.style.fontSize = '14px';
+                        textarea.style.lineHeight = '1.5';
+                        textarea.style.padding = '10px';
+                        textarea.style.border = '1px solid var(--border)';
+                        textarea.style.borderRadius = '4px';
+                        textarea.style.background = 'var(--code-bg)';
+                        textarea.style.color = 'var(--code-text)';
+                        textarea.style.resize = 'none';
+                        textarea.style.minHeight = '100px';
+                        textarea.readOnly = true;
+                    });
+                    return;
+                }
+                console.warn('CodeMirror not loaded, retrying in 100ms... (attempt', initAttempts, '/', maxAttempts, ')');
+                setTimeout(initializeCodeMirror, 100);
+                return;
+            }
+            
+            const codeTextareas = document.querySelectorAll('.codemirror-code');
+            console.log('Initializing CodeMirror for', codeTextareas.length, 'code blocks');
+            
+            codeTextareas.forEach(textarea => {
+                const codeBlock = textarea.closest('.code-block');
+                const language = codeBlock.dataset.language;
+                
+                // Map language to CodeMirror mode
+                let mode = 'text';
+                switch(language) {
+                    case 'c':
+                    case 'cpp':
+                    case 'c++':
+                        mode = 'text/x-csrc';
+                        break;
+                    case 'javascript':
+                    case 'js':
+                        mode = 'javascript';
+                        break;
+                    case 'bash':
+                    case 'shell':
+                    case 'sh':
+                        mode = 'shell';
+                        break;
+                    case 'css':
+                        mode = 'css';
+                        break;
+                    case 'html':
+                        mode = 'htmlmixed';
+                        break;
+                    case 'json':
+                        mode = 'application/json';
+                        break;
+                    default:
+                        mode = 'text';
+                }
+                
+                // Use custom theme that respects CSS variables
+                const cmTheme = 'default'; // We'll override with CSS
+                
+                try {
+                    const editor = CodeMirror.fromTextArea(textarea, {
+                        mode: mode,
+                        theme: cmTheme,
+                        lineNumbers: true,
+                        readOnly: 'nocursor',  // Disable cursor and selection
+                        lineWrapping: true,    // Enable line wrapping to avoid horizontal scroll
+                        scrollbarStyle: 'null', // Remove scrollbars
+                        viewportMargin: Infinity, // Show all content without scrolling
+                        matchBrackets: false,  // Disable bracket matching highlights
+                        styleActiveLine: false, // Disable active line highlighting
+                        indentUnit: 4,
+                        tabSize: 4
+                    });
+                    
+                    // Store editor reference for theme switching
+                    textarea.codeMirrorInstance = editor;
+                    
+                    // Auto-refresh editor size and ensure no scrollbars
+                    setTimeout(() => {
+                        editor.refresh();
+                        editor.setSize(null, 'auto'); // Auto-height based on content
+                    }, 100);
+                    
+                    console.log('CodeMirror initialized for language:', language, 'mode:', mode);
+                } catch (error) {
+                    console.error('Failed to initialize CodeMirror for textarea:', error);
+                }
+            });
+        }
+        
+        // CodeMirror themes are handled by CSS variables, no need to update programmatically
+        
+        // Initialize CodeMirror when DOM and scripts are fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait a bit more for all scripts to load
+                setTimeout(initializeCodeMirror, 200);
+            });
+        } else {
+            // Document already loaded, wait for scripts
+            setTimeout(initializeCodeMirror, 200);
+        }
+    </script>
+</body>
+</html>
