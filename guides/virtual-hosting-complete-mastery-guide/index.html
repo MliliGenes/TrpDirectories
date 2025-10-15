@@ -77,7 +77,7 @@
                 <h3>Core mechanics</h3>
                 <p><strong>Step 1: Client Request Initiation</strong><br>When you type 'www.example.com' in your browser:<br>1. DNS resolution occurs, returning the server's IP address<br>2. Browser establishes TCP connection to port 80 (HTTP) or 443 (HTTPS)<br>3. Browser sends HTTP request with critical Host header</p>
                 <div class="code-block" data-language="http">
-                    <textarea id="code-k19fo5zq6" class="codemirror-code">GET / HTTP/1.1
+                    <textarea id="code-8k2t902ur" class="codemirror-code">GET / HTTP/1.1
 Host: www.example.com
 User-Agent: Mozilla/5.0...
 Accept: text/html...</textarea>
@@ -86,7 +86,7 @@ Accept: text/html...</textarea>
                 <h3>Key components</h3>
                 <p><strong>1. Virtual Host Configuration Block</strong><br>The fundamental unit containing site-specific settings:</p>
                 <div class="code-block" data-language="nginx">
-                    <textarea id="code-rv9wexifb" class="codemirror-code">server {
+                    <textarea id="code-q0ahorzf4" class="codemirror-code">server {
     listen 80;
     server_name www.example.com example.com;
     root /var/www/example.com/public_html;
@@ -109,7 +109,7 @@ Accept: text/html...</textarea>
                 <p><strong>2. Server Name Matching Engine</strong><br>How servers determine which virtual host handles a request:<br>• <strong>Exact match:</strong> ServerName www.example.com matches exactly<br>• <strong>Wildcard match:</strong> ServerName *.example.com matches any subdomain<br>• <strong>Regex match:</strong> server_name ~^(?<subdomain>.+)\.example\.com$;<br>• <strong>Default/Catch-all:</strong> First defined vhost or explicitly marked default</p>
                 <p><strong>3. Document Root Isolation</strong><br>Physical separation of website files:</p>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-gf4uxc7wi" class="codemirror-code">/var/www/
+                    <textarea id="code-uu7cowai6" class="codemirror-code">/var/www/
 ├── example.com/
 │   ├── public_html/      # Served files
 │   ├── logs/             # Site-specific logs
@@ -140,7 +140,7 @@ Accept: text/html...</textarea>
                 <h3>Simple case: Personal Portfolio + Blog</h3>
                 <p><strong>Scenario:</strong> You want portfolio.com and blog.portfolio.com on one $5 VPS.</p>
                 <div class="code-block" data-language="apache">
-                    <textarea id="code-gczzpnyih" class="codemirror-code"># /etc/apache2/sites-available/portfolio.conf
+                    <textarea id="code-b68xt9cob" class="codemirror-code"># /etc/apache2/sites-available/portfolio.conf
 
 # Main portfolio site
 <VirtualHost *:80>
@@ -175,7 +175,7 @@ Accept: text/html...</textarea>
                 </div>
                 <p><strong>Activation steps:</strong></p>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-37g1rn4za" class="codemirror-code"># Create directory structure
+                    <textarea id="code-1t4b3ubuc" class="codemirror-code"># Create directory structure
 sudo mkdir -p /var/www/portfolio/{main,blog}
 
 # Set permissions
@@ -194,7 +194,7 @@ sudo systemctl reload apache2</textarea>
                 <h3>Professional use: Multi-Client Web Agency</h3>
                 <p><strong>Scenario:</strong> Web agency hosting 50 client sites with SSL, monitoring, and automated deployments.</p>
                 <div class="code-block" data-language="nginx">
-                    <textarea id="code-l1zcygkuq" class="codemirror-code"># Client 1: E-commerce site
+                    <textarea id="code-ir8ts3dqb" class="codemirror-code"># Client 1: E-commerce site
 server {
     listen 443 ssl http2;
     server_name client1.com www.client1.com;
@@ -222,7 +222,7 @@ server {
                 <h3>Advanced: Kubernetes Ingress Virtual Hosting</h3>
                 <p><strong>Scenario:</strong> Microservices architecture with 100+ services routed through Kubernetes Ingress.</p>
                 <div class="code-block" data-language="yaml">
-                    <textarea id="code-9obgpb2xs" class="codemirror-code">apiVersion: networking.k8s.io/v1
+                    <textarea id="code-31kxi09b6" class="codemirror-code">apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: multi-tenant-ingress
@@ -250,7 +250,7 @@ spec:
                 <h3>Container-Based Virtual Hosting</h3>
                 <p><strong>Scenario:</strong> Modern microservices with Docker containers and Traefik automatic service discovery.</p>
                 <div class="code-block" data-language="yaml">
-                    <textarea id="code-4vnwrhtqs" class="codemirror-code"># docker-compose.yml for multi-tenant hosting
+                    <textarea id="code-cy41hmgsb" class="codemirror-code"># docker-compose.yml for multi-tenant hosting
 version: '3.8'
 services:
   traefik:
@@ -304,7 +304,7 @@ networks:
                 <h3>Cloud Provider Virtual Hosting</h3>
                 <p><strong>AWS Application Load Balancer with Auto Scaling:</strong></p>
                 <div class="code-block" data-language="yaml">
-                    <textarea id="code-2kogaf64a" class="codemirror-code"># AWS ALB with multiple target groups
+                    <textarea id="code-g572rj9u3" class="codemirror-code"># AWS ALB with multiple target groups
 AWSTemplateFormatVersion: '2010-09-09'
 Resources:
   ApplicationLoadBalancer:
@@ -347,7 +347,7 @@ Resources:
                 <h3>Edge Computing with Cloudflare Workers</h3>
                 <p><strong>Scenario:</strong> Global virtual hosting at the edge with sub-50ms latency worldwide.</p>
                 <div class="code-block" data-language="javascript">
-                    <textarea id="code-vslx59i6k" class="codemirror-code">// Cloudflare Worker for intelligent routing
+                    <textarea id="code-0yw9yevcf" class="codemirror-code">// Cloudflare Worker for intelligent routing
 export default {
   async fetch(request) {
     const url = new URL(request.url);
@@ -420,7 +420,7 @@ export default {
                     <li><strong>Test both sites:</strong> Verify they serve different content</li>
                 </ol>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-v94c98zr1" class="codemirror-code"># Generate self-signed certificate
+                    <textarea id="code-j0z5n199i" class="codemirror-code"># Generate self-signed certificate
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout /etc/nginx/ssl/mysite.key \
     -out /etc/nginx/ssl/mysite.crt \
@@ -445,7 +445,7 @@ curl -k https://mysite.local</textarea>
                 <h3>Level 4: Performance Optimization (3 hours)</h3>
                 <p><strong>Advanced caching and CDN integration:</strong></p>
                 <div class="code-block" data-language="nginx">
-                    <textarea id="code-5pjpo5ji6" class="codemirror-code"># Advanced Nginx caching configuration
+                    <textarea id="code-zcwv5d112" class="codemirror-code"># Advanced Nginx caching configuration
 proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=STATIC:10m inactive=7d use_temp_path=off;
 
 server {
@@ -480,7 +480,7 @@ server {
                 <h3>Level 5: Monitoring and Observability (2 hours)</h3>
                 <p><strong>Complete monitoring stack with metrics, logs, and alerting:</strong></p>
                 <div class="code-block" data-language="yaml">
-                    <textarea id="code-0gd2id942" class="codemirror-code"># docker-compose.yml for monitoring stack
+                    <textarea id="code-2r23vtl9h" class="codemirror-code"># docker-compose.yml for monitoring stack
 version: '3.8'
 services:
   prometheus:
@@ -531,7 +531,7 @@ volumes:
                 <h3>Level 6: Load Testing and Capacity Planning</h3>
                 <p><strong>Comprehensive load testing methodology:</strong></p>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-02kjlacip" class="codemirror-code"># Multi-stage load testing script
+                    <textarea id="code-a55dh365f" class="codemirror-code"># Multi-stage load testing script
 #!/bin/bash
 
 # Baseline test - 100 users over 60 seconds
@@ -607,7 +607,7 @@ echo "Load testing complete. Check log files for detailed results."</textarea>
                 <h3>Advanced Security Configuration</h3>
                 <p><strong>Web Application Firewall (WAF) Setup:</strong></p>
                 <div class="code-block" data-language="nginx">
-                    <textarea id="code-kwi4h1y1m" class="codemirror-code"># ModSecurity with OWASP rules
+                    <textarea id="code-ut19lwwg8" class="codemirror-code"># ModSecurity with OWASP rules
 load_module modules/ngx_http_modsecurity_module.so;
 
 http {
@@ -632,7 +632,7 @@ http {
                 </div>
                 <p><strong>DDoS Protection and Rate Limiting:</strong></p>
                 <div class="code-block" data-language="nginx">
-                    <textarea id="code-45vy7acjy" class="codemirror-code">server {
+                    <textarea id="code-r5vt2bame" class="codemirror-code">server {
     # Block suspicious user agents
     if ($http_user_agent ~* (bot|crawler|scanner|probe)) {
         return 444;

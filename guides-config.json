@@ -211,6 +211,24 @@
       "lastUpdated": "2025-09-26"
     },
     {
+      "id": "understanding-file-descriptors--how-linux-connects-processes-to-files",
+      "title": "Understanding File Descriptors: How Linux Connects Processes to Files",
+      "path": "guides/understanding-file-descriptors-how-linux-connects-processes-to-files/",
+      "description": "A comprehensive guide to file descriptors, file structs, process FD tables, and inodes. Learn how these interconnected layers work together to enable file I/O in Unix-like systems, with practical examples and real-world implications.",
+      "author": "sel-mlil",
+      "tags": [
+        "file-descriptors",
+        "linux",
+        "unix",
+        "systems-programming",
+        "inodes",
+        "kernel",
+        "intermediate"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2025-10-15"
+    },
+    {
       "id": "x86-cpu-16-bit-real-mode",
       "title": "x86 CPU 16-bit Real Mode",
       "path": "guides/x86-cpu-16-bit-real-mode/",
@@ -230,8 +248,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-10-02T08:50:54.360Z",
-    "totalGuides": 13,
+    "lastModified": "2025-10-15T08:29:36.452Z",
+    "totalGuides": 14,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }
