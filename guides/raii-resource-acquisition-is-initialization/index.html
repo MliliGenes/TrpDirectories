@@ -115,7 +115,7 @@
             <div class="content">
                 <h3>Basic file handling without RAII</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-wstifzq3w" class="codemirror-code">// Manual resource management - error prone
+                    <textarea id="code-5zojydwuw" class="codemirror-code">// Manual resource management - error prone
 void processFile(const char* filename) {
     FILE* file = fopen(filename, "r");
     if (!file) return; // Must remember to check
@@ -137,7 +137,7 @@ void processFile(const char* filename) {
                 </div>
                 <h3>Same code with RAII</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-dib4yv6ew" class="codemirror-code">// RAII wrapper for file handles
+                    <textarea id="code-rbb7ikrz2" class="codemirror-code">// RAII wrapper for file handles
 class File {
     FILE* handle;
 public:
@@ -172,7 +172,7 @@ void processFile(const char* filename) {
                 </div>
                 <h3>Smart pointers - the most common RAII pattern</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-rkgayg5wz" class="codemirror-code">#include <memory>
+                    <textarea id="code-3nj3ummbk" class="codemirror-code">#include <memory>
 
 // Automatic memory management with unique_ptr
 void createAndUseObject() {
@@ -200,7 +200,7 @@ std::shared_ptr<Database> getDatabase() {
                 </div>
                 <h3>Mutex locks with RAII</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-4nbgoeq05" class="codemirror-code">#include <mutex>
+                    <textarea id="code-v925c3wfp" class="codemirror-code">#include <mutex>
 
 std::mutex dataMutex;
 int sharedData = 0;
@@ -223,7 +223,7 @@ void updateData(int value) {
                 </div>
                 <h3>Database connection pool</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-rm6pgfkbb" class="codemirror-code">class DatabaseConnection {
+                    <textarea id="code-4uxioieou" class="codemirror-code">class DatabaseConnection {
     Connection* conn;
     ConnectionPool* pool;
 public:
@@ -257,7 +257,7 @@ void performDatabaseWork() {
                 </div>
                 <h3>Custom RAII for system resources</h3>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-mns9b4z00" class="codemirror-code">// RAII for Windows handles
+                    <textarea id="code-4w9n121mn" class="codemirror-code">// RAII for Windows handles
 class WindowsHandle {
     HANDLE handle;
 public:
@@ -313,7 +313,7 @@ void processFilesInDirectory(const std::string& dir) {
                 <p><strong>Exercise 1: Build a timer guard</strong></p>
                 <p>Create an RAII class that measures execution time of a code block. The constructor should record the start time, and the destructor should calculate elapsed time and print it. This teaches you how RAII can do more than just cleanup - it can perform any scope-based action.</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-tzcp9b1d0" class="codemirror-code">class TimerGuard {
+                    <textarea id="code-1l210ccx7" class="codemirror-code">class TimerGuard {
     std::chrono::time_point<std::chrono::high_resolution_clock> start;
     std::string name;
 public:
@@ -341,7 +341,7 @@ void expensiveFunction() {
                 <p><strong>Exercise 2: Create a scope guard</strong></p>
                 <p>Build a general-purpose RAII class that executes any cleanup function you provide. This is the Swiss Army knife of RAII - it lets you wrap any cleanup logic without creating a dedicated class.</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-qrxacr2dt" class="codemirror-code">#include <functional>
+                    <textarea id="code-fctdpy0bv" class="codemirror-code">#include <functional>
 
 class ScopeGuard {
     std::function<void()> cleanup;
@@ -380,7 +380,7 @@ void transactionalOperation() {
                 <p><strong>Exercise 3: Fix a leaky function</strong></p>
                 <p>Take this intentionally broken code and fix it using RAII principles. This exercise reveals how many subtle leak opportunities exist in manual resource management.</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-h4etfvchi" class="codemirror-code">// Broken version - multiple leak opportunities
+                    <textarea id="code-m2upnlyzi" class="codemirror-code">// Broken version - multiple leak opportunities
 void processData(const char* filename) {
     int* buffer = new int[1000];
     FILE* file = fopen(filename, "r");

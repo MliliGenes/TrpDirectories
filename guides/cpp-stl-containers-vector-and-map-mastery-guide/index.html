@@ -121,7 +121,7 @@
                 <h3>Vector: Pre-allocating and C-API Interoperability</h3>
                 <p>Avoid costly reallocations by estimating size upfront (<code>reserve</code>) and safely passing data to legacy C functions that expect a raw pointer to an array (<code>&vec[0]</code>).</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-wtodr2orn" class="codemirror-code">#include <vector>
+                    <textarea id="code-umx34kajg" class="codemirror-code">#include <vector>
 #include <iostream>
 
 void C_API_Process(int* data, int count);
@@ -146,7 +146,7 @@ int main() {
                 <h3>Map: Implementing a Custom Index with Overloaded Operators</h3>
                 <p>Using a custom class as a map key requires defining <code>operator&lt;</code> for the map to correctly sort and locate keys within the Red-Black Tree.</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-29qk3mihb" class="codemirror-code">#include <map>
+                    <textarea id="code-8m9pherac" class="codemirror-code">#include <map>
 #include <string>
 
 class KeyCoordinate {
@@ -264,7 +264,7 @@ int main() {
                 <h3>Map: Custom Comparison</h3>
                 <p>Instead of overloading <code>operator&lt;</code> for a custom key type, you can pass a custom <strong>Comparator</strong> (a function object or struct with an overloaded <code>operator()</code>) as the third template argument to <code>std::map</code>. This allows you to define complex sorting rules without touching the key class definition.</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-3dmcyb4l1" class="codemirror-code">struct ReverseIntCompare {
+                    <textarea id="code-fs7coclsd" class="codemirror-code">struct ReverseIntCompare {
     bool operator()(const int& a, const int& b) const {
         return a > b; // Sorts keys in descending order
     }
