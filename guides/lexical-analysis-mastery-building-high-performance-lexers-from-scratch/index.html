@@ -136,7 +136,7 @@
                 <h3>Basic Arithmetic Lexer (C)</h3>
                 <p>A simple lexer for mathematical expressions demonstrating core tokenization concepts:</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-mw95mep8e" class="codemirror-code">typedef enum {
+                    <textarea id="code-7ok1b77d9" class="codemirror-code">typedef enum {
     TOKEN_NUMBER, TOKEN_PLUS, TOKEN_MINUS, TOKEN_MULTIPLY,
     TOKEN_DIVIDE, TOKEN_LPAREN, TOKEN_RPAREN, TOKEN_EOF, TOKEN_ERROR
 } TokenType;
@@ -177,7 +177,7 @@ Token lexer_next_token(Lexer* lexer) {
                 <h3>Professional JSON Lexer (C++)</h3>
                 <p>Production-quality lexer with proper error handling and Unicode support:</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-ttahnqqad" class="codemirror-code">class JsonLexer {
+                    <textarea id="code-l9acriwtd" class="codemirror-code">class JsonLexer {
 public:
     enum TokenType {
         STRING, NUMBER, TRUE_VAL, FALSE_VAL, NULL_VAL,
@@ -230,7 +230,7 @@ private:
                 <h3>Advanced Multi-Language Lexer</h3>
                 <p>State machine-based lexer supporting multiple parsing contexts:</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-jtwi4mzv4" class="codemirror-code">class AdvancedLexer {
+                    <textarea id="code-pkmoiywo1" class="codemirror-code">class AdvancedLexer {
     enum State { NORMAL, IN_STRING, IN_COMMENT, IN_MULTILINE_COMMENT, IN_REGEX };
     
     struct LexerState {
@@ -274,7 +274,7 @@ private:
                     <li><strong>Test Program:</strong> Write a test that tokenizes <code>"x = 42 + \"hello\"; y = 3.14;"</code> and prints each token with position.</li>
                 </ol>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-o78hp9fnp" class="codemirror-code">// Expected output for test:
+                    <textarea id="code-wzmcxp3tj" class="codemirror-code">// Expected output for test:
 // Token: IDENTIFIER  Value: x              Line: 1 Column: 1
 // Token: ASSIGN       Value: =              Line: 1 Column: 3
 // Token: NUMBER       Value: 42             Line: 1 Column: 5
@@ -376,7 +376,7 @@ private:
                 <h3>Finite State Machines</h3>
                 <p>Lexers are essentially finite state machines (FSMs). Each state represents a parsing context, and character inputs trigger state transitions. Understanding FSM theory enables building lexers for complex languages with context-sensitive tokens.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-l1v54tql0" class="codemirror-code">typedef enum {
+                    <textarea id="code-jw2bnmcfg" class="codemirror-code">typedef enum {
     STATE_NORMAL,
     STATE_IN_STRING,
     STATE_IN_ESCAPE,

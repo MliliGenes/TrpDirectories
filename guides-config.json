@@ -229,6 +229,23 @@
       "lastUpdated": "2025-10-15"
     },
     {
+      "id": "variadic-functions-in-c--va-list--va-start--va-arg--va-end",
+      "title": "Variadic Functions in C: va_list, va_start, va_arg, va_end",
+      "path": "guides/variadic-functions-in-c-valist-vastart-vaarg-vaend/",
+      "description": "How to use C's variadic API (va_list) safely: initialization, retrieving arguments with va_arg, promotions, where varargs live, and ABI/register notes.",
+      "author": "sel-mlil",
+      "tags": [
+        "C",
+        "variadic",
+        "va_list",
+        "va_arg",
+        "ABI",
+        "printf"
+      ],
+      "difficulty": "intermediate",
+      "lastUpdated": "2025-10-24"
+    },
+    {
       "id": "x86-cpu-16-bit-real-mode",
       "title": "x86 CPU 16-bit Real Mode",
       "path": "guides/x86-cpu-16-bit-real-mode/",
@@ -248,8 +265,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-10-15T08:29:36.452Z",
-    "totalGuides": 14,
+    "lastModified": "2025-10-24T13:42:36.925Z",
+    "totalGuides": 15,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }

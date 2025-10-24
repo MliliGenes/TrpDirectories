@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "Variadic Functions in C: va_list, va_start, va_arg, va_end",
+    "description": "How to use C's variadic API (va_list) safely: initialization, retrieving arguments with va_arg, promotions, where varargs live, and ABI/register notes.",
+    "author": "sel-mlil",
+    "tags": ["C","variadic","va_list","va_arg","ABI","printf"],
+    "difficulty": "intermediate",
+    "lastUpdated": "2025-10-24"
+  },
+  "navigation": [
+    {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},
+    {"id": "concept", "emoji": "💡", "title": "Core Concepts", "sectionIndex": 1},
+    {"id": "mechanics", "emoji": "⚙️", "title": "How It Works", "sectionIndex": 2},
+    {"id": "examples", "emoji": "🌍", "title": "Real Examples", "sectionIndex": 3},
+    {"id": "practice", "emoji": "🛠️", "title": "Hands-On Practice", "sectionIndex": 4},
+    {"id": "warnings", "emoji": "⚠️", "title": "Common Pitfalls", "sectionIndex": 5},
+    {"id": "performance", "emoji": "🚀", "title": "Registers & ABI Notes", "sectionIndex": 6},
+    {"id": "test", "emoji": "🎯", "title": "Test Yourself", "sectionIndex": 7},
+    {"id": "growth", "emoji": "📈", "title": "Next Steps", "sectionIndex": 8}
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {"type": "paragraph", "content": "Variadic functions let you accept a variable number of arguments — think printf. C provides a small API (va_list, va_start, va_arg, va_end) to walk those arguments. But using it correctly requires knowing about promotions and how arguments are passed at the ABI level.", "html": false},
+        {"type": "paragraph", "content": "This guide shows practical usage, pitfalls, and a short peek under the hood so you don't shoot yourself in the foot when reading varargs.", "html": false}
+      ]
+    },
+    {
+      "id": "concept",
+      "title": "CORE CONCEPTS",
+      "emoji": "💡",
+      "iconClass": "concept",
+      "content": [
+        {"type": "list", "items": ["Fixed parameters vs. variable arguments: the function signature contains fixed parameters; varargs follow those.", "va_list: an opaque handle you use to traverse the variable arguments.", "Default argument promotions: char/short → int, float → double — important when you call va_arg.", "You must know the exact type you pass to va_arg — mismatches are undefined behavior."]}
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW IT WORKS",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {"type": "heading", "level": 3, "content": "The API (short)"},
+        {"type": "list", "items": ["va_list ap; — declare a varargs traversal object.", "va_start(ap, last_fixed_arg) — initialize ap; last_fixed_arg is the name of the last fixed parameter.", "va_arg(ap, TYPE) — fetch the next argument as TYPE; advance ap.", "va_end(ap) — clean up; always call it before returning.", "va_copy(dest, src) — copy a va_list when you need to traverse more than once."]},
+        {"type": "paragraph", "content": "va_list is typically implemented by the system C library and may be a pointer or a small struct — treat it as opaque. On some ABIs it points at a register save area and a stack area (more in the ABI section).", "html": false}
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍",
+      "iconClass": "examples",
+      "content": [
+        {"type": "heading", "level": 3, "content": "Sum integers (safe)"},
+  {"type": "codeblock", "language": "c", "code": "#include <stdarg.h>\\n#include <stdio.h>\\n\\nint sum_ints(int count, ...) {\\n    va_list ap;\\n    va_start(ap, count);\\n    int total = 0;\\n    for (int i = 0; i < count; ++i) {\\n        // We expect int arguments (note: char/short promoted to int)\\n        int v = va_arg(ap, int);\\n        total += v;\\n    }\\n    va_end(ap);\\n    return total;\\n}\\n\\nint main(void) {\\n    printf(\"sum: %d\\\n\", sum_ints(4, 1, 2, 3, 4));\\n    return 0;\\n}"},
+        {"type": "heading", "level": 3, "content": "Handling floats/doubles (promotion)"},
+        {"type": "paragraph", "content": "Remember: float arguments are promoted to double when passed through '...'. So when retrieving a float, use va_arg(ap, double) and cast if needed.", "html": false},
+  {"type": "codeblock", "language": "c", "code": "#include <stdarg.h>\\n#include <stdio.h>\\n\\ndouble average(int count, ...) {\\n    va_list ap;\\n    va_start(ap, count);\\n    double sum = 0.0;\\n    for (int i = 0; i < count; ++i) {\\n        // floats are promoted to double when passed variadically\\n        double v = va_arg(ap, double);\\n        sum += v;\\n    }\\n    va_end(ap);\\n    return count ? sum / count : 0.0;\\n}\\n\\nint main(void) {\\n    printf(\"avg: %f\\\n\", average(3, 1.0f, 2.0f, 3.0f)); // 1.0f promoted to double\\n    return 0;\\n}"},
+        {"type": "heading", "level": 3, "content": "A tiny printf-like parser (illustrative)"},
+  {"type": "codeblock", "language": "c", "code": "#include <stdarg.h>\\n#include <stdio.h>\\n\\nvoid my_print(const char *fmt, ...) {\\n    va_list ap;\\n    va_start(ap, fmt);\\n    for (const char *p = fmt; *p; ++p) {\\n        if (*p != '%') {\\n            putchar(*p);\\n            continue;\\n        }\\n        ++p;\\n        switch (*p) {\\n            case 'd': {\\n                int i = va_arg(ap, int);\\n                printf(\"%d\", i);\\n                break;\\n            }\\n            case 'f': {\\n                // Note: float promoted to double\\n                double d = va_arg(ap, double);\\n                printf(\"%f\", d);\\n                break;\\n            }\\n            case 's': {\\n                char *s = va_arg(ap, char*);\\n                printf(\"%s\", s);\\n                break;\\n            }\\n            default: putchar('%'); putchar(*p); break;\\n        }\\n    }\\n    va_end(ap);\\n}\\n\\nint main(void) {\\n    my_print(\"num=%d name=%s pi=%f\\\n\", 42, \"Alice\", 3.14159f);\\n    return 0;\\n}"}
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "DO THIS NOW",
+      "emoji": "🛠️",
+      "iconClass": "practice",
+      "content": [
+        {"type": "actionbox", "boxType": "action", "content": [
+          {"type": "list", "ordered": true, "items": ["Write a variadic function that concatenates N strings and returns a heap-allocated result.", "Write tests: call it with 0, 1, and many strings; verify memory is freed properly.", "Try passing a float to your function and see what happens if you call va_arg with float vs double (observe the crash or garbage)."]},
+          {"type": "paragraph", "content": "What to look for: crashes when you request the wrong type with va_arg, incorrect values when you forget promotions or va_end.", "html": true}
+        ]}
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {"type": "list", "items": ["Never pass types to va_arg that don't match what was actually passed — UB follows.", "Don't use va_arg to detect how many arguments were passed — always supply a count or sentinel.", "Always call va_end on each va_start; use va_copy before reusing a va_list for multiple passes.", "Be careful with pointer types and lifetime: passing pointers to local stack variables can dangle."]}
+      ]
+    },
+    {
+      "id": "performance",
+      "title": "REGISTERS & ABI NOTES",
+      "emoji": "🚀",
+      "iconClass": "performance",
+      "content": [
+        {"type": "paragraph", "content": "Where do the extra args go? It depends on the platform ABI. On classic 32-bit ABIs, varargs are simply pushed on the stack after the fixed args. On modern 64-bit ABIs (e.g., x86-64 System V), the implementation is more nuanced and va_list is typically a small struct that references two areas: a register save area and an overflow (stack) area.", "html": false},
+        {"type": "paragraph", "content": "High-level x86-64 SysV summary: The ABI uses certain registers for the first integer/pointer args (RDI, RSI, RDX, RCX, R8, R9) and XMM0–XMM7 for floating args. When calling a function, the compiler copies those register arguments into a register save area so va_arg can fetch them consistently. Additional arguments (or arguments that don't fit in the registers) go on the stack (overflow area). The C library's va_arg implementation uses offsets into these areas to return the next value.", "html": false},
+        {"type": "paragraph", "content": "Because va_list depends on the ABI, its concrete type varies by platform and libc. Don't assume it is a simple pointer — use the macros in <stdarg.h>.", "html": false},
+        {"type": "paragraph", "content": "Final note: varargs and performance — reading many arguments with va_arg can be slightly slower than fixed parameters because of the indirection and possible spill/restore, but for most use cases it's negligible compared to real work like I/O or formatting.", "html": false}
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {"type": "list", "ordered": true, "items": ["What happens if you call va_arg(ap, float) when the caller passed a float literal?", "Why is va_copy needed if you want to traverse arguments twice?", "How does default argument promotion affect retrieving 'char' and 'double' from a va_list?"]},
+        {"type": "paragraph", "content": "Success criteria: you can write a variadic function that correctly retrieves ints and doubles, and you can explain promotion and ABI register/stack roles in one sentence.", "html": true}
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth",
+      "content": [
+        {"type": "list", "items": ["Read the platform ABI documentation (e.g., System V AMD64 ABI) to learn the exact va_list layout.", "Explore compiler builtins like __builtin_va_list and how compilers implement varargs.", "Consider safer variadic alternatives: use sentinel values, pass counts, or use va_list wrappers to enforce type checks (or better: use variadic macros or type-safe functions)."]}
+      ]
+    }
+  ]
+}
