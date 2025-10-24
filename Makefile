@@ -2,6 +2,7 @@
 # Author: sel-mlil
 # Description: Build system for static blog with JSON guides
 
+
 # Variables
 NODE = node
 GUIDE_GENERATOR = guide-generator.js
