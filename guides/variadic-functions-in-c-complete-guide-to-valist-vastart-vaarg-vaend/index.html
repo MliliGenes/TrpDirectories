@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="../../imgs/favicon.png" type="image/x-icon">
+    <link rel="stylesheet" href="../../style/main.css">
+    
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/darcula.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/default.min.css">
+    
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/clike/clike.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/shell/shell.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/selection/active-line.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/matchbrackets.min.js"></script>
+    
+    <title>Variadic Functions in C: Complete Guide to va_list, va_start, va_arg, va_end - Learning Guide</title>
+</head>
+<body>
+        <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1>Variadic Functions in C: Complete Guide to va_list, va_start, va_arg, va_end</h1>
+                    <div class="author-info">By sel-mlil</div>
+                </div>
+                <div class="header-nav">
+                    <a href="../../" class="back-to-index">
+                        Back to Index
+                    </a>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+                </div>
+            </div>
+        </div>
+    </header>
+        <nav>
+        <div class="container">
+            <div class="guide-nav-grid">
+                <a class="guide-nav-item" href="#hook" data-section="0">🎯 The Hook</a>
+                <a class="guide-nav-item" href="#concept" data-section="1">💡 Core Concepts</a>
+                <a class="guide-nav-item" href="#mechanics" data-section="2">⚙️ How It Works</a>
+                <a class="guide-nav-item" href="#examples" data-section="3">🌍 Real Examples</a>
+                <a class="guide-nav-item" href="#practice" data-section="4">🛠️ Hands-On Practice</a>
+                <a class="guide-nav-item" href="#debugging" data-section="5">🐛 Debugging Varargs</a>
+                <a class="guide-nav-item" href="#warnings" data-section="6">⚠️ Common Pitfalls</a>
+                <a class="guide-nav-item" href="#security" data-section="7">🔒 Security Considerations</a>
+                <a class="guide-nav-item" href="#performance" data-section="8">🚀 Registers & ABI Notes</a>
+                <a class="guide-nav-item" href="#patterns" data-section="9">🎨 Design Patterns</a>
+                <a class="guide-nav-item" href="#bestpractices" data-section="10">✨ Best Practices</a>
+                <a class="guide-nav-item" href="#advanced" data-section="11">🎓 Advanced Topics</a>
+                <a class="guide-nav-item" href="#test" data-section="12">🎯 Test Yourself</a>
+                <a class="guide-nav-item" href="#growth" data-section="13">📈 Next Steps</a>
+            </div>
+        </div>
+    </nav>
+        <main class="container">
+        <section id="hook">
+            <div class="section-header">
+                <div class="section-icon hook">🎯</div>
+                <h2 class="section-title">THE HOOK</h2>
+            </div>
+            <div class="content">
+                <p><strong>What is this?</strong><br>Variadic functions let you accept a variable number of arguments — the magic behind printf, scanf, and countless other flexible APIs. C provides a small but powerful API (va_list, va_start, va_arg, va_end) to walk through these arguments safely.</p>
+                <p><strong>Why care?</strong><br>Understanding varargs is essential for: building flexible logging systems, creating custom formatters, interfacing with legacy C APIs, and understanding how standard library functions work internally. More importantly, incorrect usage leads to crashes, security vulnerabilities, and undefined behavior that's notoriously hard to debug.</p>
+                <p><strong>Mental model:</strong><br>Think of varargs like a mystery box conveyor belt. You know something is coming down the belt, but you need explicit instructions (the format string or count) to know what type each item is. Pull the wrong type off the belt, and everything breaks.</p>
+            </div>
+        </section>
+
+        <section id="concept">
+            <div class="section-header">
+                <div class="section-icon concept">💡</div>
+                <h2 class="section-title">CORE CONCEPTS</h2>
+            </div>
+            <div class="content">
+                <h3>Fundamental principles</h3>
+                <ul>
+                    <li><strong>Fixed vs variable parameters:</strong> Function signatures contain fixed parameters (known at compile time), followed by ellipsis (...) indicating variable arguments</li>
+                    <li><strong>va_list:</strong> An opaque handle that maintains state for traversing variable arguments — treat it like a file pointer for arguments</li>
+                    <li><strong>Default argument promotions:</strong> char/short → int, float → double. This happens automatically and is critical for va_arg correctness</li>
+                    <li><strong>Type matching requirement:</strong> You must pass the exact promoted type to va_arg — mismatches cause undefined behavior, not compiler errors</li>
+                    <li><strong>No type safety:</strong> The compiler cannot verify your va_arg calls match actual arguments — you're on your own</li>
+                </ul>
+                <h3>Why promotions matter</h3>
+                <p>When you pass arguments through '...', the C standard applies <em>default argument promotions</em> to preserve compatibility with old C. This means smaller types get widened: char and short become int, float becomes double. This is why <code>va_arg(ap, float)</code> is always wrong — the float was already promoted to double before it reached your function.</p>
+            </div>
+        </section>
+
+        <section id="mechanics">
+            <div class="section-header">
+                <div class="section-icon mechanics">⚙️</div>
+                <h2 class="section-title">HOW IT WORKS</h2>
+            </div>
+            <div class="content">
+                <h3>The complete API</h3>
+                <ul>
+                    <li><strong>va_list ap;</strong> — Declare a varargs traversal object (opaque type, platform-specific)</li>
+                    <li><strong>va_start(ap, last_fixed);</strong> — Initialize ap to point after the last fixed parameter</li>
+                    <li><strong>va_arg(ap, TYPE);</strong> — Retrieve the next argument as TYPE and advance the internal pointer</li>
+                    <li><strong>va_end(ap);</strong> — Clean up resources — always call before returning or on error paths</li>
+                    <li><strong>va_copy(dest, src);</strong> — Clone a va_list for multiple traversals (C99+)</li>
+                </ul>
+                <h3>Execution flow</h3>
+                <p>The typical pattern is straightforward: declare va_list, initialize with va_start, loop through arguments with va_arg, and clean up with va_end. The tricky part is knowing when to stop and what type to request. You typically use: a count parameter, a sentinel value (like NULL), or a format string that encodes types.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-ba83htw25" class="codemirror-code">// Basic pattern
+void func(int count, ...) {
+    va_list ap;
+    va_start(ap, count);  // 'count' is last fixed param
+    
+    for (int i = 0; i < count; i++) {
+        int val = va_arg(ap, int);
+        // use val...
+    }
+    
+    va_end(ap);  // ALWAYS call this
+}</textarea>
+                </div>
+                <h3>Under the hood</h3>
+                <p>va_list is typically implemented as a pointer or small struct that tracks position in the argument list. On modern 64-bit systems, it often references both a register save area (for args passed in registers) and an overflow area (for stack args). The implementation is architecture-specific and lives in the C library — never assume its internal structure.</p>
+            </div>
+        </section>
+
+        <section id="examples">
+            <div class="section-header">
+                <div class="section-icon examples">🌍</div>
+                <h2 class="section-title">REAL EXAMPLES</h2>
+            </div>
+            <div class="content">
+                <h3>Example 1: Sum integers (count-based)</h3>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-m4h8wpcd8" class="codemirror-code">#include <stdarg.h>
+#include <stdio.h>
+
+int sum_ints(int count, ...) {
+    va_list ap;
+    va_start(ap, count);
+    
+    int total = 0;
+    for (int i = 0; i < count; i++) {
+        // char/short promoted to int
+        int v = va_arg(ap, int);
+        total += v;
+    }
+    
+    va_end(ap);
+    return total;
+}
+
+int main(void) {
+    printf("sum: %d\n", sum_ints(4, 1, 2, 3, 4));
+    printf("sum: %d\n", sum_ints(3, 10, 20, 30));
+    return 0;
+}</textarea>
+                </div>
+                <h3>Example 2: Handling floats/doubles (promotion)</h3>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-j2jmln5i5" class="codemirror-code">#include <stdarg.h>
+#include <stdio.h>
+
+double average(int count, ...) {
+    va_list ap;
+    va_start(ap, count);
+    
+    double sum = 0.0;
+    for (int i = 0; i < count; i++) {
+        // CRITICAL: float promoted to double
+        double v = va_arg(ap, double);
+        sum += v;
+    }
+    
+    va_end(ap);
+    return count ? sum / count : 0.0;
+}
+
+int main(void) {
+    // 1.0f is promoted to double automatically
+    printf("avg: %.2f\n", average(3, 1.0f, 2.0f, 3.0f));
+    return 0;
+}</textarea>
+                </div>
+                <h3>Example 3: NULL-terminated string list</h3>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-0mir55zs5" class="codemirror-code">#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+// Concatenate strings until NULL sentinel
+size_t concat_strings(char *dest, size_t size, ...) {
+    va_list ap;
+    va_start(ap, size);
+    
+    size_t written = 0;
+    dest[0] = '\0';
+    
+    char *str;
+    while ((str = va_arg(ap, char*)) != NULL) {
+        size_t len = strlen(str);
+        if (written + len < size) {
+            strcat(dest, str);
+            written += len;
+        }
+    }
+    
+    va_end(ap);
+    return written;
+}
+
+int main(void) {
+    char buf[100];
+    concat_strings(buf, sizeof(buf), "Hello", " ", "World", "!", NULL);
+    printf("%s\n", buf);
+    return 0;
+}</textarea>
+                </div>
+                <h3>Example 4: Mini printf implementation</h3>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-yts0rvhho" class="codemirror-code">#include <stdarg.h>
+#include <stdio.h>
+
+void my_printf(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    
+    for (const char *p = fmt; *p; p++) {
+        if (*p != '%') {
+            putchar(*p);
+            continue;
+        }
+        
+        switch (*++p) {
+            case 'd': {
+                int i = va_arg(ap, int);
+                printf("%d", i);
+                break;
+            }
+            case 'f': {
+                double d = va_arg(ap, double);
+                printf("%f", d);
+                break;
+            }
+            case 's': {
+                char *s = va_arg(ap, char*);
+                printf("%s", s ? s : "(null)");
+                break;
+            }
+            case '%': {
+                putchar('%');
+                break;
+            }
+            default:
+                putchar('%');
+                putchar(*p);
+                break;
+        }
+    }
+    
+    va_end(ap);
+}
+
+int main(void) {
+    my_printf("Name: %s, Age: %d, GPA: %f\n", 
+              "Alice", 20, 3.75);
+    return 0;
+}</textarea>
+                </div>
+                <h3>Example 5: Using va_copy for multiple passes</h3>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-ntfiegogg" class="codemirror-code">#include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+// Find max and min in one function
+void minmax(int count, int *min_out, int *max_out, ...) {
+    va_list ap, ap_copy;
+    va_start(ap, max_out);
+    
+    // First pass: find min
+    va_copy(ap_copy, ap);  // Clone for second pass
+    int min = va_arg(ap, int);
+    for (int i = 1; i < count; i++) {
+        int v = va_arg(ap, int);
+        if (v < min) min = v;
+    }
+    
+    // Second pass: find max
+    int max = va_arg(ap_copy, int);
+    for (int i = 1; i < count; i++) {
+        int v = va_arg(ap_copy, int);
+        if (v > max) max = v;
+    }
+    
+    va_end(ap);
+    va_end(ap_copy);  // Clean up the copy too
+    
+    *min_out = min;
+    *max_out = max;
+}
+
+int main(void) {
+    int min, max;
+    minmax(5, &min, &max, 3, 1, 4, 1, 5);
+    printf("min=%d, max=%d\n", min, max);
+    return 0;
+}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="practice">
+            <div class="section-header">
+                <div class="section-icon practice">🛠️</div>
+                <h2 class="section-title">DO THIS NOW</h2>
+            </div>
+            <div class="content">
+                <div class="action-box">
+                <ol>
+                    <li>Write a variadic function that finds the maximum of N integers</li>
+                    <li>Create a type-safe logger that accepts different types (int, string, double) with a format string</li>
+                    <li>Implement a function that concatenates strings and returns heap-allocated memory</li>
+                    <li>Try breaking it: pass float and retrieve with va_arg(ap, float) — observe the crash</li>
+                    <li>Add error handling: what happens if you forget va_end? Use valgrind to check</li>
+                </ol>
+                <p><strong>What to look for:</strong> Segfaults from type mismatches, garbage values from wrong promotions, memory leaks from missing va_end.<br><strong>Quick win:</strong> Successfully parse a custom format string and print mixed types correctly.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="debugging">
+            <div class="section-header">
+                <div class="section-icon debugging">🐛</div>
+                <h2 class="section-title">DEBUGGING VARARGS</h2>
+            </div>
+            <div class="content">
+                <h3>Common symptoms and diagnosis</h3>
+                <ul>
+                    <li><strong>Segmentation fault:</strong> Usually type mismatch or reading past end of arguments</li>
+                    <li><strong>Garbage values:</strong> Wrong type passed to va_arg (float vs double, int vs pointer)</li>
+                    <li><strong>Stack corruption:</strong> Missing va_end or multiple va_arg calls without proper tracking</li>
+                    <li><strong>Works on one platform, crashes on another:</strong> ABI differences or alignment issues</li>
+                </ul>
+                <h3>Debugging strategies</h3>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-vmpamerky" class="codemirror-code">// Add defensive logging
+void debug_varargs(int count, ...) {
+    va_list ap;
+    va_start(ap, count);
+    
+    printf("[DEBUG] Processing %d arguments\n", count);
+    for (int i = 0; i < count; i++) {
+        int val = va_arg(ap, int);
+        printf("[DEBUG] arg[%d] = %d\n", i, val);
+    }
+    
+    va_end(ap);
+}</textarea>
+                </div>
+                <ul>
+                    <li><strong>Use compiler warnings:</strong> Enable -Wformat to catch format string mismatches</li>
+                    <li><strong>Valgrind:</strong> Run with --track-origins=yes to find uninitialized reads</li>
+                    <li><strong>AddressSanitizer:</strong> Compile with -fsanitize=address to catch memory errors</li>
+                    <li><strong>Print debugging:</strong> Log each va_arg call with the expected and retrieved type</li>
+                    <li><strong>Static analysis:</strong> Tools like clang-tidy can detect some varargs issues</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="warnings">
+            <div class="section-header">
+                <div class="section-icon warnings">⚠️</div>
+                <h2 class="section-title">AVOID THESE</h2>
+            </div>
+            <div class="content">
+                <div class="warning-box">
+                <ul>
+                    <li><strong>Never use va_arg with the wrong type</strong> → Always use promoted types (int not char, double not float)</li>
+                    <li><strong>Don't assume argument count</strong> → Always use explicit count, sentinel, or format string</li>
+                    <li><strong>Never reuse va_list without va_copy</strong> → Behavior is undefined; use va_copy for multiple passes</li>
+                    <li><strong>Don't forget va_end</strong> → Resource leaks and undefined behavior on some platforms</li>
+                    <li><strong>Never pass va_list by value</strong> → May not work on all platforms; pass pointer or use va_copy</li>
+                    <li><strong>Don't mix format specifiers</strong> → %d with pointer, %s with int causes crashes</li>
+                    <li><strong>Avoid pointer lifetime issues</strong> → Don't pass pointers to local variables that will go out of scope</li>
+                </ul>
+                </div>
+                <h3>The float trap (most common error)</h3>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-yahw8tno6" class="codemirror-code">// WRONG - will crash or return garbage
+float f = va_arg(ap, float);  // ❌ NEVER DO THIS
+
+// CORRECT - floats are promoted to double
+double d = va_arg(ap, double);  // ✓ Always do this
+float f = (float)d;  // Cast back if needed</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="security">
+            <div class="section-header">
+                <div class="section-icon security">🔒</div>
+                <h2 class="section-title">SECURITY CONSIDERATIONS</h2>
+            </div>
+            <div class="content">
+                <h3>Format string vulnerabilities</h3>
+                <p>Variadic functions are notorious for security vulnerabilities, especially when format strings come from untrusted input. The classic printf vulnerability allows attackers to read/write arbitrary memory.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-rqkr0j1y2" class="codemirror-code">// DANGEROUS - never do this
+char user_input[100];
+gets(user_input);  // User provides format string
+printf(user_input);  // ❌ VULNERABILITY!
+
+// SAFE - format string is constant
+printf("%s", user_input);  // ✓ Safe</textarea>
+                </div>
+                <h3>Type confusion attacks</h3>
+                <ul>
+                    <li><strong>Length mismatches:</strong> %s expects pointer, %d expects int — confusion leads to crashes or info leaks</li>
+                    <li><strong>Stack reading:</strong> Extra %x specifiers can read arbitrary stack values</li>
+                    <li><strong>Write attacks:</strong> %n can write to memory addresses passed as arguments</li>
+                    <li><strong>Buffer overflows:</strong> Unlimited %s with user input can overflow destination buffers</li>
+                </ul>
+                <h3>Safe patterns</h3>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-481j9z1jl" class="codemirror-code">// Always validate format strings
+void safe_log(const char *fmt, ...) {
+    // Only allow specific format strings
+    const char *allowed[] = {
+        "Error: %s",
+        "Value: %d",
+        "Result: %.2f",
+        NULL
+    };
+    
+    int valid = 0;
+    for (int i = 0; allowed[i]; i++) {
+        if (strcmp(fmt, allowed[i]) == 0) {
+            valid = 1;
+            break;
+        }
+    }
+    
+    if (!valid) {
+        fprintf(stderr, "Invalid format string\n");
+        return;
+    }
+    
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stdout, fmt, ap);
+    va_end(ap);
+}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="performance">
+            <div class="section-header">
+                <div class="section-icon performance">🚀</div>
+                <h2 class="section-title">REGISTERS & ABI NOTES</h2>
+            </div>
+            <div class="content">
+                <h3>Where arguments live</h3>
+                <p>On 32-bit systems, varargs typically live entirely on the stack. On modern 64-bit ABIs (x86-64 System V), it's more complex: arguments use registers first, then overflow to stack.</p>
+                <p><strong>x86-64 System V ABI summary:</strong><br>Integer/pointer args use RDI, RSI, RDX, RCX, R8, R9 (first 6). Floating-point args use XMM0–XMM7 (first 8). Additional arguments go on stack. For variadic functions, the compiler may save register arguments to a "register save area" so va_list can access them uniformly.</p>
+                <h3>va_list implementation details</h3>
+                <p>On x86-64 Linux, va_list is typically a struct with four fields: gp_offset (general-purpose register offset), fp_offset (floating-point offset), overflow_arg_area (stack pointer), and reg_save_area (saved registers). The va_arg macro calculates offsets into these areas based on the requested type.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-g168zef43" class="codemirror-code">// Conceptual va_list on x86-64 (actual impl varies)
+typedef struct {
+    unsigned int gp_offset;      // Offset in GP reg area
+    unsigned int fp_offset;      // Offset in FP reg area
+    void *overflow_arg_area;     // Stack args
+    void *reg_save_area;         // Saved register args
+} __va_list_tag;</textarea>
+                </div>
+                <h3>Performance considerations</h3>
+                <ul>
+                    <li><strong>Indirection overhead:</strong> va_arg involves pointer arithmetic and conditionals — slightly slower than fixed params</li>
+                    <li><strong>Register spilling:</strong> Variadic functions may force register saves, increasing prologue/epilogue cost</li>
+                    <li><strong>Inlining barriers:</strong> Varargs functions are harder to inline, preventing optimizations</li>
+                    <li><strong>Practical impact:</strong> For most applications, the overhead is negligible compared to actual work (I/O, formatting)</li>
+                </ul>
+                <p>Further reading: <a href="https://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf">System V AMD64 ABI Specification</a>, <a href="https://en.cppreference.com/w/c/variadic">C Variadic Functions Reference</a></p>
+            </div>
+        </section>
+
+        <section id="patterns">
+            <div class="section-header">
+                <div class="section-icon patterns">🎨</div>
+                <h2 class="section-title">DESIGN PATTERNS</h2>
+            </div>
+            <div class="content">
+                <h3>Pattern 1: Count parameter</h3>
+                <p>Pass the number of arguments as first parameter. Simple and type-safe for homogeneous types.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-fufslg5cj" class="codemirror-code">int max(int count, ...) {
+    va_list ap;
+    va_start(ap, count);
+    int m = va_arg(ap, int);
+    for (int i = 1; i < count; i++) {
+        int v = va_arg(ap, int);
+        if (v > m) m = v;
+    }
+    va_end(ap);
+    return m;
+}</textarea>
+                </div>
+                <h3>Pattern 2: Sentinel value</h3>
+                <p>Use a special terminator value (NULL, -1, etc.) to mark the end. Works well for pointer lists.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-2mrabml1y" class="codemirror-code">void print_strings(...) {
+    va_list ap;
+    va_start(ap, 0);  // No fixed params!
+    
+    char *str;
+    while ((str = va_arg(ap, char*)) != NULL) {
+        printf("%s ", str);
+    }
+    
+    va_end(ap);
+}</textarea>
+                </div>
+                <h3>Pattern 3: Format string</h3>
+                <p>Use a format string to encode argument types and count. Most flexible but requires parsing.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-ut06t4i8u" class="codemirror-code">void log_msg(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    // Parse fmt to determine types
+    vprintf(fmt, ap);  // Let vprintf handle it
+    va_end(ap);
+}</textarea>
+                </div>
+                <h3>Pattern 4: va_list wrapper</h3>
+                <p>Create a helper that takes va_list, allowing composition of variadic functions.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-y5jewd0l9" class="codemirror-code">// Internal helper takes va_list
+void vlog_internal(const char *fmt, va_list ap) {
+    vfprintf(stderr, fmt, ap);
+}
+
+// Public API wraps it
+void log_error(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    fprintf(stderr, "[ERROR] ");
+    vlog_internal(fmt, ap);
+    va_end(ap);
+}</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="bestpractices">
+            <div class="section-header">
+                <div class="section-icon bestpractices">✨</div>
+                <h2 class="section-title">BEST PRACTICES</h2>
+            </div>
+            <div class="content">
+                <ul>
+                    <li><strong>Always pair va_start with va_end</strong> — Use RAII-style wrappers or ensure all return paths call va_end</li>
+                    <li><strong>Provide type-safe alternatives</strong> — Offer fixed-parameter versions alongside variadic ones</li>
+                    <li><strong>Document argument expectations clearly</strong> — Specify types, count method, and any sentinel values</li>
+                    <li><strong>Use format attributes</strong> — Add __attribute__((format(printf, n, m))) for GCC/Clang checking</li>
+                    <li><strong>Prefer vprintf family</strong> — Use vprintf, vsprintf, etc. instead of reinventing formatting</li>
+                    <li><strong>Validate format strings</strong> — Never trust user input as format strings</li>
+                    <li><strong>Consider alternatives first</strong> — Arrays, structs, or function pointers may be safer</li>
+                    <li><strong>Test with different argument counts</strong> — Including edge cases (0 args, 1 arg, many args)</li>
+                </ul>
+                <h3>Using format attributes</h3>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-odf6utmqj" class="codemirror-code">// Enable compiler format checking
+void my_printf(const char *fmt, ...)
+    __attribute__((format(printf, 1, 2)));
+
+void my_fprintf(FILE *f, const char *fmt, ...)
+    __attribute__((format(printf, 2, 3)));
+
+// Now compiler will warn about mismatches
+my_printf("%d %s", "wrong", 42);  // Warning!</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="advanced">
+            <div class="section-header">
+                <div class="section-icon advanced">🎓</div>
+                <h2 class="section-title">ADVANCED TOPICS</h2>
+            </div>
+            <div class="content">
+                <h3>Compiler builtins</h3>
+                <p>Modern compilers provide built-in functions for working with varargs that can be more efficient than the standard macros.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-ujc9fxm2u" class="codemirror-code">// GCC/Clang builtins
+void *__builtin_va_start(va_list ap, param);
+void *__builtin_va_end(va_list ap);
+void *__builtin_va_copy(va_list dest, va_list src);
+
+// These are what the macros typically expand to</textarea>
+                </div>
+                <h3>Custom va_list wrappers</h3>
+                <p>Create your own variadic wrapper types for better type safety and debugging.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-dm8yfczie" class="codemirror-code">#include <stdarg.h>
+#include <stdio.h>
+
+// Type-safe varargs wrapper
+typedef struct {
+    const char *fmt;
+    va_list ap;
+    int initialized;
+} SafeVarargs;
+
+void safe_va_init(SafeVarargs *sv, const char *fmt, ...) {
+    sv->fmt = fmt;
+    va_start(sv->ap, fmt);
+    sv->initialized = 1;
+}
+
+void safe_va_cleanup(SafeVarargs *sv) {
+    if (sv->initialized) {
+        va_end(sv->ap);
+        sv->initialized = 0;
+    }
+}
+
+void safe_va_print(SafeVarargs *sv) {
+    if (!sv->initialized) {
+        fprintf(stderr, "Error: va_list not initialized\n");
+        return;
+    }
+    vprintf(sv->fmt, sv->ap);
+}</textarea>
+                </div>
+                <h3>Interfacing with C++</h3>
+                <p>When calling C variadic functions from C++, or vice versa, pay attention to name mangling and ABI compatibility.</p>
+                <div class="code-block" data-language="cpp">
+                    <textarea id="code-qxf3msh2e" class="codemirror-code">// In C++ header
+extern "C" {
+    void c_variadic_func(int count, ...);
+}
+
+// C++ can also use variadic templates (preferred)
+template<typename... Args>
+void type_safe_print(Args... args) {
+    // Type-safe alternative to varargs
+    (std::cout << ... << args) << '\n';
+}</textarea>
+                </div>
+                <h3>Platform-specific implementations</h3>
+                <p>Different platforms implement va_list differently. Understanding these differences helps when porting code or debugging platform-specific issues.</p>
+                <ul>
+                    <li><strong>x86-64 System V:</strong> Struct with register and stack pointers (Linux, BSD, macOS)</li>
+                    <li><strong>x86-64 Windows:</strong> Simpler pointer-based implementation</li>
+                    <li><strong>ARM:</strong> Various implementations depending on AAPCS variant</li>
+                    <li><strong>32-bit platforms:</strong> Usually just a pointer to stack</li>
+                </ul>
+                <h3>Variadic macros alternative</h3>
+                <p>Sometimes variadic macros provide better type safety than variadic functions.</p>
+                <div class="code-block" data-language="c">
+                    <textarea id="code-5i2bwsvai" class="codemirror-code">// Variadic macro for logging
+#define LOG(level, ...) \
+    do { \
+        fprintf(stderr, "[%s] ", level); \
+        fprintf(stderr, __VA_ARGS__); \
+        fprintf(stderr, "\n"); \
+    } while(0)
+
+// Usage
+LOG("ERROR", "Failed to open %s", filename);
+LOG("INFO", "Processing %d items", count);
+
+// C11 _Generic for type-safe selection
+#define print_any(x) _Generic((x), \
+    int: printf("%d", x), \
+    double: printf("%f", x), \
+    char*: printf("%s", x))</textarea>
+                </div>
+            </div>
+        </section>
+
+        <section id="test">
+            <div class="section-header">
+                <div class="section-icon test">🎯</div>
+                <h2 class="section-title">TEST YOURSELF</h2>
+            </div>
+            <div class="content">
+                <ol>
+                    <li>What happens if you call va_arg(ap, float) when the caller passed a float literal? Why?</li>
+                    <li>Why is va_copy needed if you want to traverse arguments twice?</li>
+                    <li>Explain default argument promotions: which types get promoted and why?</li>
+                    <li>What's the security risk of printf(user_input) and how do you fix it?</li>
+                    <li>How does the x86-64 ABI handle variadic arguments differently from fixed arguments?</li>
+                    <li>Write a function that accepts mixed types (int, double, char*) with a format string</li>
+                    <li>What happens if you forget to call va_end? Is it always a problem?</li>
+                    <li>How can you detect if a va_arg type mismatch occurred?</li>
+                </ol>
+                <p><strong>Success criteria:</strong> You can write a safe variadic function with proper error handling, explain promotions and ABI basics, and debug type mismatches.<br><strong>Review triggers:</strong> When you encounter crashes in variadic code, when porting between platforms, or before using varargs in production.</p>
+                <h3>Practice challenges</h3>
+                <ol>
+                    <li><strong>Easy:</strong> Write max_int(count, ...) that returns the largest integer</li>
+                    <li><strong>Medium:</strong> Implement a safe sprintf wrapper with buffer overflow protection</li>
+                    <li><strong>Hard:</strong> Create a type-safe variadic logger that validates format strings at compile time</li>
+                    <li><strong>Expert:</strong> Implement your own vprintf that parses format strings and handles all standard specifiers</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="growth">
+            <div class="section-header">
+                <div class="section-icon growth">📈</div>
+                <h2 class="section-title">LEVEL UP</h2>
+            </div>
+            <div class="content">
+                <h3>Immediate next steps</h3>
+                <ul>
+                    <li><strong>This week:</strong> Implement a custom logging function with multiple severity levels using varargs</li>
+                    <li><strong>This week:</strong> Read your platform's ABI documentation (System V AMD64 or Windows x64)</li>
+                    <li><strong>This week:</strong> Add format attribute annotations to your variadic functions and fix all warnings</li>
+                </ul>
+                <h3>Medium-term goals</h3>
+                <ul>
+                    <li><strong>This month:</strong> Study the glibc implementation of vprintf and vfprintf</li>
+                    <li><strong>This month:</strong> Experiment with compiler builtins and compare generated assembly</li>
+                    <li><strong>This month:</strong> Write a static analyzer or lint rule to catch common varargs mistakes</li>
+                    <li><strong>This month:</strong> Implement a safe variadic wrapper library with comprehensive tests</li>
+                </ul>
+                <h3>Advanced mastery</h3>
+                <ul>
+                    <li><strong>Long term:</strong> Understand the full implementation of va_list on multiple architectures</li>
+                    <li><strong>Long term:</strong> Contribute to compiler format checking or static analysis tools</li>
+                    <li><strong>Long term:</strong> Design a type-safe alternative to varargs for a specific domain</li>
+                    <li><strong>Long term:</strong> Write a comprehensive guide or library for safe variadic programming</li>
+                </ul>
+                <h3>Related topics to explore</h3>
+                <ul>
+                    <li><strong>C++ variadic templates:</strong> Modern type-safe alternative to C varargs</li>
+                    <li><strong>Function pointers and callbacks:</strong> Alternative patterns for flexible APIs</li>
+                    <li><strong>Format string parsing:</strong> Deep dive into printf/scanf implementation</li>
+                    <li><strong>ABI and calling conventions:</strong> How arguments are passed at the machine level</li>
+                    <li><strong>Static analysis tools:</strong> clang-tidy, cppcheck, and custom checkers</li>
+                    <li><strong>Security auditing:</strong> Finding and fixing format string vulnerabilities</li>
+                </ul>
+                <h3>Resources</h3>
+                <ul>
+                    <li>System V AMD64 ABI: <a href='https://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf'>https://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf</a></li>
+                    <li>C Reference - stdarg.h: <a href='https://en.cppreference.com/w/c/variadic'>https://en.cppreference.com/w/c/variadic</a></li>
+                    <li>GCC Format Attribute: <a href='https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html'>https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html</a></li>
+                    <li>CERT C Coding Standard - Variadic Functions: <a href='https://wiki.sei.cmu.edu/confluence/display/c/EXP58-C'>https://wiki.sei.cmu.edu/confluence/display/c/EXP58-C</a></li>
+                </ul>
+            </div>
+        </section>
+    </main>
+        <footer>
+        <div class="container">
+            <p>Learning journey completed! 🎉</p>
+            <div class="checkbox-item" style="justify-content: center; margin-top: 1rem;">
+                <div class="checkbox" onclick="toggleComplete(this)"></div>
+                <span>Mark this topic as mastered</span>
+            </div>
+        </div>
+    </footer>
+        <script>
+        // Theme toggle
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update button text
+            updateThemeButton(newTheme);
+        }
+
+        // Update theme button text based on current theme
+        function updateThemeButton(currentTheme) {
+            const button = document.querySelector('.theme-toggle');
+            if (currentTheme === 'dark') {
+                button.innerHTML = '☀️ Light Mode';
+            } else {
+                button.innerHTML = '🌙 Dark Mode';
+            }
+        }
+
+        // Load saved theme
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            updateThemeButton(savedTheme);
+        }
+
+        // Initialize theme on page load
+        document.addEventListener('DOMContentLoaded', loadTheme);
+
+        // Section completion
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.toggle('completed');
+                const completedSections = Array.from(document.querySelectorAll('.nav-item.completed'))
+                    .map(el => el.getAttribute('data-section'));
+                localStorage.setItem('completed-variadic-functions-in-c--complete-guide-to-va-list--va-start--va-arg--va-end', JSON.stringify(completedSections));
+            });
+        });
+
+        // Load saved progress
+        const savedProgress = localStorage.getItem('completed-variadic-functions-in-c--complete-guide-to-va-list--va-start--va-arg--va-end');
+        if (savedProgress) {
+            const completed = JSON.parse(savedProgress);
+            completed.forEach(sectionNum => {
+                const navItem = document.querySelector(`[data-section="${sectionNum}"]`);
+                if (navItem) navItem.classList.add('completed');
+            });
+        }
+
+        // Checkbox functionality
+        function toggleComplete(checkbox) {
+            checkbox.classList.toggle('checked');
+            if (checkbox.classList.contains('checked')) {
+                checkbox.innerHTML = '✓';
+                localStorage.setItem('mastered-variadic-functions-in-c--complete-guide-to-va-list--va-start--va-arg--va-end', 'true');
+            } else {
+                checkbox.innerHTML = '';
+                localStorage.setItem('mastered-variadic-functions-in-c--complete-guide-to-va-list--va-start--va-arg--va-end', 'false');
+            }
+        }
+
+        // Load mastery status
+        const masteryStatus = localStorage.getItem('mastered-variadic-functions-in-c--complete-guide-to-va-list--va-start--va-arg--va-end');
+        if (masteryStatus === 'true') {
+            const masteryCheckbox = document.querySelector('footer .checkbox');
+            if (masteryCheckbox) {
+                masteryCheckbox.classList.add('checked');
+                masteryCheckbox.innerHTML = '✓';
+            }
+        }
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Initialize CodeMirror for all code blocks
+        let initAttempts = 0;
+        const maxAttempts = 50; // Max 5 seconds of retries
+        
+        function initializeCodeMirror() {
+            initAttempts++;
+            
+            // Check if CodeMirror is loaded
+            if (typeof CodeMirror === 'undefined') {
+                if (initAttempts >= maxAttempts) {
+                    console.error('Failed to load CodeMirror after', maxAttempts, 'attempts. Using fallback styling.');
+                    // Fallback: Style textareas as basic code blocks
+                    document.querySelectorAll('.codemirror-code').forEach(textarea => {
+                        textarea.style.fontFamily = 'Monaco, Menlo, "Ubuntu Mono", monospace';
+                        textarea.style.fontSize = '14px';
+                        textarea.style.lineHeight = '1.5';
+                        textarea.style.padding = '10px';
+                        textarea.style.border = '1px solid var(--border)';
+                        textarea.style.borderRadius = '4px';
+                        textarea.style.background = 'var(--code-bg)';
+                        textarea.style.color = 'var(--code-text)';
+                        textarea.style.resize = 'none';
+                        textarea.style.minHeight = '100px';
+                        textarea.readOnly = true;
+                    });
+                    return;
+                }
+                console.warn('CodeMirror not loaded, retrying in 100ms... (attempt', initAttempts, '/', maxAttempts, ')');
+                setTimeout(initializeCodeMirror, 100);
+                return;
+            }
+            
+            const codeTextareas = document.querySelectorAll('.codemirror-code');
+            console.log('Initializing CodeMirror for', codeTextareas.length, 'code blocks');
+            
+            codeTextareas.forEach(textarea => {
+                const codeBlock = textarea.closest('.code-block');
+                const language = codeBlock.dataset.language;
+                
+                // Map language to CodeMirror mode
+                let mode = 'text';
+                switch(language) {
+                    case 'c':
+                    case 'cpp':
+                    case 'c++':
+                        mode = 'text/x-csrc';
+                        break;
+                    case 'javascript':
+                    case 'js':
+                        mode = 'javascript';
+                        break;
+                    case 'bash':
+                    case 'shell':
+                    case 'sh':
+                        mode = 'shell';
+                        break;
+                    case 'css':
+                        mode = 'css';
+                        break;
+                    case 'html':
+                        mode = 'htmlmixed';
+                        break;
+                    case 'json':
+                        mode = 'application/json';
+                        break;
+                    default:
+                        mode = 'text';
+                }
+                
+                // Use custom theme that respects CSS variables
+                const cmTheme = 'default'; // We'll override with CSS
+                
+                try {
+                    const editor = CodeMirror.fromTextArea(textarea, {
+                        mode: mode,
+                        theme: cmTheme,
+                        lineNumbers: true,
+                        readOnly: 'nocursor',  // Disable cursor and selection
+                        lineWrapping: true,    // Enable line wrapping to avoid horizontal scroll
+                        scrollbarStyle: 'null', // Remove scrollbars
+                        viewportMargin: Infinity, // Show all content without scrolling
+                        matchBrackets: false,  // Disable bracket matching highlights
+                        styleActiveLine: false, // Disable active line highlighting
+                        indentUnit: 4,
+                        tabSize: 4
+                    });
+                    
+                    // Store editor reference for theme switching
+                    textarea.codeMirrorInstance = editor;
+                    
+                    // Auto-refresh editor size and ensure no scrollbars
+                    setTimeout(() => {
+                        editor.refresh();
+                        editor.setSize(null, 'auto'); // Auto-height based on content
+                    }, 100);
+                    
+                    console.log('CodeMirror initialized for language:', language, 'mode:', mode);
+                } catch (error) {
+                    console.error('Failed to initialize CodeMirror for textarea:', error);
+                }
+            });
+        }
+        
+        // CodeMirror themes are handled by CSS variables, no need to update programmatically
+        
+        // Initialize CodeMirror when DOM and scripts are fully loaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                // Wait a bit more for all scripts to load
+                setTimeout(initializeCodeMirror, 200);
+            });
+        } else {
+            // Document already loaded, wait for scripts
+            setTimeout(initializeCodeMirror, 200);
+        }
+    </script>
+</body>
+</html>

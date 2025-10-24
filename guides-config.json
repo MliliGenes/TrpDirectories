@@ -229,10 +229,10 @@
       "lastUpdated": "2025-10-15"
     },
     {
-      "id": "variadic-functions-in-c--va-list--va-start--va-arg--va-end",
-      "title": "Variadic Functions in C: va_list, va_start, va_arg, va_end",
-      "path": "guides/variadic-functions-in-c-valist-vastart-vaarg-vaend/",
-      "description": "How to use C's variadic API (va_list) safely: initialization, retrieving arguments with va_arg, promotions, where varargs live, and ABI/register notes.",
+      "id": "variadic-functions-in-c--complete-guide-to-va-list--va-start--va-arg--va-end",
+      "title": "Variadic Functions in C: Complete Guide to va_list, va_start, va_arg, va_end",
+      "path": "guides/variadic-functions-in-c-complete-guide-to-valist-vastart-vaarg-vaend/",
+      "description": "Master C's variadic API: from basic usage to ABI details, type safety, debugging strategies, and real-world patterns. Learn how printf works internally and avoid common pitfalls.",
       "author": "sel-mlil",
       "tags": [
         "C",
@@ -240,7 +240,9 @@
         "va_list",
         "va_arg",
         "ABI",
-        "printf"
+        "printf",
+        "type-safety",
+        "intermediate"
       ],
       "difficulty": "intermediate",
       "lastUpdated": "2025-10-24"
@@ -265,7 +267,7 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-10-24T13:42:36.925Z",
+    "lastModified": "2025-10-24T14:30:37.398Z",
     "totalGuides": 15,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"

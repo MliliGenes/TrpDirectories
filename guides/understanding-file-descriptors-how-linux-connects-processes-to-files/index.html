@@ -86,7 +86,7 @@
                 </ul>
                 <p>When you call <code>open()</code>, <code>socket()</code>, or <code>pipe()</code>, the kernel returns the <strong>lowest available file descriptor number</strong> (usually starting from 3 if the standard three are already open).</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-guoqmz1js" class="codemirror-code">int fd = open("/tmp/data.txt", O_RDONLY);
+                    <textarea id="code-zjfs2m9n8" class="codemirror-code">int fd = open("/tmp/data.txt", O_RDONLY);
 // fd might be 3, 4, 5... depending on what's already open
 read(fd, buffer, sizeof(buffer));
 close(fd);</textarea>
@@ -106,7 +106,7 @@ close(fd);</textarea>
                 <h3>Your Personal Catalog</h3>
                 <p>Each process maintains its own <strong>file descriptor table</strong>—essentially an array where the index is the file descriptor number, and each entry points to a <code>file</code> struct in kernel memory.</p>
                 <div class="code-block" data-language="text">
-                    <textarea id="code-y6g8e5rqk" class="codemirror-code">Process FD Table:
+                    <textarea id="code-70jtxy7ld" class="codemirror-code">Process FD Table:
 [0] → pointer to file struct (stdin)
 [1] → pointer to file struct (stdout)
 [2] → pointer to file struct (stderr)
@@ -117,7 +117,7 @@ close(fd);</textarea>
                 <h3>Critical behavior during fork()</h3>
                 <p>When a process forks, the child gets a <strong>copy</strong> of the parent's file descriptor table. Both parent and child have file descriptors (say, FD 3), but these point to the <strong>same file struct</strong> in kernel memory.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-hlamatazq" class="codemirror-code">int fd = open("shared.txt", O_RDWR);
+                    <textarea id="code-bhvxwvf1c" class="codemirror-code">int fd = open("shared.txt", O_RDWR);
 if (fork() == 0) {
     // Child process
     write(fd, "child", 5);  // Both see each other's writes!
@@ -149,7 +149,7 @@ if (fork() == 0) {
                 <h3>Shared vs Independent File Structs</h3>
                 <p>Multiple file descriptors can point to the same file struct (via <code>dup()</code> or <code>fork()</code>), so they share the offset:</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-t9032rr9o" class="codemirror-code">int fd1 = open("file.txt", O_RDONLY);
+                    <textarea id="code-qo4p0tr2e" class="codemirror-code">int fd1 = open("file.txt", O_RDONLY);
 int fd2 = dup(fd1);  // fd2 shares the same file struct as fd1
 
 read(fd1, buf, 10);  // Advances offset by 10
@@ -157,7 +157,7 @@ read(fd2, buf, 10);  // Continues from position 10, not 0!</textarea>
                 </div>
                 <p>But opening the same file twice creates <strong>separate file structs</strong>:</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-lbjgzcp19" class="codemirror-code">int fd1 = open("file.txt", O_RDONLY);
+                    <textarea id="code-yxjk7aepw" class="codemirror-code">int fd1 = open("file.txt", O_RDONLY);
 int fd2 = open("file.txt", O_RDONLY);  // Different file struct
 
 read(fd1, buf, 10);  // Advances fd1's offset
@@ -188,7 +188,7 @@ read(fd2, buf, 10);  // Reads from position 0, independent offset!</textarea>
                 <p><strong>Key insight:</strong> The filename is NOT in the inode. Filenames live in directory entries that point to inodes. This is why you can have multiple filenames (hard links) pointing to the same inode.</p>
                 </div>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-ie3proxq4" class="codemirror-code">$ ln /tmp/original.txt /tmp/link.txt
+                    <textarea id="code-z1idbzl3d" class="codemirror-code">$ ln /tmp/original.txt /tmp/link.txt
 # Both filenames point to the same inode</textarea>
                 </div>
                 <p><strong>Shared across all opens:</strong> No matter how many processes open the same file, they all ultimately reference the <strong>same inode</strong>. This is why file permission changes are immediately visible to all processes.</p>
@@ -205,7 +205,7 @@ read(fd2, buf, 10);  // Reads from position 0, independent offset!</textarea>
                 <p>Let's trace what happens when two processes open the same file:</p>
                 <h4>Process A opens /etc/passwd:</h4>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-8j6wnwdxx" class="codemirror-code">int fd_a = open("/etc/passwd", O_RDONLY);  // Returns fd 3</textarea>
+                    <textarea id="code-1kpip8pbs" class="codemirror-code">int fd_a = open("/etc/passwd", O_RDONLY);  // Returns fd 3</textarea>
                 </div>
                 <ol>
                     <li>Kernel creates a <strong>file struct</strong> for this open session</li>
@@ -215,7 +215,7 @@ read(fd2, buf, 10);  // Reads from position 0, independent offset!</textarea>
                 </ol>
                 <h4>Process B opens /etc/passwd:</h4>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-guikiokpb" class="codemirror-code">int fd_b = open("/etc/passwd", O_RDONLY);  // Returns fd 3 in Process B</textarea>
+                    <textarea id="code-evq0ehpxc" class="codemirror-code">int fd_b = open("/etc/passwd", O_RDONLY);  // Returns fd 3 in Process B</textarea>
                 </div>
                 <ol>
                     <li>Kernel creates a <strong>separate file struct</strong> (new open session)</li>
@@ -225,7 +225,7 @@ read(fd2, buf, 10);  // Reads from position 0, independent offset!</textarea>
                 </ol>
                 <h3>The Resulting Structure</h3>
                 <div class="code-block" data-language="text">
-                    <textarea id="code-a0q8p3km6" class="codemirror-code">Process A FD Table          Process B FD Table
+                    <textarea id="code-xk2e6adb4" class="codemirror-code">Process A FD Table          Process B FD Table
 [3] → File Struct A         [3] → File Struct B
       offset: 0                   offset: 0
       mode: O_RDONLY              mode: O_RDONLY
@@ -255,7 +255,7 @@ read(fd2, buf, 10);  // Reads from position 0, independent offset!</textarea>
                 <h3>Why This Design Matters</h3>
                 <h4>1. File Descriptor Inheritance (fork behavior)</h4>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-2c7mpxce6" class="codemirror-code">int fd = open("shared.txt", O_RDWR);
+                    <textarea id="code-rd1hx1k80" class="codemirror-code">int fd = open("shared.txt", O_RDWR);
 if (fork() == 0) {
     write(fd, "A", 1);
     close(fd);
@@ -268,12 +268,12 @@ if (fork() == 0) {
                 </div>
                 <h4>2. Redirection in Shells</h4>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-134u9lopp" class="codemirror-code">$ command > output.txt</textarea>
+                    <textarea id="code-d84b8w78c" class="codemirror-code">$ command > output.txt</textarea>
                 </div>
                 <p>What happens: Shell opens <code>output.txt</code> (gets FD 3), then uses <code>dup2(3, 1)</code> to make FD 1 (stdout) point to the same file struct. Now stdout goes to the file!</p>
                 <h4>3. File Descriptor Leaks</h4>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-ex8v7esb6" class="codemirror-code">while (true) {
+                    <textarea id="code-a3xcbz70l" class="codemirror-code">while (true) {
     int fd = open("file.txt", O_RDONLY);
     // Forgot close(fd)!
 }
@@ -298,7 +298,7 @@ if (fork() == 0) {
                 <p>The inode remains in memory and the data blocks stay on disk until <strong>all file structs</strong> referencing it are closed. The file becomes unlinked (no directory entry), but continues to exist until the last <code>close()</code>.</p>
                 <h3>Q: How do I see a process's open file descriptors?</h3>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-lwjhtqk96" class="codemirror-code">$ ls -l /proc/<PID>/fd
+                    <textarea id="code-kj4fax0z4" class="codemirror-code">$ ls -l /proc/<PID>/fd
 $ lsof -p <PID></textarea>
                 </div>
                 <h3>Q: Can two threads in the same process have different file descriptor tables?</h3>
