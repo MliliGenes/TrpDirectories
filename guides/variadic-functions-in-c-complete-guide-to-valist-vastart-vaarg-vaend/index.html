@@ -110,7 +110,7 @@
                 <h3>Execution flow</h3>
                 <p>The typical pattern is straightforward: declare va_list, initialize with va_start, loop through arguments with va_arg, and clean up with va_end. The tricky part is knowing when to stop and what type to request. You typically use: a count parameter, a sentinel value (like NULL), or a format string that encodes types.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-ba83htw25" class="codemirror-code">// Basic pattern
+                    <textarea id="code-gcianfkrh" class="codemirror-code">// Basic pattern
 void func(int count, ...) {
     va_list ap;
     va_start(ap, count);  // 'count' is last fixed param
@@ -125,6 +125,15 @@ void func(int count, ...) {
                 </div>
                 <h3>Under the hood</h3>
                 <p>va_list is typically implemented as a pointer or small struct that tracks position in the argument list. On modern 64-bit systems, it often references both a register save area (for args passed in registers) and an overflow area (for stack args). The implementation is architecture-specific and lives in the C library — never assume its internal structure.</p>
+                <h3>Why the compiler promotes types</h3>
+                <p>Default argument promotions exist to make variable arguments easier for the CPU to handle. When types smaller than int (like char or short) are passed, the compiler promotes them to int. Similarly, float becomes double. This happens for several reasons:</p>
+                <ul>
+                    <li><strong>Alignment and efficiency:</strong> CPUs handle word-sized operations (int, pointer size) more efficiently than smaller types. Promoting char/short to int means every argument occupies at least one machine word, simplifying stack layout and memory access</li>
+                    <li><strong>Historical compatibility:</strong> Early C had 'default argument promotions' for all functions. When prototypes were added, this remained for variadic functions to maintain backward compatibility</li>
+                    <li><strong>Consistent stack layout:</strong> Without promotions, the va_list would need to track the actual size of each argument (1 byte for char, 2 for short, 4 for int, etc.). By promoting everything to at least int size, the layout becomes predictable</li>
+                    <li><strong>Register allocation:</strong> Modern architectures pass arguments in registers. Registers are word-sized (32-bit or 64-bit). A char in a 64-bit register still occupies the full register — the promotion makes this explicit in the type system</li>
+                </ul>
+                <p>Example: When you write <code>func(1, 'A', 2.5f)</code>, the compiler transforms this to <code>func(1, (int)'A', (double)2.5f)</code> before passing arguments. The character 'A' (65) gets zero-extended to a full int (0x00000041 on 32-bit), and the float 2.5 gets converted to double precision. This means va_arg must request int and double respectively, not char and float.</p>
             </div>
         </section>
 
@@ -136,7 +145,7 @@ void func(int count, ...) {
             <div class="content">
                 <h3>Example 1: Sum integers (count-based)</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-m4h8wpcd8" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-yja7xsuk5" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 
 int sum_ints(int count, ...) {
@@ -162,7 +171,7 @@ int main(void) {
                 </div>
                 <h3>Example 2: Handling floats/doubles (promotion)</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-j2jmln5i5" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-ybytqnngq" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 
 double average(int count, ...) {
@@ -188,7 +197,7 @@ int main(void) {
                 </div>
                 <h3>Example 3: NULL-terminated string list</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-0mir55zs5" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-i7hnulfmh" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -222,7 +231,7 @@ int main(void) {
                 </div>
                 <h3>Example 4: Mini printf implementation</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-yts0rvhho" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-fnp0e02oh" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 
 void my_printf(const char *fmt, ...) {
@@ -273,7 +282,7 @@ int main(void) {
                 </div>
                 <h3>Example 5: Using va_copy for multiple passes</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-ntfiegogg" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-169l5tw8b" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -348,7 +357,7 @@ int main(void) {
                 </ul>
                 <h3>Debugging strategies</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-vmpamerky" class="codemirror-code">// Add defensive logging
+                    <textarea id="code-bhgkeqc57" class="codemirror-code">// Add defensive logging
 void debug_varargs(int count, ...) {
     va_list ap;
     va_start(ap, count);
@@ -391,7 +400,7 @@ void debug_varargs(int count, ...) {
                 </div>
                 <h3>The float trap (most common error)</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-yahw8tno6" class="codemirror-code">// WRONG - will crash or return garbage
+                    <textarea id="code-lharaxquu" class="codemirror-code">// WRONG - will crash or return garbage
 float f = va_arg(ap, float);  // ❌ NEVER DO THIS
 
 // CORRECT - floats are promoted to double
@@ -410,7 +419,7 @@ float f = (float)d;  // Cast back if needed</textarea>
                 <h3>Format string vulnerabilities</h3>
                 <p>Variadic functions are notorious for security vulnerabilities, especially when format strings come from untrusted input. The classic printf vulnerability allows attackers to read/write arbitrary memory.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-rqkr0j1y2" class="codemirror-code">// DANGEROUS - never do this
+                    <textarea id="code-3ir4ubnyz" class="codemirror-code">// DANGEROUS - never do this
 char user_input[100];
 gets(user_input);  // User provides format string
 printf(user_input);  // ❌ VULNERABILITY!
@@ -427,7 +436,7 @@ printf("%s", user_input);  // ✓ Safe</textarea>
                 </ul>
                 <h3>Safe patterns</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-481j9z1jl" class="codemirror-code">// Always validate format strings
+                    <textarea id="code-bitu4o404" class="codemirror-code">// Always validate format strings
 void safe_log(const char *fmt, ...) {
     // Only allow specific format strings
     const char *allowed[] = {
@@ -471,7 +480,7 @@ void safe_log(const char *fmt, ...) {
                 <h3>va_list implementation details</h3>
                 <p>On x86-64 Linux, va_list is typically a struct with four fields: gp_offset (general-purpose register offset), fp_offset (floating-point offset), overflow_arg_area (stack pointer), and reg_save_area (saved registers). The va_arg macro calculates offsets into these areas based on the requested type.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-g168zef43" class="codemirror-code">// Conceptual va_list on x86-64 (actual impl varies)
+                    <textarea id="code-l4m4l4dcm" class="codemirror-code">// Conceptual va_list on x86-64 (actual impl varies)
 typedef struct {
     unsigned int gp_offset;      // Offset in GP reg area
     unsigned int fp_offset;      // Offset in FP reg area
@@ -499,7 +508,7 @@ typedef struct {
                 <h3>Pattern 1: Count parameter</h3>
                 <p>Pass the number of arguments as first parameter. Simple and type-safe for homogeneous types.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-fufslg5cj" class="codemirror-code">int max(int count, ...) {
+                    <textarea id="code-y84gconjl" class="codemirror-code">int max(int count, ...) {
     va_list ap;
     va_start(ap, count);
     int m = va_arg(ap, int);
@@ -514,7 +523,7 @@ typedef struct {
                 <h3>Pattern 2: Sentinel value</h3>
                 <p>Use a special terminator value (NULL, -1, etc.) to mark the end. Works well for pointer lists.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-2mrabml1y" class="codemirror-code">void print_strings(...) {
+                    <textarea id="code-mzrwqkelx" class="codemirror-code">void print_strings(...) {
     va_list ap;
     va_start(ap, 0);  // No fixed params!
     
@@ -529,7 +538,7 @@ typedef struct {
                 <h3>Pattern 3: Format string</h3>
                 <p>Use a format string to encode argument types and count. Most flexible but requires parsing.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-ut06t4i8u" class="codemirror-code">void log_msg(const char *fmt, ...) {
+                    <textarea id="code-svqfby2ds" class="codemirror-code">void log_msg(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     // Parse fmt to determine types
@@ -540,7 +549,7 @@ typedef struct {
                 <h3>Pattern 4: va_list wrapper</h3>
                 <p>Create a helper that takes va_list, allowing composition of variadic functions.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-y5jewd0l9" class="codemirror-code">// Internal helper takes va_list
+                    <textarea id="code-i44ft9zbu" class="codemirror-code">// Internal helper takes va_list
 void vlog_internal(const char *fmt, va_list ap) {
     vfprintf(stderr, fmt, ap);
 }
@@ -575,7 +584,7 @@ void log_error(const char *fmt, ...) {
                 </ul>
                 <h3>Using format attributes</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-odf6utmqj" class="codemirror-code">// Enable compiler format checking
+                    <textarea id="code-bk3i8uu0c" class="codemirror-code">// Enable compiler format checking
 void my_printf(const char *fmt, ...)
     __attribute__((format(printf, 1, 2)));
 
@@ -597,7 +606,7 @@ my_printf("%d %s", "wrong", 42);  // Warning!</textarea>
                 <h3>Compiler builtins</h3>
                 <p>Modern compilers provide built-in functions for working with varargs that can be more efficient than the standard macros.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-ujc9fxm2u" class="codemirror-code">// GCC/Clang builtins
+                    <textarea id="code-pumym9ysz" class="codemirror-code">// GCC/Clang builtins
 void *__builtin_va_start(va_list ap, param);
 void *__builtin_va_end(va_list ap);
 void *__builtin_va_copy(va_list dest, va_list src);
@@ -607,7 +616,7 @@ void *__builtin_va_copy(va_list dest, va_list src);
                 <h3>Custom va_list wrappers</h3>
                 <p>Create your own variadic wrapper types for better type safety and debugging.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-dm8yfczie" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-x0y7xne4w" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 
 // Type-safe varargs wrapper
@@ -641,7 +650,7 @@ void safe_va_print(SafeVarargs *sv) {
                 <h3>Interfacing with C++</h3>
                 <p>When calling C variadic functions from C++, or vice versa, pay attention to name mangling and ABI compatibility.</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-qxf3msh2e" class="codemirror-code">// In C++ header
+                    <textarea id="code-oosvz6m4z" class="codemirror-code">// In C++ header
 extern "C" {
     void c_variadic_func(int count, ...);
 }
@@ -664,7 +673,7 @@ void type_safe_print(Args... args) {
                 <h3>Variadic macros alternative</h3>
                 <p>Sometimes variadic macros provide better type safety than variadic functions.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-5i2bwsvai" class="codemirror-code">// Variadic macro for logging
+                    <textarea id="code-fdyfd52dh" class="codemirror-code">// Variadic macro for logging
 #define LOG(level, ...) \
     do { \
         fprintf(stderr, "[%s] ", level); \
@@ -718,41 +727,33 @@ LOG("INFO", "Processing %d items", count);
                 <h2 class="section-title">LEVEL UP</h2>
             </div>
             <div class="content">
-                <h3>Immediate next steps</h3>
+                <h3>Related concepts to explore</h3>
                 <ul>
-                    <li><strong>This week:</strong> Implement a custom logging function with multiple severity levels using varargs</li>
-                    <li><strong>This week:</strong> Read your platform's ABI documentation (System V AMD64 or Windows x64)</li>
-                    <li><strong>This week:</strong> Add format attribute annotations to your variadic functions and fix all warnings</li>
+                    <li><strong>C++ variadic templates:</strong> Modern type-safe alternative to C varargs with compile-time type checking</li>
+                    <li><strong>Function pointers and callbacks:</strong> Alternative patterns for flexible APIs without varargs</li>
+                    <li><strong>Format string parsing:</strong> Deep dive into printf/scanf implementation and state machines</li>
+                    <li><strong>ABI and calling conventions:</strong> How arguments are passed at the machine level (cdecl, stdcall, fastcall)</li>
+                    <li><strong>Static analysis tools:</strong> Understanding clang-tidy, cppcheck, and writing custom checkers</li>
+                    <li><strong>Security auditing:</strong> Finding and fixing format string vulnerabilities in existing codebases</li>
+                    <li><strong>Compiler optimization:</strong> How compilers optimize variadic functions and inline expansions</li>
+                    <li><strong>Type systems:</strong> Exploring languages with type-safe variadic arguments (Rust, Swift, Modern C++)</li>
                 </ul>
-                <h3>Medium-term goals</h3>
+                <h3>Essential resources</h3>
                 <ul>
-                    <li><strong>This month:</strong> Study the glibc implementation of vprintf and vfprintf</li>
-                    <li><strong>This month:</strong> Experiment with compiler builtins and compare generated assembly</li>
-                    <li><strong>This month:</strong> Write a static analyzer or lint rule to catch common varargs mistakes</li>
-                    <li><strong>This month:</strong> Implement a safe variadic wrapper library with comprehensive tests</li>
+                    <li><strong>System V AMD64 ABI Specification:</strong> <a href='https://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf'>Complete ABI documentation</a> - Details on register usage and va_list implementation</li>
+                    <li><strong>C Reference - stdarg.h:</strong> <a href='https://en.cppreference.com/w/c/variadic'>cppreference.com variadic functions</a> - Comprehensive API reference with examples</li>
+                    <li><strong>GCC Format Attribute:</strong> <a href='https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html'>GCC function attributes</a> - Enable compile-time format checking</li>
+                    <li><strong>CERT C Coding Standard:</strong> <a href='https://wiki.sei.cmu.edu/confluence/display/c/EXP58-C'>EXP58-C Variadic Functions</a> - Security guidelines and best practices</li>
+                    <li><strong>Glibc Source Code:</strong> <a href='https://sourceware.org/git/?p=glibc.git'>glibc repository</a> - Study real-world vprintf/vsprintf implementations</li>
+                    <li><strong>LLVM/Clang Documentation:</strong> <a href='https://clang.llvm.org/docs/AttributeReference.html'>Attribute reference</a> - format_arg and related attributes</li>
+                    <li><strong>Windows x64 Calling Convention:</strong> <a href='https://docs.microsoft.com/en-us/cpp/build/x64-calling-convention'>Microsoft documentation</a> - Windows ABI differences</li>
                 </ul>
-                <h3>Advanced mastery</h3>
+                <h3>Advanced reading</h3>
                 <ul>
-                    <li><strong>Long term:</strong> Understand the full implementation of va_list on multiple architectures</li>
-                    <li><strong>Long term:</strong> Contribute to compiler format checking or static analysis tools</li>
-                    <li><strong>Long term:</strong> Design a type-safe alternative to varargs for a specific domain</li>
-                    <li><strong>Long term:</strong> Write a comprehensive guide or library for safe variadic programming</li>
-                </ul>
-                <h3>Related topics to explore</h3>
-                <ul>
-                    <li><strong>C++ variadic templates:</strong> Modern type-safe alternative to C varargs</li>
-                    <li><strong>Function pointers and callbacks:</strong> Alternative patterns for flexible APIs</li>
-                    <li><strong>Format string parsing:</strong> Deep dive into printf/scanf implementation</li>
-                    <li><strong>ABI and calling conventions:</strong> How arguments are passed at the machine level</li>
-                    <li><strong>Static analysis tools:</strong> clang-tidy, cppcheck, and custom checkers</li>
-                    <li><strong>Security auditing:</strong> Finding and fixing format string vulnerabilities</li>
-                </ul>
-                <h3>Resources</h3>
-                <ul>
-                    <li>System V AMD64 ABI: <a href='https://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf'>https://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf</a></li>
-                    <li>C Reference - stdarg.h: <a href='https://en.cppreference.com/w/c/variadic'>https://en.cppreference.com/w/c/variadic</a></li>
-                    <li>GCC Format Attribute: <a href='https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html'>https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html</a></li>
-                    <li>CERT C Coding Standard - Variadic Functions: <a href='https://wiki.sei.cmu.edu/confluence/display/c/EXP58-C'>https://wiki.sei.cmu.edu/confluence/display/c/EXP58-C</a></li>
+                    <li><strong>ISO C Standard (C11):</strong> Section 7.16 stdarg.h - Official specification of variadic functions</li>
+                    <li><strong>ARM AAPCS:</strong> ARM Architecture Procedure Call Standard - How ARM handles varargs</li>
+                    <li><strong>Format String Attacks:</strong> Academic papers on exploitation techniques and mitigations</li>
+                    <li><strong>Compiler Implementation:</strong> Study how GCC/Clang implement __builtin_va_* intrinsics</li>
                 </ul>
             </div>
         </section>

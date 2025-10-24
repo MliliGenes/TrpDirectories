@@ -125,6 +125,30 @@
           "type": "paragraph",
           "content": "va_list is typically implemented as a pointer or small struct that tracks position in the argument list. On modern 64-bit systems, it often references both a register save area (for args passed in registers) and an overflow area (for stack args). The implementation is architecture-specific and lives in the C library — never assume its internal structure.",
           "html": false
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Why the compiler promotes types"
+        },
+        {
+          "type": "paragraph",
+          "content": "Default argument promotions exist to make variable arguments easier for the CPU to handle. When types smaller than int (like char or short) are passed, the compiler promotes them to int. Similarly, float becomes double. This happens for several reasons:",
+          "html": false
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Alignment and efficiency:</strong> CPUs handle word-sized operations (int, pointer size) more efficiently than smaller types. Promoting char/short to int means every argument occupies at least one machine word, simplifying stack layout and memory access",
+            "<strong>Historical compatibility:</strong> Early C had 'default argument promotions' for all functions. When prototypes were added, this remained for variadic functions to maintain backward compatibility",
+            "<strong>Consistent stack layout:</strong> Without promotions, the va_list would need to track the actual size of each argument (1 byte for char, 2 for short, 4 for int, etc.). By promoting everything to at least int size, the layout becomes predictable",
+            "<strong>Register allocation:</strong> Modern architectures pass arguments in registers. Registers are word-sized (32-bit or 64-bit). A char in a 64-bit register still occupies the full register — the promotion makes this explicit in the type system"
+          ]
+        },
+        {
+          "type": "paragraph",
+          "content": "Example: When you write <code>func(1, 'A', 2.5f)</code>, the compiler transforms this to <code>func(1, (int)'A', (double)2.5f)</code> before passing arguments. The character 'A' (65) gets zero-extended to a full int (0x00000041 on 32-bit), and the float 2.5 gets converted to double precision. This means va_arg must request int and double respectively, not char and float.",
+          "html": true
         }
       ]
     },
@@ -635,72 +659,50 @@
         {
           "type": "heading",
           "level": 3,
-          "content": "Immediate next steps"
+          "content": "Related concepts to explore"
         },
         {
           "type": "list",
           "items": [
-            "<strong>This week:</strong> Implement a custom logging function with multiple severity levels using varargs",
-            "<strong>This week:</strong> Read your platform's ABI documentation (System V AMD64 or Windows x64)",
-            "<strong>This week:</strong> Add format attribute annotations to your variadic functions and fix all warnings"
+            "<strong>C++ variadic templates:</strong> Modern type-safe alternative to C varargs with compile-time type checking",
+            "<strong>Function pointers and callbacks:</strong> Alternative patterns for flexible APIs without varargs",
+            "<strong>Format string parsing:</strong> Deep dive into printf/scanf implementation and state machines",
+            "<strong>ABI and calling conventions:</strong> How arguments are passed at the machine level (cdecl, stdcall, fastcall)",
+            "<strong>Static analysis tools:</strong> Understanding clang-tidy, cppcheck, and writing custom checkers",
+            "<strong>Security auditing:</strong> Finding and fixing format string vulnerabilities in existing codebases",
+            "<strong>Compiler optimization:</strong> How compilers optimize variadic functions and inline expansions",
+            "<strong>Type systems:</strong> Exploring languages with type-safe variadic arguments (Rust, Swift, Modern C++)"
           ]
         },
         {
           "type": "heading",
           "level": 3,
-          "content": "Medium-term goals"
+          "content": "Essential resources"
         },
         {
           "type": "list",
           "items": [
-            "<strong>This month:</strong> Study the glibc implementation of vprintf and vfprintf",
-            "<strong>This month:</strong> Experiment with compiler builtins and compare generated assembly",
-            "<strong>This month:</strong> Write a static analyzer or lint rule to catch common varargs mistakes",
-            "<strong>This month:</strong> Implement a safe variadic wrapper library with comprehensive tests"
+            "<strong>System V AMD64 ABI Specification:</strong> <a href='https://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf'>Complete ABI documentation</a> - Details on register usage and va_list implementation",
+            "<strong>C Reference - stdarg.h:</strong> <a href='https://en.cppreference.com/w/c/variadic'>cppreference.com variadic functions</a> - Comprehensive API reference with examples",
+            "<strong>GCC Format Attribute:</strong> <a href='https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html'>GCC function attributes</a> - Enable compile-time format checking",
+            "<strong>CERT C Coding Standard:</strong> <a href='https://wiki.sei.cmu.edu/confluence/display/c/EXP58-C'>EXP58-C Variadic Functions</a> - Security guidelines and best practices",
+            "<strong>Glibc Source Code:</strong> <a href='https://sourceware.org/git/?p=glibc.git'>glibc repository</a> - Study real-world vprintf/vsprintf implementations",
+            "<strong>LLVM/Clang Documentation:</strong> <a href='https://clang.llvm.org/docs/AttributeReference.html'>Attribute reference</a> - format_arg and related attributes",
+            "<strong>Windows x64 Calling Convention:</strong> <a href='https://docs.microsoft.com/en-us/cpp/build/x64-calling-convention'>Microsoft documentation</a> - Windows ABI differences"
           ]
         },
         {
           "type": "heading",
           "level": 3,
-          "content": "Advanced mastery"
+          "content": "Advanced reading"
         },
         {
           "type": "list",
           "items": [
-            "<strong>Long term:</strong> Understand the full implementation of va_list on multiple architectures",
-            "<strong>Long term:</strong> Contribute to compiler format checking or static analysis tools",
-            "<strong>Long term:</strong> Design a type-safe alternative to varargs for a specific domain",
-            "<strong>Long term:</strong> Write a comprehensive guide or library for safe variadic programming"
-          ]
-        },
-        {
-          "type": "heading",
-          "level": 3,
-          "content": "Related topics to explore"
-        },
-        {
-          "type": "list",
-          "items": [
-            "<strong>C++ variadic templates:</strong> Modern type-safe alternative to C varargs",
-            "<strong>Function pointers and callbacks:</strong> Alternative patterns for flexible APIs",
-            "<strong>Format string parsing:</strong> Deep dive into printf/scanf implementation",
-            "<strong>ABI and calling conventions:</strong> How arguments are passed at the machine level",
-            "<strong>Static analysis tools:</strong> clang-tidy, cppcheck, and custom checkers",
-            "<strong>Security auditing:</strong> Finding and fixing format string vulnerabilities"
-          ]
-        },
-        {
-          "type": "heading",
-          "level": 3,
-          "content": "Resources"
-        },
-        {
-          "type": "list",
-          "items": [
-            "System V AMD64 ABI: <a href='https://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf'>https://refspecs.linuxfoundation.org/elf/x86_64-abi-0.99.pdf</a>",
-            "C Reference - stdarg.h: <a href='https://en.cppreference.com/w/c/variadic'>https://en.cppreference.com/w/c/variadic</a>",
-            "GCC Format Attribute: <a href='https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html'>https://gcc.gnu.org/onlinedocs/gcc/Common-Function-Attributes.html</a>",
-            "CERT C Coding Standard - Variadic Functions: <a href='https://wiki.sei.cmu.edu/confluence/display/c/EXP58-C'>https://wiki.sei.cmu.edu/confluence/display/c/EXP58-C</a>"
+            "<strong>ISO C Standard (C11):</strong> Section 7.16 stdarg.h - Official specification of variadic functions",
+            "<strong>ARM AAPCS:</strong> ARM Architecture Procedure Call Standard - How ARM handles varargs",
+            "<strong>Format String Attacks:</strong> Academic papers on exploitation techniques and mitigations",
+            "<strong>Compiler Implementation:</strong> Study how GCC/Clang implement __builtin_va_* intrinsics"
           ]
         }
       ]
