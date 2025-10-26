@@ -1,0 +1,661 @@
+{
+  "meta": {
+    "title": "A Comprehensive Guide to Linked Lists in C",
+    "description": "A detailed, beginner-friendly guide to understanding, implementing, and mastering linked lists in C, covering core concepts, real-world examples, common pitfalls, and advanced topics.",
+    "author": "Gemini AI",
+    "tags": ["C", "Data Structures", "Linked Lists", "Pointers", "Memory Management", "Beginner"],
+    "difficulty": "beginner",
+    "lastUpdated": "2025-10-26"
+  },
+  "navigation": [
+    {"id": "hook", "emoji": "🎯", "title": "The Hook", "sectionIndex": 0},
+    {"id": "mechanics", "emoji": "⚙️", "title": "How It Works", "sectionIndex": 1},
+    {"id": "examples", "emoji": "🌍", "title": "Real Examples", "sectionIndex": 2},
+    {"id": "practice", "emoji": "🛠️", "title": "Do This Now", "sectionIndex": 3},
+    {"id": "warnings", "emoji": "⚠️", "title": "Avoid These", "sectionIndex": 4},
+    {"id": "connections", "emoji": "🔗", "title": "Connections", "sectionIndex": 5},
+    {"id": "test", "emoji": "🎯", "title": "Test Yourself", "sectionIndex": 6},
+    {"id": "growth", "emoji": "📈", "title": "Level Up", "sectionIndex": 7}
+  ],
+  "sections": [
+    {
+      "id": "hook",
+      "title": "THE HOOK",
+      "emoji": "🎯",
+      "iconClass": "hook",
+      "content": [
+        {
+          "type": "paragraph",
+          "content": "<strong>What is this?</strong><br><ul><li><strong>Primary Definition:</strong> A <strong>linked list</strong> is a fundamental, dynamic data structure in computer science. Unlike a static array (which stores data in one continuous block of memory), a linked list stores data in a chain of individual <em>nodes</em>. Each <strong>node</strong> is a small, separate block of memory that contains two things: (1) The actual <strong>data</strong> and (2) A <strong>pointer</strong> (an address) that points to the <em>next node</em> in the chain.</li><li><strong>Alternative Definitions:</strong><br>    <ul><li><strong>A Recursive Data Structure:</strong> A linked list is either empty (represented by a <code>NULL</code> pointer) or it's a node containing data and a pointer to <em>another</em> linked list.</li><li><strong>A Sequential Collection:</strong> It's a way to store a sequence of items, where the order is determined by pointers, not by physical memory location.</li></ul></li><li><strong>Historical Context:</strong> Linked lists are one of the oldest data structures, popularized by languages like LISP. In C, they became the classic solution for dynamic data, as the language gives you direct control over memory allocation (<code>malloc</code>) and pointers.</li></ul>",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Why care?</strong><br><ul><li><strong>Immediate Personal Impact:</strong> Your music playlist, your browser's 'back' button history—these are often implemented using linked lists.</li><li><strong>Professional Advantages:</strong> This is a <strong>core building block</strong>. Understanding linked lists proves you understand the three most important concepts in C: <strong>pointers</strong>, <strong>structs</strong>, and <strong>dynamic memory allocation (<code>malloc</code>/<code>free</code>)</strong>. You <em>will</em> be asked to implement one in technical interviews.</li><li><strong>Quantifiable Benefits:</strong><br>    <ul><li><strong>Dynamic Size:</strong> Grow and shrink one item at a time. No need to guess a 'max size'.</li><li><strong>Efficient Insertion/Deletion:</strong> Inserting an item at the beginning is an <i>O(1)</i> operation (instant). In an array, this is <i>O(n)</i> (you have to shift <em>every</em> other element).</li></ul></li></ul>",
+          "html": true
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Mental model:</strong><br><ul><li><strong>Primary Analogy (A Scavenger Hunt):</strong><br>The <strong><code>head</code></strong> pointer is the <em>first clue</em>. You go to that address and find a box (a <strong><code>node</code></strong>). Inside, you find two things: a piece of data (the <strong><code>data</code></strong>) and the <em>next clue</em> (the <strong><code>next</code></strong> pointer). You follow this new clue to the next box. The last box contains a clue that says <strong><code>NULL</code></strong>, meaning 'The hunt is over.'</li><li><strong>Secondary Analogy (A Train):</strong><br>A train is a set of cars. The <strong><code>head</code></strong> is the <em>engine</em>. Each <strong><code>car</code></strong> is a <strong><code>node</code></strong>, holding <em>cargo</em> (<strong><code>data</code></strong>) and a <em>coupler</em> (<strong><code>next</code></strong> pointer). The last car's coupler is attached to nothing (<strong><code>NULL</code></strong>). To add a car, you just uncouple two cars and link the new one in between.</li></ul>",
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "mechanics",
+      "title": "HOW IT WORKS",
+      "emoji": "⚙️",
+      "iconClass": "mechanics",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Core mechanics"
+        },
+        {
+          "type": "paragraph",
+          "content": "In C, the 'blueprint' for a node is a <code>struct</code>. The most critical concept is a <strong>self-referential structure</strong>: a <code>struct</code> that contains a pointer <em>to itself</em>.",
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "1. The Blueprint (struct Node)"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "// This is the blueprint for all our train cars.\nstruct Node {\n    int data; // The cargo (can be any type)\n    struct Node* next; // The coupler (a pointer to another struct of the *same type*)\n};"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "2. The Entry Point (head)"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "// An empty list is just a NULL pointer.\nstruct Node* head = NULL;"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "3. Process: Adding a Node (to the head)"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "<strong>Allocate Memory:</strong> Ask the OS for a new, empty node. <code>malloc</code> returns a pointer to this new memory.<br><code>struct Node* newNode = malloc(sizeof(struct Node));</code>",
+            "<strong>Check for Failure:</strong> <code>malloc</code> returns <code>NULL</code> if the computer is out of memory. <em>Always</em> check this.<br><code>if (newNode == NULL) { /* handle error */ }</code>",
+            "<strong>Set Data:</strong> Put the data into the new node.<br><code>newNode->data = 10;</code>",
+            "<strong>Link It:</strong> Make the new node's <code>next</code> pointer point to the <em>current</em> head. (If the list was empty, it points to <code>NULL</code>, which is correct).<br><code>newNode->next = head;</code>",
+            "<strong>Update Head:</strong> Update the <code>head</code> pointer to point to our <code>newNode</code>, making it the new first item.<br><code>head = newNode;</code>"
+          ],
+          "startFrom": 1
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "4. Process: Traversing (Walking) the List"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "// 1. Create a temporary pointer. NEVER modify 'head' to traverse!\nstruct Node* current = head;\n\n// 2. Loop as long as our current spot is not NULL (the end)\nwhile (current != NULL) {\n    // 3. Do something with the data\n    printf(\"%d -> \", current->data);\n    \n    // 4. Move to the next node in the chain\n    current = current->next;\n}\nprintf(\"NULL\\n\");"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "5. Process: Freeing (Deleting) the List"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "struct Node* current = head;\nstruct Node* nextNode = NULL;\n\nwhile (current != NULL) {\n    nextNode = current->next; // 1. Save the pointer to the *next* node\n    free(current);            // 2. Free the *current* node\n    current = nextNode;       // 3. Move to the next node\n}\nhead = NULL; // The list is now safely empty"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Key components"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong><code>struct Node</code>:</strong> The C structure that defines the node.",
+            "<strong><code>data</code>:</strong> The 'payload' of the node. This can be an <code>int</code>, a <code>float</code>, a <code>char*</code>, or even another <code>struct</code>.",
+            "<strong><code>next</code> pointer:</strong> The 'link.' This is a pointer to another <code>struct Node</code>. It's the 'glue' that holds the list together.",
+            "<strong><code>head</code> pointer:</strong> A standalone pointer (of type <code>struct Node*</code>) that is the 'entry point' for the entire list. If you lose <code>head</code>, you lose the list.",
+            "<strong><code>NULL</code>:</strong> A special pointer value (often just <code>0</code>) that signifies 'points to nothing.' It's used to mark the end of the list.",
+            "<strong><code>malloc()</code>:</strong> The C Standard Library function that allocates a block of memory on the <strong>heap</strong>. This memory persists until you manually <code>free()</code> it.",
+            "<strong><code>free()</code>:</strong> The function that 'returns' memory allocated with <code>malloc</code> back to the operating system, preventing memory leaks."
+          ]
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Governing principles"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Dynamic vs. Static Allocation:</strong> Nodes are <em>dynamically</em> allocated on the <strong>heap</strong> (using <code>malloc</code>). A simple <code>int arr[10]</code> is <em>statically</em> allocated on the <strong>stack</strong>.",
+            "<strong>Sequential Access (No Random Access):</strong> This is the <strong>Big Trade-Off</strong>. To get to the <i>N<sup>th</sup></i> element, you <em>must</em> visit elements 1, 2, 3... up to <i>N</i>. This is an <i>O(n)</i> operation. With an array <code>arr</code>, accessing <code>arr[N]</code> is an <i>O(1)</i> operation.",
+            "<strong>Pointer-based:</strong> The entire structure is virtual. The nodes can be scattered all over your computer's RAM. It's the <em>pointers</em> that create the logical order.",
+            "<strong>Complexity Analysis:</strong><br><ul><li><strong>Access (<i>N<sup>th</sup></i> item):</strong> <i>O(n)</i></li><li><strong>Search (for a value):</strong> <i>O(n)</i></li><li><strong>Insertion (at head):</strong> <i>O(1)</i></li><li><strong>Insertion (at tail):</strong> <i>O(n)</i> (unless you keep a <code>tail</code> pointer, then it's <i>O(1)</i>)</li><li><strong>Deletion (at head):</strong> <i>O(1)</i></li><li><strong>Deletion (at tail):</strong> <i>O(n)</i> (must traverse to find the <em>second-to-last</em> node)</li></ul>"
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Advanced concepts"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Doubly Linked List:</strong> Each node has <em>two</em> pointers: <code>next</code> and <code>prev</code>. <strong>Pro:</strong> Can be traversed forwards and backwards. <strong>Con:</strong> Uses more memory and is more complex to manage.",
+            "<strong>Circular Linked List:</strong> The <code>next</code> pointer of the <em>last</em> node doesn't point to <code>NULL</code>. It points back to the <strong><code>head</code></strong>. <strong>Use Case:</strong> A 'round-robin' scheduler.",
+            "<strong>Sentinel/Header Nodes:</strong> A 'dummy' node at the very beginning of the list. <strong>Pro:</strong> It <em>dramatically</em> simplifies insertion and deletion logic, as you never have to check for an empty list or modify the <code>head</code> pointer itself."
+          ],
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "examples",
+      "title": "REAL EXAMPLES",
+      "emoji": "🌍",
+      "iconClass": "examples",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Simple case: A Singly Linked List for Integers"
+        },
+        {
+          "type": "paragraph",
+          "content": "This is the 'Hello, World!' of linked lists. A complete, runnable C program.",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "#include <stdio.h>\n#include <stdlib.h> // For malloc() and free()\n\n// 1. The Blueprint\nstruct Node {\n    int data;\n    struct Node* next;\n};\n\n// 2. Helper function to create a new node\nstruct Node* create_node(int data) {\n    struct Node* newNode = malloc(sizeof(struct Node));\n    if (newNode == NULL) {\n        fprintf(stderr, \"Error: Memory allocation failed\\n\");\n        return NULL; // Failed to create node\n    }\n    newNode->data = data;\n    newNode->next = NULL; // New node always points to NULL initially\n    return newNode;\n}\n\n// 3. Function to insert a new node at the *head* of the list\n// We must pass a pointer-to-a-pointer (**) so we can *change* the main 'head' pointer\nvoid insert_at_head(struct Node** head, int data) {\n    struct Node* newNode = create_node(data);\n    if (newNode == NULL) {\n        return; // Allocation failed\n    }\n    \n    newNode->next = *head; // New node points to the old head\n    *head = newNode;       // The 'head' pointer itself is updated to point to our new node\n}\n\n// 4. Function to print the entire list\nvoid print_list(struct Node* head) {\n    struct Node* current = head; // Use a temporary pointer to walk the list\n    while (current != NULL) {\n        printf(\"%d -> \", current->data);\n        current = current->next; // Move to the next node\n    }\n    printf(\"NULL\\n\");\n}\n\n// 5. Function to free all memory used by the list\nvoid free_list(struct Node** head) {\n    struct Node* current = *head;\n    struct Node* nextNode;\n\n    while (current != NULL) {\n        nextNode = current->next; // Save the next pointer\n        free(current);            // Free the current node\n        current = nextNode;       // Move to the next\n    }\n    \n    *head = NULL; // Set the original head pointer to NULL\n}\n\n// 6. Main function to drive the program\nint main() {\n    struct Node* myList = NULL; // Start with an empty list\n\n    printf(\"List after creation: \");\n    print_list(myList);\n\n    insert_at_head(&myList, 30);\n    insert_at_head(&myList, 20);\n    insert_at_head(&myList, 10);\n\n    printf(\"List after inserting 10, 20, 30: \");\n    print_list(myList); // Expected: 10 -> 20 -> 30 -> NULL\n\n    // Clean up\n    free_list(&myList);\n    printf(\"List after freeing: \");\n    print_list(myList); // Expected: NULL\n\n    return 0;\n}"
+        },
+        {
+          "type": "paragraph",
+          "content": "<strong>Expected Output:</strong>",
+          "html": true
+        },
+        {
+          "type": "codeblock",
+          "language": "bash",
+          "code": "List after creation: NULL\nList after inserting 10, 20, 30: 10 -> 20 -> 30 -> NULL\nList after freeing: NULL"
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Professional use: A Print Job Queue (FIFO)"
+        },
+        {
+          "type": "paragraph",
+          "content": "A <strong>Queue</strong> is a 'First-In, First-Out' (FIFO) structure. A linked list is perfect for this, but we need <em>two</em> pointers: <code>head</code> (to remove from) and <code>tail</code> (to add to). This makes both operations <i>O(1)</i>.",
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Structure"
+        },
+        {
+          "type": "codeblock",
+          "language": "c",
+          "code": "struct Queue {\n    struct Node* head;\n    struct Node* tail;\n};"
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Operation enqueue(Queue* q, int data) (Add to queue)"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "Create a <code>newNode</code> with the data.",
+            "If the queue is empty (<code>q->head == NULL</code>): Set <code>q->head = newNode;</code> and <code>q->tail = newNode;</code>",
+            "If the queue is <em>not</em> empty: Set <code>q->tail->next = newNode;</code> (Link the current last node) and Set <code>q->tail = newNode;</code> (Update the tail pointer)."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Operation dequeue(Queue* q) (Remove from queue)"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "If the queue is empty (<code>q->head == NULL</code>), return an error.",
+            "Get the data to return: <code>int data = q->head->data;</code>",
+            "Create a temp pointer: <code>struct Node* temp = q->head;</code>",
+            "Move the <code>head</code> pointer up: <code>q->head = q->head->next;</code>",
+            "<strong>Critical Check:</strong> If <code>q->head</code> is now <code>NULL</code>, the list is empty. You <em>must</em> also set <code>q->tail = NULL;</code>!",
+            "<code>free(temp);</code>",
+            "Return <code>data</code>."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Advanced scenarios: LRU (Least Recently Used) Cache"
+        },
+        {
+          "type": "paragraph",
+          "content": "This is a very common, high-performance pattern. The goal is to keep a small number of frequently-accessed items in memory. It uses:",
+          "html": true
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "A <strong>Hash Map (or Hash Table):</strong> For <i>O(1)</i> <em>lookup</em>.",
+            "A <strong>Doubly Linked List:</strong> To manage <em>recency</em>."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "Logic"
+        },
+        {
+          "type": "list",
+          "items": [
+            "The list is ordered by most-recent-use. The <strong>head</strong> is the <em>most</em> recently used. The <strong>tail</strong> is the <em>least</em> recently used.",
+            "<strong>When an item is accessed:</strong><br><ul><li><strong>Cache Hit (found):</strong> Get the pointer to its node. <em>Move that node to the head of the list.</em> This is an <i>O(1)</i> operation with a doubly linked list.</li><li><strong>Cache Miss (not found):</strong><br>1. If cache is full: <strong>Evict</strong> the item at the <strong>tail</strong> of the list (remove from list and hash map).<br>2. Load the new item.<br>3. <strong>Insert</strong> the new node at the <strong>head</strong> of the list.<br>4. Add the item (and its node pointer) to the hash map.</li></ul>"
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Comparative analysis: Array vs. Linked List"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Feature: Memory</strong><br><strong>Static Array:</strong> <strong>Contiguous:</strong> All elements are side-by-side in one big block.<br><strong>Linked List:</strong> <strong>Fragmented:</strong> Nodes can be anywhere in memory (heap).",
+            "<strong>Feature: Cache Locality</strong><br><strong>Static Array:</strong> <strong>Excellent.</strong> Accessing <code>arr[0]</code>, <code>arr[1]</code>, <code>arr[2]</code> is very fast. The CPU pre-fetches them.<br><strong>Linked List:</strong> <strong>Poor.</strong> Accessing <code>node1->next->data</code> can cause a 'cache miss,' as the next node might be in a totally different part of RAM.",
+            "<strong>Feature: Random Access</strong><br><strong>Static Array:</strong> <strong><i>O(1)</i></strong> (Excellent). Can get <code>arr[50]</code> instantly.<br><strong>Linked List:</strong> <strong><i>O(n)</i></strong> (Poor). Must walk 50 nodes to find the 50th element.",
+            "<strong>Feature: Insertion at Head</strong><br><strong>Static Array:</strong> <strong><i>O(n)</i></strong> (Terrible). Must shift <em>all</em> elements.<br><strong>Linked List:</strong> <strong><i>O(1)</i></strong> (Excellent).",
+            "<strong>Feature: Insertion at Tail</strong><br><strong>Static Array:</strong> <strong><i>O(1)</i></strong> (if not full)<br><strong>Linked List:</strong> <strong><i>O(1)</i></strong> (Excellent, <em>if</em> you maintain a <code>tail</code> pointer).",
+            "<strong>Feature: Insertion in Middle</strong><br><strong>Static Array:</strong> <strong><i>O(n)</i></strong> (Poor). Must shift elements.<br><strong>Linked List:</strong> <strong><i>O(1)</i></strong> (Excellent, <em>if</em> you already have a pointer to the previous node).",
+            "<strong>Feature: Size</strong><br><strong>Static Array:</strong> <strong>Fixed.</strong> Set at compile time.<br><strong>Linked List:</strong> <strong>Dynamic.</strong> Grows and shrinks at runtime.",
+            "<strong>Feature: Memory Overhead</strong><br><strong>Static Array:</strong> <strong>None.</strong> <code>sizeof(int) * 100</code>.<br><strong>Linked List:</strong> <strong>High.</strong> <code>(sizeof(int) + sizeof(void*)) * N</code> nodes. A 64-bit pointer is 8 bytes, often larger than the <code>int</code> data itself!"
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 4,
+          "content": "When to use which"
+        },
+        {
+          "type": "list",
+          "items": [
+            "Use an <strong>Array</strong> when: You know the max size, you need <em>fast</em> random access (lookup by index), and you don't insert/delete from the middle often.",
+            "Use a <strong>Linked List</strong> when: You <em>don't</em> know the size, you primarily add/remove from the ends, and you need flexible, dynamic storage."
+          ],
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "practice",
+      "title": "DO THIS NOW",
+      "emoji": "🛠️",
+      "iconClass": "practice",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "action",
+          "title": "Hands-On Practice Guide",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Immediate action"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "<strong>Prerequisites:</strong> You need a C compiler (<code>gcc</code> or <code>clang</code>).",
+                "<strong>Setup:</strong> Create a file: <code>touch linkedlist.c</code> and open it in a text editor.",
+                "<strong>Detailed Step-by-Step Implementation:</strong><br>1. <strong>Copy the code:</strong> Take the <em>entire</em> code block from the 'Simple Case' example and paste it into <code>linkedlist.c</code>.<br>2. <strong>Read it:</strong> Go through it line-by-line. Pay special attention to <code>*head</code> vs. <code>head</code> and the <code>**</code> (pointer-to-pointer).<br>3. <strong>Compile:</strong> In your terminal, run: <code>gcc -Wall -Wextra -g -o mylist linkedlist.c</code><br>4. <strong>Run:</strong> Type <code>./mylist</code> and press Enter.<br>5. <strong>Test for Leaks (Crucial!):</strong> Run <code>valgrind --leak-check=full ./mylist</code>. You should see 'All heap blocks were freed -- no leaks are possible.'<br>6. <strong>Experiment:</strong> Comment out the <code>free_list(&myList);</code> line, re-compile, and run Valgrind again to see a 'definitely lost' error. This is a memory leak!"
+              ],
+              "html": true
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "What to look for"
+            },
+            {
+              "type": "list",
+              "items": [
+                "<strong>Pointers Changing:</strong> The 'Aha!' moment is realizing <code>head = newNode;</code> <em>inside</em> a function wouldn't work. We <em>must</em> use <code>*head = newNode;</code> (a <code>**</code>) to change the <em>original</em> pointer in <code>main</code>.",
+                "<strong>Debugger Practice:</strong><br>1. Run <code>gdb ./mylist</code>.<br>2. Type <code>b main</code> (set breakpoint), then <code>run</code>.<br>3. Type <code>n</code> (next) to step. When you get to <code>insert_at_head</code>, type <code>s</code> (step <em>into</em>).<br>4. Type <code>p *head</code> (print what head points to) and watch the pointers change. This is the #1 way to understand lists."
+              ],
+              "html": true
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Comprehensive exercises"
+            },
+            {
+              "type": "list",
+              "items": [
+                "<strong>Beginner: <code>insert_at_tail</code></strong><br>Write <code>void insert_at_tail(struct Node** head, int data);</code>. <strong>Hint:</strong> You must traverse the list: <code>while (current->next != NULL) { ... }</code>. When the loop finishes, <code>current</code> is the <em>last</em> node.",
+                "<strong>Intermediate: <code>delete_by_value</code></strong><br>Write <code>void delete_by_value(struct Node** head, int value_to_delete);</code>. <strong>Hint:</strong> You need to keep track of the <em>previous</em> node (<code>prev</code>) so you can link it around the node you delete: <code>prev->next = current->next;</code>.",
+                "<strong>Advanced: <code>reverse_list</code></strong><br>Write <code>void reverse_list(struct Node** head);</code>. This is a classic interview question. <strong>Hint:</strong> You need three pointers: <code>prev</code>, <code>current</code>, and <code>next</code>. Loop and reverse the pointers: <code>current->next = prev;</code>."
+              ],
+              "html": true
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Validation framework"
+            },
+            {
+              "type": "list",
+              "items": [
+                "<strong>Test Cases:</strong> For every function, test it on: (1) An empty list, (2) A list with one node, (3) A list with many nodes.",
+                "<strong>Quality Checklist:</strong><br><ul><li>Does it compile with <code>-Wall -Wextra</code> with <em>zero</em> warnings?</li><li>Does Valgrind report <em>zero</em> leaks?</li><li>Did you check if <code>malloc</code> returned <code>NULL</code>?</li></ul>"
+              ],
+              "html": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "warnings",
+      "title": "AVOID THESE",
+      "emoji": "⚠️",
+      "iconClass": "warnings",
+      "content": [
+        {
+          "type": "actionbox",
+          "boxType": "warning",
+          "title": "Common Pitfalls & Risk Management",
+          "content": [
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Critical mistakes"
+            },
+            {
+              "type": "list",
+              "ordered": true,
+              "items": [
+                "<strong>Forgetting to Check <code>malloc</code>'s Return:</strong> <strong>Mistake:</strong> <code>struct Node* n = malloc(...); n->data = 10;</code>. <strong>Consequence:</strong> If <code>malloc</code> fails, <code>n</code> is <code>NULL</code>. <code>NULL->data</code> is a <strong>segmentation fault</strong> (crash). <strong>Prevention:</strong> Always check <code>if (n == NULL) { ... }</code>",
+                "<strong>Losing the <code>head</code> Pointer:</strong> <strong>Mistake:</strong> Using your main <code>head</code> pointer to traverse the list (<code>head = head->next;</code>). <strong>Consequence:</strong> You've lost the pointer to the start of your list, and all preceding nodes are leaked. <strong>Prevention:</strong> Always traverse using a temporary pointer: <code>struct Node* current = head;</code>",
+                "<strong>Memory Leaks (The 'Slow Death'):</strong> <strong>Mistake:</strong> Setting <code>head = NULL</code> without freeing each node individually. <strong>Consequence:</strong> The memory you <code>malloc</code>'d is still allocated but you have no pointer to it. <strong>Prevention:</strong> You must <code>free()</code> every single node you <code>malloc</code>'d.",
+                "<strong>Dereferencing a <code>NULL</code> Pointer:</strong> <strong>Mistake:</strong> <code>while (current->next != NULL)</code> on an empty list. <strong>Consequence:</strong> If <code>current</code> is <code>NULL</code>, <code>current->next</code> crashes. <strong>Prevention:</strong> Check the pointer itself first: <code>while (current != NULL && current->next != NULL)</code>",
+                "<strong>Use After Free:</strong> <strong>Mistake:</strong> <code>free(current); ... printf(\"%d\", current->data);</code> <strong>Consequence:</strong> Undefined behavior. It might crash, it might print garbage. <strong>Prevention:</strong> After <code>free(ptr)</code>, it's good practice to set <code>ptr = NULL;</code>."
+              ],
+              "html": true
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Warning signs"
+            },
+            {
+              "type": "list",
+              "items": [
+                "<strong>Segmentation Fault (core dumped):</strong> You 100% dereferenced <code>NULL</code> or accessed memory you don't own.",
+                "<strong>Garbage Values:</strong> You're reading from an uninitialized pointer or memory you've already freed.",
+                "<strong>Valgrind 'Definitely Lost' report:</strong> You have a memory leak.",
+                "<strong>Valgrind 'Invalid Read/Write' report:</strong> You have a use-after-free.",
+                "<strong>Infinite loop in your <code>print</code> function:</strong> You accidentally created a <strong>circular</strong> list (e.g., <code>node->next = node;</code>)."
+              ],
+              "html": true
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Advanced pitfalls"
+            },
+            {
+              "type": "list",
+              "items": [
+                "<strong>Dangling <code>tail</code> Pointer:</strong> In your Queue, you <code>dequeue</code> the <em>last</em> item. <code>head</code> becomes <code>NULL</code>, but <code>tail</code> is <em>still pointing to the memory you just freed</em>. You <em>must</em> set <code>tail = NULL;</code> in this case.",
+                "<strong>Concurrency (Threads):</strong> If two threads try to <code>insert_at_head</code> at the same time, you get a <strong>race condition</strong> and one of the nodes will be lost. <strong>Prevention:</strong> Requires a <strong>mutex</strong> lock."
+              ],
+              "html": true
+            },
+            {
+              "type": "heading",
+              "level": 3,
+              "content": "Recovery strategies"
+            },
+            {
+              "type": "list",
+              "items": [
+                "<strong>Segfaults:</strong> Use <code>gdb ./mylist</code> -> <code>run</code> -> (crash) -> <code>bt</code> (backtrace). This tells you the exact line that crashed. Print your pointers to confirm they are <code>NULL</code>.",
+                "<strong>Memory Leaks:</strong> <code>valgrind --leak-check=full ./mylist</code>. It tells you *which function* allocated the memory that was lost.",
+                "<strong>Logic Errors:</strong> <strong>Draw it on paper.</strong> This is not a suggestion, it's a requirement. Draw boxes for nodes and arrows for pointers. Step through your code manually on the drawing, erasing and re-drawing arrows."
+              ],
+              "html": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "connections",
+      "title": "CONNECTIONS",
+      "emoji": "🔗",
+      "iconClass": "connections",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Prerequisites"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "<strong>C Basics:</strong> You <em>must</em> understand functions, <code>int</code>, <code>if</code>/<code>while</code> loops.",
+            "<strong><code>struct</code>:</strong> The <code>struct</code> keyword is the 'blueprint' for your node.",
+            "<strong>Pointers (The Big One):</strong> You must be comfortable with <code>&</code> (Address-of), <code>*</code> (Dereference), and <code>-></code> (Arrow Operator). <code>current->data</code> is just a shortcut for <code>(*current).data</code>.",
+            "<strong>Dynamic Memory Allocation:</strong> You must know that <code>malloc</code> (on the <strong>heap</strong>) creates memory that <em>you</em> are responsible for, while <code>int x;</code> (on the <strong>stack</strong>) is automatically cleaned up."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Related concepts"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Arrays:</strong> The main alternative (see comparison table).",
+            "<strong>Stacks (LIFO):</strong> A 'Last-In, First-Out' structure. A singly linked list is a <em>perfect</em> stack! <code>push()</code> is <code>insert_at_head()</code> and <code>pop()</code> is <code>delete_from_head()</code>.",
+            "<strong>Queues (FIFO):</strong> A 'First-In, First-Out' structure. A linked list with a <code>head</code> and <code>tail</code> pointer.",
+            "<strong>Binary Trees:</strong> A node that has *two* pointers: <code>struct Node* left;</code> and <code>struct Node* right;</code>.",
+            "<strong>Hash Tables (Hash Maps):</strong> One of the most common ways to handle 'collisions' (when two keys hash to the same index) is to use a linked list at that index. This is called <strong>chaining</strong>."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Ecosystem overview"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>C Standard Library:</strong> <code>stdlib.h</code> (for <code>malloc</code>, <code>free</code>, <code>NULL</code>) and <code>stdio.h</code> (for <code>printf</code>) are all you need.",
+            "<strong>There is no 'built-in' C list:</strong> Unlike C++ (<code>std::list</code>) or Python (<code>list</code>), C gives you the <em>tools</em> but <em>you</em> must build the data structure yourself.",
+            "<strong>Linux Kernel Lists:</strong> The Linux kernel has its <em>own</em> famous, highly-optimized <code>list.h</code> implementation (a circular, doubly linked list)."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Advanced connections"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Unrolled Linked List:</strong> An optimization. Each 'node' is not a single item, but a small <em>array</em> of items. This <em>dramatically</em> improves cache locality.",
+            "<strong>Self-Organizing Lists:</strong> Lists that re-order themselves on the fly. When you find an item, you <em>move it to the head of the list</em>. This makes future searches for that <em>same item</em> <i>O(1)</i>."
+          ],
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "test",
+      "title": "TEST YOURSELF",
+      "emoji": "🎯",
+      "iconClass": "test",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Knowledge verification"
+        },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            "<strong>Q:</strong> What are the two <em>essential</em> members of a C <code>struct</code> used for a singly linked list?<br><strong>A:</strong> The data (e.g., <code>int data;</code>) and a pointer to the next node (<code>struct Node* next;</code>).",
+            "<strong>Q:</strong> Why do we <em>need</em> <code>malloc</code>? Why can't we just declare <code>struct Node myNode;</code> on the stack inside the <code>insert</code> function?<br><strong>A:</strong> Memory on the stack is <em>destroyed</em> when the function returns. The <code>myNode</code> variable would be gone. <code>malloc</code> allocates on the heap, which persists until we manually call <code>free</code>.",
+            "<strong>Q:</strong> What is the performance complexity (<i>O</i> notation) of: (a) Accessing the 500th element? (b) Inserting a new <code>head</code>? (c) Inserting at the <code>tail</code> (on a list that <em>only</em> has a <code>head</code> pointer)?<br><strong>A:</strong> (a) <i>O(n)</i>, (b) <i>O(1)</i>, (c) <i>O(n)</i> (because you must traverse the whole list to <em>find</em> the tail).",
+            "<strong>Q:</strong> What special value signifies the end of the list?<br><strong>A:</strong> <code>NULL</code>.",
+            "<strong>Q:</strong> What is the *root cause* of a segmentation fault when working with lists?<br><strong>A:</strong> Dereferencing a <code>NULL</code> pointer (e.g., <code>current->data</code> when <code>current</code> is <code>NULL</code>)."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Skill demonstration"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Code:</strong> Write a function <code>int count(struct Node* head);</code> that returns the total number of nodes in the list.",
+            "<strong>Code:</strong> Write a function <code>struct Node* find(struct Node* head, int value);</code> that returns a <em>pointer</em> to the first node containing <code>value</code>, or <code>NULL</code> if it's not found.",
+            "<strong>Debug:</strong> Find the bug in this code:<br><code>void delete_last_node(struct Node** head) {<br>  if (*head == NULL) return;<br>  struct Node* current = *head;<br>  while (current->next != NULL) { current = current->next; }<br>  free(current);<br>}</code><br><strong>Answer:</strong> The <em>second-to-last</em> node's <code>next</code> pointer is <em>still pointing to the freed memory</em> (a dangling pointer). You must use <code>prev->next = NULL;</code>.",
+            "<strong>Design:</strong> How would you implement a simple <code>undo</code> feature in a text editor?<br><strong>Answer:</strong> Use a <strong>Stack</strong> (which is just a linked list). When the user types, <code>push</code> (insert at head) the action. When they hit 'Undo,' you <code>pop</code> (delete from head) the last action and reverse it."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Success criteria"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Novice:</strong> You can write the 'Simple Case' program from memory and explain <code>insert_at_head</code>.",
+            "<strong>Competent:</strong> You can implement <code>insert_at_tail</code>, <code>delete_by_value</code>, and <code>count</code>. Your code compiles with <code>-Wall</code> and has <em>zero</em> leaks on Valgrind.",
+            "<strong>Proficient:</strong> You can implement <code>reverse_list</code> iteratively. You can build a Queue with <code>head</code> and <code>tail</code> pointers.",
+            "<strong>Mastery:</strong> You can implement a Doubly Linked List and build an LRU Cache."
+          ],
+          "html": true
+        }
+      ]
+    },
+    {
+      "id": "growth",
+      "title": "LEVEL UP",
+      "emoji": "📈",
+      "iconClass": "growth",
+      "content": [
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "This week (Immediate Skills)"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Daily:</strong> Re-write the 'Simple Case' <code>linkedlist.c</code> <em>from a blank file</em> until you don't need to look up anything.",
+            "<strong>Mini-Project:</strong> Implement <code>insert_at_tail</code>, <code>count</code>, and <code>delete_by_value</code>.",
+            "<strong>Tools:</strong> Get 100% comfortable with <code>gcc -Wall -g</code>, <code>valgrind</code>, and the basic GDB commands (<code>b</code>, <code>run</code>, <code>n</code>, <code>s</code>, <code>p</code>)."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "This month (Skill Consolidation)"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Comprehensive Project:</strong> Build a <strong>Stack</strong> (<code>push</code>, <code>pop</code>) and a <strong>Queue</strong> (<code>enqueue</code>, <code>dequeue</code>) <em>using your linked list as the underlying structure</em>.",
+            "<strong>Advanced Feature:</strong> Implement the <code>reverse_list</code> function. Whiteboard it for a friend.",
+            "<strong>Best Practices:</strong> Write a <code>Makefile</code> for your project. Write simple unit tests using <code>assert.h</code>."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "This quarter (Advanced Mastery)"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Complex Project:</strong> Implement a <strong>Doubly Linked List</strong> from scratch. Pay <em>extreme</em> attention to all the pointer updates.",
+            "<strong>Integration:</strong> Build the <strong>LRU Cache</strong> (from the 'Advanced Example'). This requires learning a basic Hash Table and integrating it with your Doubly Linked List."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Long term (Expertise and Innovation)"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Thought Leadership:</strong> Read and <em>understand</em> the Linux kernel's <code>list.h</code>. Compare its design to your 'naive' list.",
+            "<strong>Original Implementation:</strong> Implement an <strong>Unrolled Linked List</strong> (for cache-friendliness) or a <strong>Skip List</strong> (for <i>O(log n)</i> search).",
+            "<strong>Mentoring:</strong> Do code reviews for junior C programmers focusing on pointer safety and memory management."
+          ],
+          "html": true
+        },
+        {
+          "type": "heading",
+          "level": 3,
+          "content": "Career integration"
+        },
+        {
+          "type": "list",
+          "items": [
+            "<strong>Interviews:</strong> You are now 100% prepared for the most common data structure interview question. Be able to whiteboard <code>delete_by_value</code> and <code>reverse_list</code> quickly.",
+            "<strong>Professional Development:</strong> This knowledge is the direct foundation for <em>all</em> other dynamic data structures (trees, graphs, etc.).",
+            "<strong>Industry:</strong> In embedded systems, custom kernel development, or high-performance computing, this low-level, manual memory management is <em>still</em> a daily reality."
+          ],
+          "html": true
+        }
+      ]
+    }
+  ]
+}

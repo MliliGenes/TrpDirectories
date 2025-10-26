@@ -179,6 +179,23 @@
       "lastUpdated": "2025-09-30"
     },
     {
+      "id": "a-comprehensive-guide-to-linked-lists-in-c",
+      "title": "A Comprehensive Guide to Linked Lists in C",
+      "path": "guides/a-comprehensive-guide-to-linked-lists-in-c/",
+      "description": "A detailed, beginner-friendly guide to understanding, implementing, and mastering linked lists in C, covering core concepts, real-world examples, common pitfalls, and advanced topics.",
+      "author": "Gemini AI",
+      "tags": [
+        "C",
+        "Data Structures",
+        "Linked Lists",
+        "Pointers",
+        "Memory Management",
+        "Beginner"
+      ],
+      "difficulty": "beginner",
+      "lastUpdated": "2025-10-26"
+    },
+    {
       "id": "sockets---poll",
       "title": "Sockets & Poll",
       "path": "guides/sockets-poll/",
@@ -267,8 +284,8 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-10-24T14:52:19.186Z",
-    "totalGuides": 15,
+    "lastModified": "2025-10-26T17:42:09.569Z",
+    "totalGuides": 16,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"
   }
