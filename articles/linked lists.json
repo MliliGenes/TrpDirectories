@@ -2,7 +2,7 @@
   "meta": {
     "title": "A Comprehensive Guide to Linked Lists in C",
     "description": "A detailed, beginner-friendly guide to understanding, implementing, and mastering linked lists in C, covering core concepts, real-world examples, common pitfalls, and advanced topics.",
-    "author": "Gemini AI",
+    "author": "sel-mlil",
     "tags": ["C", "Data Structures", "Linked Lists", "Pointers", "Memory Management", "Beginner"],
     "difficulty": "beginner",
     "lastUpdated": "2025-10-26"

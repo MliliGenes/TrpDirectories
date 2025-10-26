@@ -183,7 +183,7 @@
       "title": "A Comprehensive Guide to Linked Lists in C",
       "path": "guides/a-comprehensive-guide-to-linked-lists-in-c/",
       "description": "A detailed, beginner-friendly guide to understanding, implementing, and mastering linked lists in C, covering core concepts, real-world examples, common pitfalls, and advanced topics.",
-      "author": "Gemini AI",
+      "author": "sel-mlil",
       "tags": [
         "C",
         "Data Structures",
@@ -284,7 +284,7 @@
   ],
   "metadata": {
     "version": "2.1.0",
-    "lastModified": "2025-10-26T17:42:09.569Z",
+    "lastModified": "2025-10-26T17:44:44.529Z",
     "totalGuides": 16,
     "system": "Automated JSON-to-HTML guide generation",
     "description": "Dynamically built from articles directory"

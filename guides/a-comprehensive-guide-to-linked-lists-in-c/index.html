@@ -30,7 +30,7 @@
             <div class="header-content">
                 <div class="header-title">
                     <h1>A Comprehensive Guide to Linked Lists in C</h1>
-                    <div class="author-info">By Gemini AI</div>
+                    <div class="author-info">By sel-mlil</div>
                 </div>
                 <div class="header-nav">
                     <a href="../../" class="back-to-index">
@@ -78,7 +78,7 @@
                 <p>In C, the 'blueprint' for a node is a <code>struct</code>. The most critical concept is a <strong>self-referential structure</strong>: a <code>struct</code> that contains a pointer <em>to itself</em>.</p>
                 <h4>1. The Blueprint (struct Node)</h4>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-v5ulpiajl" class="codemirror-code">// This is the blueprint for all our train cars.
+                    <textarea id="code-x4rdljt5e" class="codemirror-code">// This is the blueprint for all our train cars.
 struct Node {
     int data; // The cargo (can be any type)
     struct Node* next; // The coupler (a pointer to another struct of the *same type*)
@@ -86,7 +86,7 @@ struct Node {
                 </div>
                 <h4>2. The Entry Point (head)</h4>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-ne5hhhz2g" class="codemirror-code">// An empty list is just a NULL pointer.
+                    <textarea id="code-03361e5bw" class="codemirror-code">// An empty list is just a NULL pointer.
 struct Node* head = NULL;</textarea>
                 </div>
                 <h4>3. Process: Adding a Node (to the head)</h4>
@@ -99,7 +99,7 @@ struct Node* head = NULL;</textarea>
                 </ol>
                 <h4>4. Process: Traversing (Walking) the List</h4>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-aeofptw3r" class="codemirror-code">// 1. Create a temporary pointer. NEVER modify 'head' to traverse!
+                    <textarea id="code-2qezuoouh" class="codemirror-code">// 1. Create a temporary pointer. NEVER modify 'head' to traverse!
 struct Node* current = head;
 
 // 2. Loop as long as our current spot is not NULL (the end)
@@ -114,7 +114,7 @@ printf("NULL\n");</textarea>
                 </div>
                 <h4>5. Process: Freeing (Deleting) the List</h4>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-y1gwizdbx" class="codemirror-code">struct Node* current = head;
+                    <textarea id="code-7y2c6lf79" class="codemirror-code">struct Node* current = head;
 struct Node* nextNode = NULL;
 
 while (current != NULL) {
@@ -159,7 +159,7 @@ head = NULL; // The list is now safely empty</textarea>
                 <h3>Simple case: A Singly Linked List for Integers</h3>
                 <p>This is the 'Hello, World!' of linked lists. A complete, runnable C program.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-pn0f04d3u" class="codemirror-code">#include <stdio.h>
+                    <textarea id="code-t16iclch2" class="codemirror-code">#include <stdio.h>
 #include <stdlib.h> // For malloc() and free()
 
 // 1. The Blueprint
@@ -240,7 +240,7 @@ int main() {
                 </div>
                 <p><strong>Expected Output:</strong></p>
                 <div class="code-block" data-language="bash">
-                    <textarea id="code-i4ik5jrut" class="codemirror-code">List after creation: NULL
+                    <textarea id="code-w56ew7bbz" class="codemirror-code">List after creation: NULL
 List after inserting 10, 20, 30: 10 -> 20 -> 30 -> NULL
 List after freeing: NULL</textarea>
                 </div>
@@ -248,7 +248,7 @@ List after freeing: NULL</textarea>
                 <p>A <strong>Queue</strong> is a 'First-In, First-Out' (FIFO) structure. A linked list is perfect for this, but we need <em>two</em> pointers: <code>head</code> (to remove from) and <code>tail</code> (to add to). This makes both operations <i>O(1)</i>.</p>
                 <h4>Structure</h4>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-0zfittqt5" class="codemirror-code">struct Queue {
+                    <textarea id="code-87gvpi1yq" class="codemirror-code">struct Queue {
     struct Node* head;
     struct Node* tail;
 };</textarea>

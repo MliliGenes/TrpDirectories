@@ -110,7 +110,7 @@
                 <h3>Execution flow</h3>
                 <p>The typical pattern is straightforward: declare va_list, initialize with va_start, loop through arguments with va_arg, and clean up with va_end. The tricky part is knowing when to stop and what type to request. You typically use: a count parameter, a sentinel value (like NULL), or a format string that encodes types.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-b5decf2wi" class="codemirror-code">// Basic pattern
+                    <textarea id="code-axpuag5u9" class="codemirror-code">// Basic pattern
 void func(int count, ...) {
     va_list ap;
     va_start(ap, count);  // 'count' is last fixed param
@@ -145,7 +145,7 @@ void func(int count, ...) {
             <div class="content">
                 <h3>Example 1: Sum integers (count-based)</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-t6axghl16" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-yhxwz47f8" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 
 int sum_ints(int count, ...) {
@@ -171,7 +171,7 @@ int main(void) {
                 </div>
                 <h3>Example 2: Handling floats/doubles (promotion)</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-dqd5syl73" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-tg07iua16" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 
 double average(int count, ...) {
@@ -197,7 +197,7 @@ int main(void) {
                 </div>
                 <h3>Example 3: NULL-terminated string list</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-ut3dgopme" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-7ucaorp1e" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -231,7 +231,7 @@ int main(void) {
                 </div>
                 <h3>Example 4: Mini printf implementation</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-d9a0ninws" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-nfjy3jvy0" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 
 void my_printf(const char *fmt, ...) {
@@ -282,7 +282,7 @@ int main(void) {
                 </div>
                 <h3>Example 5: Using va_copy for multiple passes</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-bk46f0c40" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-yelr6ko6c" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -357,7 +357,7 @@ int main(void) {
                 </ul>
                 <h3>Debugging strategies</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-reo3syfyh" class="codemirror-code">// Add defensive logging
+                    <textarea id="code-sse4ujoa3" class="codemirror-code">// Add defensive logging
 void debug_varargs(int count, ...) {
     va_list ap;
     va_start(ap, count);
@@ -400,7 +400,7 @@ void debug_varargs(int count, ...) {
                 </div>
                 <h3>The float trap (most common error)</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-k9dbqp8cb" class="codemirror-code">// WRONG - will crash or return garbage
+                    <textarea id="code-x29qtfacz" class="codemirror-code">// WRONG - will crash or return garbage
 float f = va_arg(ap, float);  // ❌ NEVER DO THIS
 
 // CORRECT - floats are promoted to double
@@ -419,7 +419,7 @@ float f = (float)d;  // Cast back if needed</textarea>
                 <h3>Format string vulnerabilities</h3>
                 <p>Variadic functions are notorious for security vulnerabilities, especially when format strings come from untrusted input. The classic printf vulnerability allows attackers to read/write arbitrary memory.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-x57zie92j" class="codemirror-code">// DANGEROUS - never do this
+                    <textarea id="code-7lys2sxve" class="codemirror-code">// DANGEROUS - never do this
 char user_input[100];
 gets(user_input);  // User provides format string
 printf(user_input);  // ❌ VULNERABILITY!
@@ -436,7 +436,7 @@ printf("%s", user_input);  // ✓ Safe</textarea>
                 </ul>
                 <h3>Safe patterns</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-g2tqw7fyl" class="codemirror-code">// Always validate format strings
+                    <textarea id="code-kulr8j29z" class="codemirror-code">// Always validate format strings
 void safe_log(const char *fmt, ...) {
     // Only allow specific format strings
     const char *allowed[] = {
@@ -480,7 +480,7 @@ void safe_log(const char *fmt, ...) {
                 <h3>va_list implementation details</h3>
                 <p>On x86-64 Linux, va_list is typically a struct with four fields: gp_offset (general-purpose register offset), fp_offset (floating-point offset), overflow_arg_area (stack pointer), and reg_save_area (saved registers). The va_arg macro calculates offsets into these areas based on the requested type.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-p7oj7tfxh" class="codemirror-code">// Conceptual va_list on x86-64 (actual impl varies)
+                    <textarea id="code-tt686ccpk" class="codemirror-code">// Conceptual va_list on x86-64 (actual impl varies)
 typedef struct {
     unsigned int gp_offset;      // Offset in GP reg area
     unsigned int fp_offset;      // Offset in FP reg area
@@ -508,7 +508,7 @@ typedef struct {
                 <h3>Pattern 1: Count parameter</h3>
                 <p>Pass the number of arguments as first parameter. Simple and type-safe for homogeneous types.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-aph9z6jss" class="codemirror-code">int max(int count, ...) {
+                    <textarea id="code-edoabqtu2" class="codemirror-code">int max(int count, ...) {
     va_list ap;
     va_start(ap, count);
     int m = va_arg(ap, int);
@@ -523,7 +523,7 @@ typedef struct {
                 <h3>Pattern 2: Sentinel value</h3>
                 <p>Use a special terminator value (NULL, -1, etc.) to mark the end. Works well for pointer lists.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-hg4vv6zz8" class="codemirror-code">void print_strings(...) {
+                    <textarea id="code-pwpxsltnp" class="codemirror-code">void print_strings(...) {
     va_list ap;
     va_start(ap, 0);  // No fixed params!
     
@@ -538,7 +538,7 @@ typedef struct {
                 <h3>Pattern 3: Format string</h3>
                 <p>Use a format string to encode argument types and count. Most flexible but requires parsing.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-4z5t3m0q1" class="codemirror-code">void log_msg(const char *fmt, ...) {
+                    <textarea id="code-6zxl1m1hl" class="codemirror-code">void log_msg(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     // Parse fmt to determine types
@@ -549,7 +549,7 @@ typedef struct {
                 <h3>Pattern 4: va_list wrapper</h3>
                 <p>Create a helper that takes va_list, allowing composition of variadic functions.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-wyiqpnap8" class="codemirror-code">// Internal helper takes va_list
+                    <textarea id="code-zwx1zkbou" class="codemirror-code">// Internal helper takes va_list
 void vlog_internal(const char *fmt, va_list ap) {
     vfprintf(stderr, fmt, ap);
 }
@@ -584,7 +584,7 @@ void log_error(const char *fmt, ...) {
                 </ul>
                 <h3>Using format attributes</h3>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-dymhfm5q9" class="codemirror-code">// Enable compiler format checking
+                    <textarea id="code-0m2wfmz2e" class="codemirror-code">// Enable compiler format checking
 void my_printf(const char *fmt, ...)
     __attribute__((format(printf, 1, 2)));
 
@@ -606,7 +606,7 @@ my_printf("%d %s", "wrong", 42);  // Warning!</textarea>
                 <h3>Compiler builtins</h3>
                 <p>Modern compilers provide built-in functions for working with varargs that can be more efficient than the standard macros.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-gn61tjaeb" class="codemirror-code">// GCC/Clang builtins
+                    <textarea id="code-6jva55o7u" class="codemirror-code">// GCC/Clang builtins
 void *__builtin_va_start(va_list ap, param);
 void *__builtin_va_end(va_list ap);
 void *__builtin_va_copy(va_list dest, va_list src);
@@ -616,7 +616,7 @@ void *__builtin_va_copy(va_list dest, va_list src);
                 <h3>Custom va_list wrappers</h3>
                 <p>Create your own variadic wrapper types for better type safety and debugging.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-m99jjgu0w" class="codemirror-code">#include <stdarg.h>
+                    <textarea id="code-iq0xdoj1m" class="codemirror-code">#include <stdarg.h>
 #include <stdio.h>
 
 // Type-safe varargs wrapper
@@ -650,7 +650,7 @@ void safe_va_print(SafeVarargs *sv) {
                 <h3>Interfacing with C++</h3>
                 <p>When calling C variadic functions from C++, or vice versa, pay attention to name mangling and ABI compatibility.</p>
                 <div class="code-block" data-language="cpp">
-                    <textarea id="code-815kmna74" class="codemirror-code">// In C++ header
+                    <textarea id="code-2rfgokvvn" class="codemirror-code">// In C++ header
 extern "C" {
     void c_variadic_func(int count, ...);
 }
@@ -673,7 +673,7 @@ void type_safe_print(Args... args) {
                 <h3>Variadic macros alternative</h3>
                 <p>Sometimes variadic macros provide better type safety than variadic functions.</p>
                 <div class="code-block" data-language="c">
-                    <textarea id="code-t9z7q16c6" class="codemirror-code">// Variadic macro for logging
+                    <textarea id="code-2u2532lgf" class="codemirror-code">// Variadic macro for logging
 #define LOG(level, ...) \
     do { \
         fprintf(stderr, "[%s] ", level); \
